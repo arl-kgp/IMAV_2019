@@ -70,6 +70,8 @@ def roi_detect(image):
 	padding = 0.03
 
 	orig = image.copy()
+	# origH = 1080
+	# origW = 720
 	(origH, origW) = image.shape[:2]
 
 	# set the new width and height and then determine the ratio in change
@@ -88,9 +90,6 @@ def roi_detect(image):
 	layerNames = [
 		"feature_fusion/Conv_7/Sigmoid",
 		"feature_fusion/concat_3"]
-
-	# load the pre-trained EAST text detector
-
 
 	# construct a blob from the image and then perform a forward pass of
 	# the model to obtain the two output layer sets
@@ -243,6 +242,9 @@ net = cv2.dnn.readNet(east)
 f = open('warehouse.csv','w')
 print("file opened")
 # cv2.waitKey(3000);
+hover_time = 0
+reached_qrcode = 0
+
 
 def img_resize(im):
 	fx = 7.092159469231584126e+02
@@ -353,15 +355,16 @@ if __name__ == '__main__':
 
 	# Read feed:
 	frame_read = tello.get_frame_read()
-
+	rcOut = [0,0,0,0]
 	while True:
 		
 		# for FPS:
 		start_time = time.time()
-		# fps = FPS().start()
 		# Frame preprocess
 		# frameBGR = np.copy(frame_read.frame)
-		im = imu.resize(frame_read.frame, width=720)
+
+		# im = frame_read.frame
+
 		# b,g,r = cv2.split(im)
 		# kernel = np.ones((5,5), np.uint8)
 		# img_erosion = cv2.erode(b, kernel, iterations=1)
@@ -373,37 +376,57 @@ if __name__ == '__main__':
 		# im[:,:,0]=b
 		# im[:,:,1]=g
 		# im[:,:,2]=r
-		# Undistortion --Uncomment for Tello-001
-		#im = undistort(im)
 
-		# QR-codes detect
-		im, qrpoints, qrlist = main(im)
+		# # Undistortion --Uncomment for Tello-001
+		# im = undistort(im)
 
-		# if qrpoints != []:			# If QR detected, detect TEXT
-		print(qrlist)
+		# # QR-codes detect
+		k = cv2.waitKey(1) & 0xFF
+		if k == ord("m"):
 
-		#im = img_resize(im)
-		#im = apply_contrast(im)
-		#im = apply_thresh(im)
-		#im = hist_equalise(im)
+			im, qrpoints, qrlist = main(frame_read.frame)
 
-		im = find_text_and_write(im, qrlist)
-				
+			if qrpoints != [] and hover_time < 3:	# If QR detected, detect TEXT
 
-		cv2.imshow("Results", im)
-		key = cv2.waitKey(1) & 0xFF;
+				print(qrlist)
+				rcOut = [0,0,0,0]
+				hover_time = hover_time + time.time() - start_time 
+
+				# reached_qrcode=1
+				# im = imu.resize(frame_read.frame, width=720)
+
+			# 	#im = img_resize(im)
+			# 	#im = apply_contrast(im)
+			# 	#im = apply_thresh(im)
+			# 	#im = hist_equalise(im)
+
+				im = find_text_and_write(frame_read.frame, qrlist)
+			
+			elif hover_time > 3:
+				tello.land()
+
+			else:
+				# rcOut = [0,10,0,0]
+				reached_qrcode = 0
+				hover_time = 0
+			cv2.imshow("Results", im)
+
+		else:
+			cv2.imshow("Results",frame_read.frame)
+
+		key = cv2.waitKey(1) & 0xFF
 		if key == ord("t"):
-			tello.takeoff()    
+			tello.takeoff()
 		elif key == ord("l"):
 			tello.land()
 		elif key == ord("w"):
 			rcOut[1] = 10
 		elif key == ord("a"):
-			rcOut[0] = 10
+			rcOut[0] = -10
 		elif key == ord("s"):
 			rcOut[1] = -10
 		elif key == ord("d"):
-			rcOut[0] = -10
+			rcOut[0] = 10
 		elif key == ord("u"):
 			rcOut[2] = 10
 		elif key == ord("j"):
@@ -416,18 +439,10 @@ if __name__ == '__main__':
 			f.close()
 			print("file closed")
 			break
-		else:
-			rcOut = [0,0,0,0]
 
-		#print self.rcOut
-		tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
+		# tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
 		rcOut = [0,0,0,0]
-		# fps.update()
-		# fps.stop()
-		# print("FPS: ", fps.elapsed())
 		print("FPS: ", 1.0 / (time.time() - start_time))
-
-
 
 tello.end()
 cv2.destroyAllWindows()
