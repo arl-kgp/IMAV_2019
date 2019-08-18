@@ -56,6 +56,24 @@ def main(im):
 			qrpoints.append(obj.polygon)
 	
 	im = display(im, decodedObjects)
-	
+
+	yc = 0
+	for polygon in qrpoints:
+		for point in polygon:
+			if(yc<point.y):
+				yc = point.y
+	cropped_im = im[yc:, :]
+		
 	return im, qrpoints, qrlist
+
+def qr_centroid(qrpoints):
+	xc = 0
+	yc = 0
+	n_pts = len(qrpoints)*4
+	for polygon in qrpoints:
+		for point in polygon:
+			xc += point.x/n_pts
+			yc += point.y/n_pts
+	centroid = [xc, yc]
+	return centroid
 	

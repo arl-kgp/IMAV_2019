@@ -37,10 +37,12 @@ def text_better(text):
 			list1[0]='4'
 		elif(text[0]=='O'):
 			list1[0]='0'
+		elif(text[0]=='Q'):
+			list1[0]='0'
 
 
 		if(text[1]=='S'):
-			list1[1]='5'
+			list1[1]='9'
 		elif(text[1]=='I'):
 			list1[1]='1'
 		elif(text[1]=='A'):
@@ -70,7 +72,7 @@ def roi_detect(image):
 	min_confidence = 0.5
 	height = width = 320
 
-	padding = 0.03
+	padding = 0.06
 
 	orig = image.copy()
 	# origH = 1080
@@ -252,10 +254,11 @@ reached_qrcode = 0
 
 
 def img_resize(im):
-	fx = 7.092159469231584126e+02
-	fy = 7.102890453175559742e+02
-	cx = 3.681653710406367850e+02
-	cy = 2.497677007139825491e+02
+	fx = 910.6412491
+	fy = 680.16057188
+	
+	# cx = 3.681653710406367850e+02
+	# cy = 2.497677007139825491e+02
 
 	"""fx = 672.074266
 	fy = 672.019640
@@ -279,28 +282,22 @@ def img_resize(im):
 	return resized
 
 
-def undistort(im):
-	K = np.array([[5.277994366999020031e+02,0.000000000000000000e+00,3.711893449350251331e+02], [0.000000000000000000e+00,5.249025134499009937e+02,2.671209192674019732e+02], [0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00
-	]], dtype = 'uint8')
+def undistort(img):	
+	
+	balance = 1.0
+	DIM=(960, 720)
+	K=np.array([[676.4953507779437, 0.0, 485.52063689559924], [0.0, 673.0210851712478, 361.69019922623494], [0.0, 0.0, 1.0]])
+	D=np.array([[0.17623414178050884], [-0.3648169258817548], [0.6005180717950186], [-0.3442054161739578]])
+	dim1 = img.shape[:2][::-1]
+	dim2 = dim1
+	dim3 = dim1
+	scaled_K = K * dim1[0] / DIM[0]
+	scaled_K[2][2] = 1.0 
+	new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(scaled_K, D, dim2, np.eye(3), balance=balance)
+	map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
+	undistorted_img = cv2.remap(img, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
 
-	dist = np.array([-1.941494206892808161e-01,-1.887639714668869206e-02,-5.988986169837847741e-03,-7.372353351255917582e-05,7.269696522356267065e-02], dtype = 'uint8')
-
-	K_inv = np.linalg.inv(K)
-
-	h , w = im.shape[:2]
-
-	newcameramtx, roi = cv2.getOptimalNewCameraMatrix(K,dist,(w,h),1,(w,h))
-
-	mapx,mapy = cv2.initUndistortRectifyMap(K,dist,None,newcameramtx,(w,h),5)
-	dst = cv2.remap(im,mapx,mapy,cv2.INTER_LINEAR)
-
-	x,y,w,h = roi
-	im = dst[y:y+h,x:x+w]
-
-	#print("ROI: ",x,y,w,h)
-	#cv2.imshow("lkgs",frame2use)
-
-	return(im)
+	return undistorted_img
 
 def hist_equalise(im):
 
@@ -397,7 +394,7 @@ def diff_shelf(im, qrpoints, textpoints):
 			if(x1>point.x):
 				x1 = point.x
 	print(textpoints)
-	x2 = textpoints[0][0][0]
+	x2 = max(textpoints[0][0][0], textpoints[0][1][0])
 	is_bar_present = 0
 	print("x1: "+str(x1))
 	print("x2: "+str(x2))
@@ -406,6 +403,7 @@ def diff_shelf(im, qrpoints, textpoints):
 		if ((i-x1)*(i-x2)) < 0:
 			is_bar_present += 1
 	print("Is bar present "+str(is_bar_present))
+	return is_bar_present
 	
 def write_in_file(qrlist, text):
 
@@ -417,18 +415,28 @@ def write_in_file(qrlist, text):
 		f.write('%s,%s,\n'%(Data, text))
 		# f.close()
 
-def find_text_and_write(im, qrlist):
+def find_text_and_write(im, qrlist, qrpoints):
 	text, corners, output = text_finder(im)
 	print(text)
 	check = 1
 	#check = check_format(text)
-
+	
 	check_text = 0                         # Flag to determine whether text actually found
 	if text != None and check:
+
+		bars = diff_shelf(frame, qrpoints, corners)
+		if bars>8:
+			return frame, 2, corners
+
 		check_text = 1
 		write_in_file(qrlist, text)
 
-	return output, check_text, corners
+	# check_text value:
+	# 0->no text found
+	# 1->text found, WRITE
+	# 2->text found but different shelf
+
+	return output, check_text, corners  
 
 def qr_intersection(lst1, lst2):
 	ret_val = True 
@@ -439,7 +447,7 @@ def qr_intersection(lst1, lst2):
 
 if __name__ == '__main__':
 
-	cv2.namedWindow('Results',cv2.WINDOW_NORMAL)
+	#cv2.namedWindow('Results',cv2.WINDOW_NORMAL)
 	qrprev_list = []                                   # For comparing with newer qr-codes from next shelf
 	qrlist = []
 	check_qr_num = 0
@@ -454,6 +462,8 @@ if __name__ == '__main__':
 		                            
 		# for FPS:
 		start_time = time.time()
+		bat = tello.get_battery()
+		print("Battery: "+str(bat))   # INCLUDE THIS IN LEFT
 		# Frame preprocess
 		# frameBGR = np.copy(frame_read.frame)
 
@@ -493,7 +503,7 @@ if __name__ == '__main__':
 				if reached_qrcode == 0:
 					# MOVE TO RIGHT FUNCTION
 					reached_qrcode=1
-					print("New QR, move")
+					print("New QRs found")
 				
 
 			# 	#im = img_resize(im)
@@ -501,18 +511,31 @@ if __name__ == '__main__':
 			# 	#im = apply_thresh(im)
 			# 	#im = hist_equalise(im)
 
-				frame, check_text, txt_corners = find_text_and_write(frame, qrlist)
+				frame, check_text, txt_corners = find_text_and_write(frame, qrlist, qrpoints)
 				
 				if check_text == 0:
+					rcOut = [5,0,0,0]
+					print("text not found")
+					tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
+					cv2.imshow("Results",frame)
 					continue
-				diff_shelf(frame, qrpoints, txt_corners)
+
+				if check_text == 2:
+					# move until further code is detected.
+					rcOut = [5,0,0,0]
+					print("text and QR in different Shelves")
+					tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
+					cv2.imshow("Results",frame)
+					continue
+				# bars = diff_shelf(frame, qrpoints, txt_corners)
+
 				hover_time = hover_time + time.time() - start_time 
 
 			
 			elif hover_time > 3:
 				print("hover time: "+str(hover_time))
 				#tello.land()
-				rcOut = [25,0,0,0]
+				rcOut = [10,0,0,0]
 				
 				check_qr_num += 1
 				
@@ -526,9 +549,9 @@ if __name__ == '__main__':
 					break
 
 			else:
-				rcOut = [10,0,0,0]
+				rcOut = [5,0,0,0]
 				reached_qrcode = 0
-				hover_time = 0
+				hover_time= 0
 			# cv2.imshow("Results", im)
 	
 		elif k == ord("t"):
@@ -546,6 +569,7 @@ if __name__ == '__main__':
 		elif k == ord("u"):
 			print("up")
 			rcOut[2] = 50
+			#rcOut[1] += 10
 		elif k == ord("j"):
 			rcOut[2] = -50
 		elif k == ord("c"):
@@ -559,6 +583,7 @@ if __name__ == '__main__':
 			break
 
 		cv2.imshow("Results",frame)
+		#rcOut[1] += 0
 		tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
 		rcOut = [0,0,0,0]
 		print("FPS: ", 1.0 / (time.time() - start_time))
