@@ -16,9 +16,10 @@ class Tello:
     # Send and receive commands, client socket
     UDP_IP = '192.168.10.1'
     UDP_PORT = 8889
-    RESPONSE_TIMEOUT = 0.5  # in seconds
-    TIME_BTW_COMMANDS = 0.5  # in seconds
+    RESPONSE_TIMEOUT = 7  # in seconds
+    TIME_BTW_COMMANDS = 1  # in seconds
     TIME_BTW_RC_CONTROL_COMMANDS = 0.5  # in seconds
+    RETRY_COUNT = 3
     last_received_command = time.time()
 
     HANDLER = logging.StreamHandler()
@@ -35,35 +36,217 @@ class Tello:
     VS_UDP_IP = '0.0.0.0'
     VS_UDP_PORT = 11111
 
+    STATE_UDP_PORT = 8890
+
     # VideoCapture object
     cap = None
     background_frame_read = None
 
     stream_on = False
 
-    def __init__(self):
-        # To send comments
-        self.address = (self.UDP_IP, self.UDP_PORT)
-        self.clientSocket = socket.socket(socket.AF_INET,  # Internet
-                                          socket.SOCK_DGRAM)  # UDP
-        self.clientSocket.bind(('', self.UDP_PORT))  # For UDP response (receiving data)
+    def __init__(self,
+        host='192.168.10.1',
+        port=8889,
+        client_socket=None,
+        enable_exceptions=True,
+        retry_count=3):
+
+        self.address = (host, port)
         self.response = None
+        self.response_state = None  #to attain the response of the states
         self.stream_on = False
+        self.enable_exceptions = enable_exceptions
+        self.retry_count = retry_count
+
+        if client_socket:
+            self.clientSocket = client_socket
+        else:
+            self.clientSocket = socket.socket(socket.AF_INET,  # Internet
+                                            socket.SOCK_DGRAM)  # UDP
+            self.clientSocket.bind(('', self.UDP_PORT))  # For UDP response (receiving data)
+
+        self.stateSocket = socket.socket(socket.AF_INET,
+                                          socket.SOCK_DGRAM)
+        self.stateSocket.bind(('', self.STATE_UDP_PORT))# for accessing the states of Tello
 
         # Run tello udp receiver on background
-        thread = threading.Thread(target=self.run_udp_receiver, args=())
-        thread.daemon = True
-        thread.start()
+        thread1 = threading.Thread(target=self.run_udp_receiver, args=())
+        # Run state reciever on background
+        thread2 = threading.Thread(target=self.get_states, args=())
+
+        thread1.daemon = True
+        thread2.daemon = True
+        thread1.start()
+        thread2.start()
 
     def run_udp_receiver(self):
         """Setup drone UDP receiver. This method listens for responses of Tello. Must be run from a background thread
         in order to not block the main thread."""
         while True:
             try:
-                self.response, _ = self.clientSocket.recvfrom(1024)  # buffer size is 1024 bytes
+                self.response, _ = self.clientSocket.recvfrom(256)  # buffer size is 1024 bytes
             except Exception as e:
                 self.LOGGER.error(e)
                 break
+
+    def get_states(self):
+        """This runs on background to recieve the state of Tello"""
+        while True:
+            try:
+                self.response_state, _ = self.stateSocket.recvfrom(128)
+            except Exception as e:
+                self.LOGGER.error(e)
+                break
+
+    def get_current_state_all(self):
+        """Call this function to attain the states of Tello"""
+        if self.response_state == 'ok':
+            return False
+        else:
+            return self.response_state.decode('ASCII')
+
+    def get_pitch(self):
+        if self.response_state == 'ok':
+            return False
+        else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
+            try:
+                return float(response[1])
+            except:
+                print("Exception in pitch occured")
+                return 0
+
+    def get_roll(self):
+        if self.response_state == 'ok':
+            return False
+        else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
+            try:
+                return float(response[3])
+            except:
+                print("Exception in roll occured")
+                return 0
+
+    def get_yaw(self):
+        if self.response_state == 'ok':
+            return False
+        else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
+            try:
+                return float(response[5])
+            except:
+                print("Exception in yaw occured")
+                return 0
+
+    def get_vgx(self):
+        if self.response_state == 'ok':
+            return False
+        else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
+            try:
+                return float(response[7])
+            except:
+                print("Exception in velocity in x occured")
+                return 0
+
+    def get_vgy(self):
+        if self.response_state == 'ok':
+            return False
+        else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
+            try:
+                return float(response[9])
+            except:
+                print("Exception in velocity in y occured")
+                return 0
+
+    def get_vgz(self):
+        if self.response_state == 'ok':
+            return False
+        else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
+            try:
+                return float(response[11])
+            except:
+                print("Exception in velocity in z occured")
+                return 0
+
+    def get_agx(self):
+        if self.response_state == 'ok':
+            return False
+        else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
+            try:
+                return float(response[27])
+            except:
+                print("Exception in acceleration in x")
+                return 0
+
+    def get_agy(self):
+        if self.response_state == 'ok':
+            return False
+        else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
+            try:
+                return float(response[29])
+            except:
+                print("Exception in acceleration in y")
+                return 0
+
+    def get_agz(self):
+        if self.response_state == 'ok':
+            return False
+        else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
+            try:
+                return float(response[31])
+            except:
+                print("Exception in acceleration in z")
+                return 0
+
+    def get_h(self):
+        if self.response_state == 'ok':
+            return False
+        else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
+            try:
+                return float(response[19])
+            except:
+                print("Exception in height")
+                return 0
+
+    def get_bat(self):
+        if self.response_state == 'ok':
+            return False
+        else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
+            try:
+                return float(response[21])
+            except:
+                print("Exception in battery")
+                return 0
 
     def get_udp_video_address(self):
         return 'udp://@' + self.VS_UDP_IP + ':' + str(self.VS_UDP_PORT)  # + '?overrun_nonfatal=1&fifo_size=5000'
@@ -182,12 +365,13 @@ class Tello:
             bool: True for successful, False for unsuccessful
         """
 
-        response = self.send_command_with_return(command)
+        for i in range(0, self.retry_count):
+            response = self.send_command_with_return(command)
 
-        if response == 'OK' or response == 'ok':
-            return True
-        else:
-            return self.return_error_on_send_command(command, response)
+            if response == 'OK' or response == 'ok':
+                return True
+
+        return self.return_error_on_send_command(command, response, self.enable_exceptions)
 
     @accepts(command=str)
     def send_read_command(self, command):
@@ -220,12 +404,18 @@ class Tello:
             else:
                 return response
         else:
-            return self.return_error_on_send_command(command, response)
+            return self.return_error_on_send_command(command, response, self.enable_exceptions)
 
-    def return_error_on_send_command(self, command, response):
+    @staticmethod
+    def return_error_on_send_command(command, response, enable_exceptions):
         """Returns False and print an informative result code to show unsuccessful response"""
-        self.LOGGER.error('Command ' + command + ' was unsuccessful. Message: ' + str(response))
-        return False
+        msg = 'Command ' + command + ' was unsuccessful. Message: ' + str(response)
+        if enable_exceptions:
+            raise Exception(msg)
+        else:
+            self.LOGGER.error(msg)
+            return False
+
 
     def connect(self):
         """Entry SDK mode
@@ -458,6 +648,63 @@ class Tello:
         """
         return self.send_command_without_return('curve %s %s %s %s %s %s %s' % (x1, y1, z1, x2, y2, z2, speed))
 
+    @accepts(x=int, y=int, z=int, speed=int, mid=int)
+    def go_xyz_speed_mid(self, x, y, z, speed, mid):
+        """Tello fly to x y z in speed (cm/s) relative to mission pad iwth id mid
+        Arguments:
+            x: -500-500
+            y: -500-500
+            z: -500-500
+            speed: 10-100
+            mid: 1-8
+        Returns:
+            bool: True for successful, False for unsuccessful
+        """
+        return self.send_control_command('go %s %s %s %s m%s' % (x, y, z, speed, mid))
+
+    @accepts(x1=int, y1=int, z1=int, x2=int, y2=int, z2=int, speed=int, mid=int)
+    def curve_xyz_speed_mid(self, x1, y1, z1, x2, y2, z2, speed, mid):
+        """Tello fly to x2 y2 z2 over x1 y1 z1 in speed (cm/s) relative to mission pad with id mid
+        Arguments:
+            x1: -500-500
+            y1: -500-500
+            z1: -500-500
+            x2: -500-500
+            y2: -500-500
+            z2: -500-500
+            speed: 10-60
+            mid: 1-8
+        Returns:
+            bool: True for successful, False for unsuccessful
+        """
+        return self.send_control_command('curve %s %s %s %s %s %s %s m%s' % (x1, y1, z1, x2, y2, z2, speed, mid))
+
+    @accepts(x=int, y=int, z=int, speed=int, yaw=int, mid1=int, mid2=int)
+    def go_xyz_speed_yaw_mid(self, x, y, z, speed, yaw, mid1, mid2):
+        """Tello fly to x y z in speed (cm/s) relative to mid1
+        Then fly to 0 0 z over mid2 and rotate to yaw relative to mid2's rotation
+        Arguments:
+            x: -500-500
+            y: -500-500
+            z: -500-500
+            speed: 10-100
+            yaw: -360-360
+            mid1: 1-8
+            mid2: 1-8
+        Returns:
+            bool: True for successful, False for unsuccessful
+        """
+        return self.send_control_command('jump %s %s %s %s %s m%s m%s' % (x, y, z, speed, yaw, mid1, mid2))
+
+    def enable_mission_pads(self):
+        return self.send_control_command("mon")
+
+    def disable_mission_pads(self):
+        return self.send_control_command("moff")
+
+    def set_mission_pad_detection_direction(self, x):
+        return self.send_control_command("mdirection " + str(x))
+
     @accepts(x=int)
     def set_speed(self, x):
         """Set speed to x cm/s.
@@ -574,6 +821,22 @@ class Tello:
             str: snr
         """
         return self.send_read_command('wifi?')
+
+    def get_sdk_version(self):
+        """Get SDK Version
+        Returns:
+            False: Unsuccessful
+            str: SDK Version
+        """
+        return self.send_read_command('sdk?')
+
+    def get_serial_number(self):
+        """Get Serial Number
+        Returns:
+            False: Unsuccessful
+            str: Serial Number
+        """
+        return self.send_read_command('sn?')
 
     def end(self):
         """Call this method when you want to end the tello object"""
