@@ -70,7 +70,7 @@ def roi_detect(image):
 	min_confidence = 0.5
 	height = width = 320
 
-	padding = 0.03
+	padding = 0.06
 
 	orig = image.copy()
 	# origH = 1080

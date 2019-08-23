@@ -62,9 +62,9 @@ def main(im):
 		for point in polygon:
 			if(yc<point.y):
 				yc = point.y
-	cropped_im = im[yc:, :]
+	cropped_im = im[yc-30:, :]
 		
-	return im, qrpoints, qrlist
+	return cropped_im, qrpoints, qrlist
 
 def qr_centroid(qrpoints):
 	xc = 0

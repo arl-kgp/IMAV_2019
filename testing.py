@@ -29,9 +29,9 @@ def text_better(text):
 	list1 = list(text)
 
 	if(len(text)==3) :
-		#if(text[0]=='S'):
-		#	list1[0]='5'
-		if(text[0]=='I'):
+		if(text[0]=='S'):
+			list1[0]='5'
+		elif(text[0]=='I'):
 			list1[0]='1'
 		elif(text[0]=='A'):
 			list1[0]='4'
@@ -41,8 +41,8 @@ def text_better(text):
 			list1[0]='0'
 
 
-		#if(text[1]=='S'):
-		#	list1[1]='9'
+		if(text[1]=='S'):
+			list1[1]='9'
 		elif(text[1]=='I'):
 			list1[1]='1'
 		elif(text[1]=='A'):
@@ -154,11 +154,11 @@ def roi_detect(image):
 		text = text.replace('\\', '')
 		text = text.replace('/', '')
 		
-		if(len(text) == 3):
-			text = text_better(text)
-			text_list.append(text)
-			conf_list.append(conf)
-			corners.append(corner_pts)
+		
+		#text = text_better(text)
+		text_list.append(text)
+		conf_list.append(conf)
+		corners.append(corner_pts)
 		iter += 1
 
 	return text_list, conf_list, corners, output
@@ -315,8 +315,6 @@ def text_finder(im):
 	# EAST + Tesseract
 	text = None
 	text_list, conf_list, corners, output = roi_detect(im)
-	if(corners):
-		print("Area: "+str(find_area(corners)))
 	if len(conf_list) > 0:
 		text = text_list[np.argmax(conf_list)]
 		corner_pts = corners[np.argmax(conf_list)]
@@ -384,7 +382,7 @@ def check_bars(img, src, barsize):
 			for i in range(10):
 				if x+i<cols:
 					src[:, x+i] = 0
-	print(avg_int_list[idx])
+	#print(avg_int_list[idx])
 	return src, idx
 
 def diff_shelf(im, qrpoints, textpoints):
@@ -395,7 +393,7 @@ def diff_shelf(im, qrpoints, textpoints):
 		for point in polygon:
 			if(x1>point.x):
 				x1 = point.x
-	print(textpoints)
+	#print(textpoints)
 	x2 = max(textpoints[0][0][0], textpoints[0][1][0])
 	is_bar_present = 0
 	print("x1: "+str(x1))
@@ -424,11 +422,11 @@ def find_text_and_write(im, qrlist, qrpoints):
 	#check = check_format(text)
 	
 	check_text = 0                         # Flag to determine whether text actually found
-	if text != None and check:
+	if corners != [] and check:
 
-		bars = diff_shelf(frame, qrpoints, corners)
-		if bars>8:
-			return frame, 2, corners
+		#bars = diff_shelf(frame, qrpoints, corners)
+		#if bars>8:
+		#	return frame, 2, corners
 
 		check_text = 1
 		write_in_file(qrlist, text)
@@ -450,142 +448,25 @@ def qr_intersection(lst1, lst2):
 def find_length(points):
 	s = np.abs(points[0][0][0]-points[0][1][0])
 	return s
-
 def find_area(points):
 	A = np.abs(points[0][0][0]-points[0][1][0])*np.abs(points[0][0][1]-points[0][1][1])
 	return A
 
 def rectifypos(frame):
-	text_box_x_min = 3000
-	text_box_x_max = 5000
+	text_box_x_min = 90
+	text_box_x_max = 100
 
-	text, corners, output = text_finder_for_position(frame)
+	text, corners, output = text_finder(frame)
 	if corners == []:
-		return output, -1             # Too Far
+		return 0, output
 
-	text_box_x = find_area(corners)
-	print("AREA calculated: "+str(text_box_x))
+	text_box_x = find_length(corners)
 	if text_box_x > text_box_x_max:   # More than Ideal
-		fb = text_box_x_max-text_box_x
-		return output, fb
+		return -1, output
 	elif text_box_x < text_box_x_min: # Less than Ideal
-		fb = text_box_x_min-text_box_x
-		return output, fb 
+		return 1, output
 	else:							  # Perfect
-		return output, 0
-
-############### REDEFINED ROI_DETECT and TEXT_FINDER 
-def roi_detect_for_position(image):
-
-	min_confidence = 0.5
-	height = width = 320
-
-	padding = 0.36
-
-	orig = image.copy()
-	# origH = 1080
-	# origW = 720
-	(origH, origW) = image.shape[:2]
-
-	# set the new width and height and then determine the ratio in change
-	# for both the width and height
-	(newW, newH) = (width, height)
-	rW = origW / float(newW)
-	rH = origH / float(newH)
-
-	# resize the image and grab the new image dimensions
-	image = cv2.resize(image, (newW, newH))
-	(H, W) = image.shape[:2]
-
-	# define the two output layer names for the EAST detector model that
-	# we are interested -- the first is the output probabilities and the
-	# second can be used to derive the bounding box coordinates of text
-	layerNames = [
-		"feature_fusion/Conv_7/Sigmoid",
-		"feature_fusion/concat_3"]
-
-	# construct a blob from the image and then perform a forward pass of
-	# the model to obtain the two output layer sets
-	blob = cv2.dnn.blobFromImage(image, 1.0, (W, H),
-		(123.68, 116.78, 103.94), swapRB=True, crop=False)
-	net.setInput(blob)
-	(scores, geometry) = net.forward(layerNames)
-
-	# decode the predictions, then  apply non-maxima suppression to
-	# suppress weak, overlapping bounding boxes
-	(rects, confidences) = decode_predictions(scores, geometry, min_confidence)
-	boxes = non_max_suppression(np.array(rects), probs=confidences)
-
-	# initialize the list of results
-	results = []
-
-	iter = 1
-	text_list = []
-	conf_list = []
-	corners = []
-
-	output = orig.copy()
-
-	for (startX, startY, endX, endY) in boxes:
-
-		# scale the bounding box coordinates based on the respective
-		# ratios
-		startX = int(startX * rW)
-		startY = int(startY * rH)
-		endX = int(endX * rW)
-		endY = int(endY * rH)
-
-		# in order to obtain a better OCR of the text we can potentially
-		# apply a bit of padding surrounding the bounding box -- here we
-		# are computing the deltas in both the x and y directions
-		dX = int((endX - startX) * padding)
-		dY = int((endY - startY) * padding)
-
-		# apply padding to each side of the bounding box, respectively
-		startX = max(0, startX - dX)
-		startY = max(0, startY - dY)
-		endX = min(origW, endX + (dX * 2))
-		endY = min(origH, endY + (dY * 2))
-
-		# extract the actual padded ROI
-		roi = orig[startY:endY, startX:endX]
-		
-		im, text, conf = return_text(roi)
-
-		cv2.rectangle(output, (startX, startY), (endX, endY), (0, 0, 255), 2)
-		cv2.putText(output, text, (startX, startY - 20), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
-		corner_pts = [[startX, startY], [endX, endY]]
-		
-		#print("text " + str(iter) + " :" + text)
-
-		text = text.replace('_', '')
-		text = text.replace('\\', '')
-		text = text.replace('/', '')
-		
-		
-		#text = text_better(text)
-		text_list.append(text)
-		conf_list.append(conf)
-		corners.append(corner_pts)
-		iter += 1
-
-	return text_list, conf_list, corners, output
-
-def text_finder_for_position(im):
-
-	# EAST + Tesseract
-	text = None
-	text_list, conf_list, corners, output = roi_detect_for_position(im)
-	if len(conf_list) > 0:
-		text = text_list[np.argmax(conf_list)]
-		corner_pts = corners[np.argmax(conf_list)]
-	
-	return text, corners, output
-
-def motion_cmd_PID(size_diff):
-	vmax = 10
-	v_put = 0.005*size_diff
-	return v_put
+		return 0, output
 
 if __name__ == '__main__':
 
@@ -603,7 +484,8 @@ if __name__ == '__main__':
 	frame_read = tello.get_frame_read()
 	rcOut = [0,0,0,0]
 	while True:
-		                            
+		print()
+		print("START")                         
 		# for FPS:
 		start_time = time.time()
 
@@ -633,117 +515,86 @@ if __name__ == '__main__':
 
 		frame = frame_read.frame
 		#frame = undistort(frame)
+
+		# NEED to edit more and include in left
+		# Have passed one shelf, check distance
+		
+		"""
+		if passed_shelf_var:
+			text_box_x_min = a
+			text_box_x_max = b
+
+			text, corners, output = text_finder(frame)
+			text_box_x = find_length(corners)
+			if text_box_x > text_box_x_max:   # More than Ideal
+				#move_backward
+				continue
+			elif text_box_x < text_box_x_min: # Less than Ideal
+				#move_forward
+				continue
+		"""
+
 		# # QR-codes detect
 		k = cv2.waitKey(1) & 0xFF
-		if k == ord("m") or k == ord("n"):
-			print("m printing")
-
-			if k == ord("n"):
-				
-				output, feedback = rectifypos(frame)
-				print("feedback: "+str(feedback))
-				dist = motion_cmd_PID(feedback)
-				if feedback == -1:
-					rcOut = [0,10,0,0]
-					print("Not visible, forward")
-				elif feedback == 0:
-					rcOut = [0,0,0,0]
-					print("No deviation")
-				else:
-					rcOut = [0,dist,0,0]
-					print("distance: "+str(dist))
-					print("PID cmd")
-				cv2.imshow("Results", output)
-				#tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
-				continue
-
-
-			frame, qrpoints, qrlist = main(frame)
-			ret_val = qr_intersection(qrlist, qrprev_list)          #ret_val = 1 if no intersection otherwise 0
-
-			print("intersection: "+str(ret_val))
-
-			if qrpoints != [] and hover_time < 5 and ret_val == 1:	 # If QR detected, detect TEXT
-
-				print(qrlist)
-				rcOut = [0,0,0,0]
-				
-				if reached_qrcode == 0:
-					# MOVE TO RIGHT FUNCTION
-					reached_qrcode=1
-					print("New QRs found")
-				
-
-			  	#im = img_resize(im)
-			  	#im = apply_contrast(im)
-			 	#im = apply_thresh(im)
-			 	#im = hist_equalise(im)
-
-				frame, check_text, txt_corners = find_text_and_write(frame, qrlist, qrpoints)
-				
-				if check_text == 0:
-					rcOut = [5,0,0,0]
-					print("text not found")
-					tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
-					cv2.imshow("Results",frame)
-					continue
-
-				if check_text == 2:
-					# move until further code is detected.
-					rcOut = [5,0,0,0]
-					print("text and QR in different Shelves")
-					tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
-					cv2.imshow("Results",frame)
-					continue
-				# bars = diff_shelf(frame, qrpoints, txt_corners)
-				print("Text length: "+str(find_length(txt_corners)))     #include in LEFT
-				hover_time = hover_time + time.time() - start_time 
-
-			
-			elif hover_time > 5:
-				print("hover time: "+str(hover_time))
-				#tello.land()
-
-				rcOut = [25,0,0,0]
-				
-				check_qr_num += 1
-				
-				hover_time = 0
-				reached_qrcode = 0
-				qrprev_list = qrlist
-				
-				print("exceeded time")
-				if check_qr_num == 2:	# Since, ONLY 2 Shelves in experimental setup
-					tello.land()
-					break
-
+	
+		"""
+		if k == ord("n"):
+			move, output = rectifypos(frame)
+			if move == 1:
+				rcOut = [0,5,0,0]
+				print("forward")
+			elif move == -1:
+				rcOut = [0,-5,0,0]
+				print("backward")
 			else:
-				rcOut = [10,0,0,0]
-				reached_qrcode = 0
-				hover_time= 0
-			# cv2.imshow("Results", im)
+				rcOut = [0,0,0,0]
+				print("No Deviation")
+			cv2.imshow("Results", output)
+			tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
+			continue
+		"""
+
+		frame, qrpoints, qrlist = main(frame)
+		ret_val = qr_intersection(qrlist, qrprev_list)          #ret_val = 1 if no intersection otherwise 0
+
+		print("intersection: "+str(ret_val))
+
+		
+
+		frame, check_text, txt_corners = find_text_and_write(frame, qrlist, qrpoints)
+		
+		if check_text == 0:
+			rcOut = [5,0,0,0]
+			print("text not found")
+			tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
+			cv2.imshow("Results",frame)
+			continue
+		if txt_corners:
+			#print(txt_corners)
+			# bars = diff_shelf(frame, qrpoints, txt_corners)
+			print("########Text length: "+str(find_length(txt_corners)))     #include in LEFT
+			print("########Area: "+str(find_area(txt_corners)))
+			hover_time = hover_time + time.time() - start_time 
+
+		# cv2.imshow("Results", im)
 	
 		elif k == ord("t"):
 			tello.takeoff()
 		elif k == ord("l"):
 			tello.land()
 		elif k == ord("w"):
-			# front
 			rcOut[1] = 50
 		elif k == ord("a"):
-			# left
 			rcOut[0] = -50
 		elif k == ord("s"):
-			# back
 			rcOut[1] = -50
 		elif k == ord("d"):
-			# right
 			rcOut[0] = 50
 		elif k == ord("u"):
-			# up
+			print("up")
 			rcOut[2] = 50
+			#rcOut[1] += 10
 		elif k == ord("j"):
-			# down
 			rcOut[2] = -50
 		elif k == ord("c"):
 			rcOut[3] = 50
@@ -765,8 +616,3 @@ f.close()
 print("random")
 tello.streamoff()
 tello.end()
-
-
-
-
-	  
