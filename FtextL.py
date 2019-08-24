@@ -682,6 +682,12 @@ if __name__ == '__main__':
 				hover_time = 0
 				reached_qrcode = 0
 				qrprev_list = qrlist
+				while(qr_intersection(qrlist,qrprev_list)):
+					rcOut = [0,0,25,0]
+					frame = frame_read.frame
+					qrprev_list = qrlist
+					frame, qrpoints, qrlist = main(frame)
+
 				
 				print("exceeded time")
 				if check_qr_num == 2:	# Since, ONLY 2 Shelves in experimental setup
