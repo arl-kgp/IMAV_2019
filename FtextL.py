@@ -251,7 +251,8 @@ print("file opened")
 # cv2.waitKey(3000);
 hover_time = 0
 reached_qrcode = 0
-
+qr_shelf = 0
+qr1details = []
 
 def img_resize(im):
 	fx = 910.6412491
@@ -636,13 +637,14 @@ if __name__ == '__main__':
 			print("intersection: "+str(ret_val))
 
 			if qrpoints != [] and hover_time < 3 and ret_val == 1:	 # If QR detected, detect TEXT
-
+				qrlist = qr1details
 				print(qrlist)
 				rcOut = [0,0,0,0]
 				
 				if reached_qrcode == 0:
 					# MOVE TO RIGHT FUNCTION
 					reached_qrcode=1
+					# qr_shelf = 1     #to mark it has reached 1st qr in one shelf
 					print("New QRs found")
 				
 
@@ -687,8 +689,13 @@ if __name__ == '__main__':
 					frame = frame_read.frame
 					qrprev_list = qrlist
 					frame, qrpoints, qrlist = main(frame)
+					########print in file function to be added
 
-				
+				while(qr1details != qrlist):
+					frame = frame_read.frame
+					rcOut = [0,0,-25,0]
+					frame, qrpoints, qrlist = main(frame)
+					
 				print("exceeded time")
 				if check_qr_num == 2:	# Since, ONLY 2 Shelves in experimental setup
 					tello.land()
