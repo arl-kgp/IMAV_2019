@@ -27,42 +27,43 @@ from imutils.video import FPS
 
 def text_better(text):
 	list1 = list(text)
+	if len(text) == 4:
+		list1 = list1[1:]
 
-	if(len(text)==3) :
-		if(text[0]=='S'):
-			list1[0]='5'
-		elif(text[0]=='I'):
-			list1[0]='1'
-		elif(text[0]=='A'):
-			list1[0]='4'
-		elif(text[0]=='O'):
-			list1[0]='0'
-		elif(text[0]=='Q'):
-			list1[0]='0'
-
-
-		if(text[1]=='S'):
-			list1[1]='9'
-		elif(text[1]=='I'):
-			list1[1]='1'
-		elif(text[1]=='A'):
-			list1[1]='4'
+	if(text[0]=='S'):
+		list1[0]='5'
+	if(text[0]=='I'):
+		list1[0]='1'
+	elif(text[0]=='A'):
+		list1[0]='4'
+	elif(text[0]=='O'):
+		list1[0]='0'
+	elif(text[0]=='Q'):
+		list1[0]='0'
 
 
-		if(text[2]=='4'):
-			list1[2]='A'
-		elif(text[2]=='6'):
-			list1[2]='C'
-		elif(text[2]=='0'):
-			list1[2]='D'
-		elif(text[2]=='1'):
-			list1[2]='I'
-		elif(text[2]=='5'):
-			list1[2]='S'
-		elif(text[2]=='3'):
-			list1[2]='B'
-		elif(text[2]=='8'):
-			list1[2]='B'
+	if(text[1]=='S'):
+		list1[1]='9'
+	elif(text[1]=='I'):
+		list1[1]='1'
+	elif(text[1]=='A'):
+		list1[1]='4'
+
+
+	if(text[2]=='4'):
+		list1[2]='A'
+	elif(text[2]=='6'):
+		list1[2]='C'
+	elif(text[2]=='0'):
+		list1[2]='D'
+	elif(text[2]=='1'):
+		list1[2]='I'
+	elif(text[2]=='5'):
+		list1[2]='S'
+	elif(text[2]=='3'):
+		list1[2]='B'
+	elif(text[2]=='8'):
+		list1[2]='B'
 
 	text = ''.join(list1)
 	return text
@@ -154,7 +155,7 @@ def roi_detect(image):
 		text = text.replace('\\', '')
 		text = text.replace('/', '')
 		
-		if(len(text) == 3):
+		if len(text) == 3 or len(text) == 4:
 			text = text_better(text)
 			text_list.append(text)
 			conf_list.append(conf)
@@ -317,6 +318,12 @@ def text_finder(im):
 	text_list, conf_list, corners, output = roi_detect(im)
 	if(corners):
 		print("Area: "+str(find_area(corners)))
+	for index in range(len(text_list)):
+		text = text_list[index]
+		if not check_format(text):
+			del text_list[index]
+			del conf_list[index]
+			del corners[index]
 	if len(conf_list) > 0:
 		text = text_list[np.argmax(conf_list)]
 		corner_pts = corners[np.argmax(conf_list)]
@@ -324,11 +331,11 @@ def text_finder(im):
 	return text, corners, output
 
 def check_format(text):
-	to_print = 0
+	to_print = False
 	rex1 = re.compile("^[0-9]{2}[A-Z]$")
 	rex2 = re.compile("^[0-9][A-Z]$")
 	if rex1.match(text) or rex2.match(text):
-		to_print = 1
+		to_print = True
 
 	return to_print
 
@@ -420,11 +427,9 @@ def write_in_file(qrlist, text):
 def find_text_and_write(im, qrlist, qrpoints):
 	text, corners, output = text_finder(im)
 	print(text)
-	check = 1
-	#check = check_format(text)
 	
 	check_text = 0                         # Flag to determine whether text actually found
-	if text != None and check:
+	if text != None and corners:
 
 		bars = diff_shelf(frame, qrpoints, corners)
 		if bars>8:
@@ -461,16 +466,19 @@ def rectifypos(frame):
 
 	text, corners, output = text_finder_for_position(frame)
 	if corners == []:
-		return -1, output             # Too Far
+		return output, -1             # Too Far
 
 	text_box_x = find_area(corners)
 	print("AREA calculated: "+str(text_box_x))
 	if text_box_x > text_box_x_max:   # More than Ideal
-		return -1, output
+		fb = text_box_x_max-text_box_x
+		return output, fb
 	elif text_box_x < text_box_x_min: # Less than Ideal
-		return 1, output
+		fb = text_box_x_min-text_box_x
+		return output, fb 
 	else:							  # Perfect
-		return 0, output
+		return output, 0
+
 
 ############### REDEFINED ROI_DETECT and TEXT_FINDER 
 def roi_detect_for_position(image):
@@ -478,7 +486,7 @@ def roi_detect_for_position(image):
 	min_confidence = 0.5
 	height = width = 320
 
-	padding = 0.05
+	padding = 0.06
 
 	orig = image.copy()
 	# origH = 1080
@@ -560,8 +568,6 @@ def roi_detect_for_position(image):
 		text = text.replace('\\', '')
 		text = text.replace('/', '')
 		
-		
-		#text = text_better(text)
 		text_list.append(text)
 		conf_list.append(conf)
 		corners.append(corner_pts)
@@ -580,6 +586,9 @@ def text_finder_for_position(im):
 	
 	return text, corners, output
 
+def motion_cmd_PID(size_diff):
+	v_put = 0.005*size_diff
+	return v_put
 
 if __name__ == '__main__':
 
@@ -587,7 +596,7 @@ if __name__ == '__main__':
 	qrprev_list = []                                   # For comparing with newer qr-codes from next shelf
 	qrlist = []
 	check_qr_num = 0
-	passed_shelf_var = False  #include in left
+	passed_shelf_var = False
 
 
 	f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))
@@ -603,54 +612,52 @@ if __name__ == '__main__':
 
 		# BATTERY checker
 		tello.get_battery()
-		#print("Battery: "+str(bat))   # INCLUDE THIS IN LEFT
 
-		# Frame preprocess
-		# frameBGR = np.copy(frame_read.frame)
-
-		# im = frame_read.frame
-
-		# b,g,r = cv2.split(im)
-		# kernel = np.ones((5,5), np.uint8)
-		# img_erosion = cv2.erode(b, kernel, iterations=1)
-		# img_dilation = cv2.dilate(b, kernel, iterations=1)
-		# img_erosion = cv2.erode(g, kernel, iterations=1)
-		# img_dilation = cv2.dilate(g, kernel, iterations=1)
-		# img_erosion = cv2.erode(r, kernel, iterations=1)
-		# img_dilation = cv2.dilate(r, kernel, iterations=1)
-		# im[:,:,0]=b
-		# im[:,:,1]=g
-		# im[:,:,2]=r
-
-		# # Undistortion --Uncomment for Tello-001
-		# im = undistort(im)
 		frame = frame_read.frame
+
+		#Undistortion --Uncomment for Tello-001
 		#frame = undistort(frame)
-		# # QR-codes detect
+
+		# QR-codes detect
 		k = cv2.waitKey(1) & 0xFF
-		if k == ord("m"):
+
+		if k == ord("m") or k == ord("n"):
+			
+			if k == ord("n"):
+				
+				print("n printing")
+				output, feedback = rectifypos(frame)
+				print("feedback: "+str(feedback))
+				dist = motion_cmd_PID(feedback)
+				if feedback == -1:
+					rcOut = [0,10,0,0]
+					print("Not visible, forward")
+				elif feedback == 0:
+					rcOut = [0,0,0,0]
+					print("No deviation")
+				else:
+					rcOut = [0,dist,0,0]
+					print("distance: "+str(dist))
+					print("PID cmd")
+				cv2.imshow("Results", output)
+				#tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
+				continue
+
 			print("m printing")
 			frame, qrpoints, qrlist = main(frame)
 			ret_val = qr_intersection(qrlist, qrprev_list)          #ret_val = 1 if no intersection otherwise 0
 
 			print("intersection: "+str(ret_val))
 
-			if qrpoints != [] and hover_time < 3 and ret_val == 1:	 # If QR detected, detect TEXT
+			if qrpoints != [] and hover_time < 5 and ret_val == 1:	 # If QR detected, detect TEXT
 
 				print(qrlist)
 				rcOut = [0,0,0,0]
 				
 				if reached_qrcode == 0:
-					# MOVE TO RIGHT FUNCTION
 					reached_qrcode=1
 					print("New QRs found")
 				
-
-			 	#im = img_resize(im)
-			 	#im = apply_contrast(im)
-			 	#im = apply_thresh(im)
-			 	#im = hist_equalise(im)
-
 				frame, check_text, txt_corners = find_text_and_write(frame, qrlist, qrpoints)
 				
 				if check_text == 0:
@@ -667,14 +674,13 @@ if __name__ == '__main__':
 					tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
 					cv2.imshow("Results",frame)
 					continue
-				# bars = diff_shelf(frame, qrpoints, txt_corners)
+
 				print("Text length: "+str(find_length(txt_corners)))
 				hover_time = hover_time + time.time() - start_time 
 
 			
 			elif hover_time > 5:
 				print("hover time: "+str(hover_time))
-				#tello.land()
 				rcOut = [-25,0,0,0]
 				
 				check_qr_num += 1
@@ -692,8 +698,7 @@ if __name__ == '__main__':
 				rcOut = [-10,0,0,0]
 				reached_qrcode = 0
 				hover_time= 0
-			# cv2.imshow("Results", im)
-	
+
 		elif k == ord("t"):
 			tello.takeoff()
 		elif k == ord("l"):
@@ -707,9 +712,7 @@ if __name__ == '__main__':
 		elif k == ord("d"):
 			rcOut[0] = 50
 		elif k == ord("u"):
-			print("up")
 			rcOut[2] = 50
-			#rcOut[1] += 10
 		elif k == ord("j"):
 			rcOut[2] = -50
 		elif k == ord("c"):
@@ -723,7 +726,6 @@ if __name__ == '__main__':
 			break
 
 		cv2.imshow("Results",frame)
-		#rcOut[1] += 0
 		tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
 		rcOut = [0,0,0,0]
 		print("FPS: ", 1.0 / (time.time() - start_time))
