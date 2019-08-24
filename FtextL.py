@@ -690,6 +690,7 @@ if __name__ == '__main__':
 					qrprev_list = qrlist
 					frame, qrpoints, qrlist = main(frame)
 					########print in file function to be added
+				f.write('%s,\n'%(qrlist))
 
 				while(qr1details != qrlist):
 					frame = frame_read.frame
