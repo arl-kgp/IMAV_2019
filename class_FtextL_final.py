@@ -10,11 +10,9 @@ from time import sleep
 import time   
 import os
 import random
-import time
 import asyncio
 import numpy as np
 import cv2
-# import PIL.Image as pim
 import pytesseract
 from qrcode import *
 from text import *
@@ -25,12 +23,9 @@ import scipy.misc
 from imutils.video import FPS
 	
 
-class warehouse:
+class warehouse_L:
 	def __init__(self, tello):
 		self.tello = tello
-		self.tello.connect()
-		self.tello.streamoff()
-		self.tello.streamon()
 		self.rcout = np.zeros(4)
 		self.east = "frozen_east_text_detection.pb" 			#enter the full path to east model
 		print("[INFO] loading east text detector...")
@@ -320,15 +315,21 @@ class warehouse:
 		text_list, conf_list, corners, output = self.roi_detect(im)
 		if(corners):
 			print("Area: "+str(self.find_area(corners)))
+		
+		text_list_ref = []			## FINAL RETURN VALUES
+		conf_list_ref = []
+		corners_ref = []
+
 		for index in range(len(text_list)):
 			text = text_list[index]
-			if not self.check_format(text):
-				del text_list[index]
-				del conf_list[index]
-				del corners[index]
-		if len(conf_list) > 0:
-			text = text_list[np.argmax(conf_list)]
-			corner_pts = corners[np.argmax(conf_list)]
+			if self.check_format(text):
+				text_list_ref.append(text_list[index])
+				conf_list_ref.append(conf_list[index])
+				corners_ref.append(corners[index])
+				print("Added: "+str(text))
+		if len(conf_list_ref) > 0:
+			text = text_list_ref[np.argmax(conf_list)]
+			corner_pts = corners_ref[np.argmax(conf_list)]
 		
 		return text, corners, output
 
@@ -592,14 +593,15 @@ class warehouse:
 		v_put = 0.005*size_diff
 		return v_put
 
-	def scan(self):
+	def scan(self, dist):
 
 		#cv2.namedWindow('Results',cv2.WINDOW_NORMAL)
 		qrprev_list = []                                   # For comparing with newer qr-codes from next shelf
 		qrlist = []
 		check_qr_num = 0
 		passed_shelf_var = False
-
+		min_dist = -10
+		max_dist = 20
 
 		self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))
 		# f.close()
@@ -617,32 +619,25 @@ class warehouse:
 
 			frame = frame_read.frame
 
-			#Undistortion --Uncomment for self.tello-001
+			#Undistortion --Uncomment for tello-001
 			#frame = undistort(frame)
 
 			# QR-codes detect
 			k = cv2.waitKey(1) & 0xFF
 
-			if k == ord("m") or k == ord("n"):
-				
-				if k == ord("n"):
-					
-					print("n printing")
-					output, feedback = self.rectifypos(frame)
-					print("feedback: "+str(feedback))
-					dist = self.motion_cmd_PID(feedback)
-					if feedback == -1:
-						self.rcOut = [0,10,0,0]
-						print("Not visible, forward")
-					elif feedback == 0:
-						self.rcOut = [0,0,0,0]
-						print("No deviation")
-					else:
-						self.rcOut = [0,dist,0,0]
-						print("distance: "+str(dist))
-						print("PID cmd")
+			if k == ord("m"):
+
+				if dist > max_dist:
+					v = self.motion_cmd_PID(dist - max_dist)
 					cv2.imshow("Results", output)
-					#self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
+					self.tello.send_rc_control(0,int(v),0,0)
+					print("Position correction: "+str(v))
+					continue
+				elif dist < min_dist:
+					v = self.motion_cmd_PID(dist - min_dist)
+					cv2.imshow("Results", output)
+					self.tello.send_rc_control(0,int(v),0,0)
+					print("Position correction: "+str(v))
 					continue
 
 				print("m printing")
@@ -733,9 +728,7 @@ class warehouse:
 			print("FPS: ", 1.0 / (time.time() - start_time))
 
 		self.f.close()
-		print("random")
-		self.tello.streamoff()
-		self.tello.end()
+		
 
 
 

@@ -590,6 +590,24 @@ def motion_cmd_PID(size_diff):
 	v_put = 0.005*size_diff
 	return v_put
 
+def correct_pos(frame):
+	output, feedback = rectifypos(frame)
+	print("feedback: "+str(feedback))
+	dist = motion_cmd_PID(feedback)
+	if dist>0:
+		dist = dist*2
+	if feedback == -1:
+		rcOut = [0,10,0,0]
+		print("Not visible, forward")
+	elif feedback == 0:
+		rcOut = [0,0,0,0]
+		print("No deviation")
+	else:
+		rcOut = [0,dist,0,0]
+		print("distance: "+str(dist))
+		print("PID cmd")
+	return rcOut, output
+
 if __name__ == '__main__':
 
 	#cv2.namedWindow('Results',cv2.WINDOW_NORMAL)
@@ -597,7 +615,8 @@ if __name__ == '__main__':
 	qrlist = []
 	check_qr_num = 0
 	passed_shelf_var = False
-
+	should_correct_pos = False
+	num_corrections = 0
 
 	f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))
 	# f.close()
@@ -620,30 +639,19 @@ if __name__ == '__main__':
 
 		# QR-codes detect
 		k = cv2.waitKey(1) & 0xFF
-		if k == ord("m") or k == ord("n"):
+		if k == ord("m"):
 			
-
-			if k == ord("n"):
-				
-				print("n printing")
-				output, feedback = rectifypos(frame)
-				print("feedback: "+str(feedback))
-				dist = motion_cmd_PID(feedback)
-				if dist>0:
-					dist = dist*2
-				dist = dist*2
-				if feedback == -1:
-					rcOut = [0,10,0,0]
-					print("Not visible, forward")
-				elif feedback == 0:
-					rcOut = [0,0,0,0]
-					print("No deviation")
-				else:
-					rcOut = [0,dist,0,0]
-					print("distance: "+str(dist))
-					print("PID cmd")
+			if should_correct_pos == True:
+				print("Correcting.....")
+				rcOut, output = correct_pos(frame)
 				cv2.imshow("Results", output)
 				tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
+				# BREAK STATEMENT
+				if rcOut[1] == 0:
+					num_corrections += 1		# Increase num_corrections by one for "NO Deflection"
+				if num_corrections == 3:		# Break when 3 correct predictions
+					num_corrections = 0			# num_corrections reset
+					should_correct_pos = False	
 				continue
 
 			print("m printing")
@@ -659,6 +667,7 @@ if __name__ == '__main__':
 				
 				if reached_qrcode == 0:
 					reached_qrcode=1
+					should_correct_pos = True
 					print("New QRs found")
 
 				frame, check_text, txt_corners = find_text_and_write(frame, qrlist, qrpoints)
@@ -699,6 +708,9 @@ if __name__ == '__main__':
 					break
 
 			else:
+				if distance_from_start = desired:              ########### EDIT
+					should_correct_pos = True   			   ## Just ONCE every time this distance is reached
+
 				rcOut = [10,0,0,0]
 				reached_qrcode = 0
 				hover_time= 0
