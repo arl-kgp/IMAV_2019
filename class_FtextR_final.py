@@ -10,7 +10,6 @@ from time import sleep
 import time   
 import os
 import random
-import time
 import asyncio
 import numpy as np
 import cv2
@@ -24,7 +23,6 @@ import scipy.misc
 from imutils.video import FPS
 
 
-
 class warehouse_R:
 	def __init__(self, tello):
 		self.tello = tello
@@ -32,7 +30,7 @@ class warehouse_R:
 		self.east = "frozen_east_text_detection.pb" 			#enter the full path to east model
 		print("[INFO] loading east text detector...")
 		self.net = cv2.dnn.readNet(self.east)
-		self.f = open('warehouse.csv','w')
+		self.f = open('warehouse.csv','a+')
 		print("file opened")
 		# cv2.waitKey(3000);
 		self.hover_time = 0
@@ -238,79 +236,6 @@ class warehouse_R:
 		# return a tuple of the bounding boxes and associated confidences
 		return (rects, confidences)
 
-
-
-	def apply_contrast(self,im):
-		im_hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
-		h,s,v = cv2.split(im_hsv)
-		ret, v = cv2.threshold(v,127,255,cv2.THRESH_BINARY)
-		im_hsv[:, :, 2] = v
-		im = cv2.cvtColor(im_hsv, cv2.COLOR_HSV2BGR)
-		return im
-
-	def apply_thresh(self,img):
-		lower = np.array([50, 50, 50])
-		upper = np.array([255, 255, 255])
-		mask = cv2.inRange(img, lower, upper)
-		img = cv2.bitwise_and(img, img, mask = mask)
-
-	def img_resize(self,im):
-		fx = 910.6412491
-		fy = 680.16057188
-		
-		# cx = 3.681653710406367850e+02
-		# cy = 2.497677007139825491e+02
-
-		"""fx = 672.074266
-		fy = 672.019640
-		cx = 324.846853
-		cy = 255.070573"""
-
-		depth = 200
-		real_text_w = 150	#200
-		real_text_h = 60	#100
-		favg = (fx+fy)/2
-		text_w = (real_text_w*favg)/depth
-		text_h = (real_text_h*favg)/depth
-
-		optical_text_w = 172
-		optimal_text_h = 74
-		k = optimal_text_h/text_h
-		rows = int(im.shape[0] * 1.2)
-		cols = int(im.shape[1] * 1.2)
-		dim = (cols, rows)
-		resized = cv2.resize(im, dim, interpolation = cv2.INTER_LINEAR)
-		return resized
-
-
-	def undistort(self,img):	
-		
-		balance = 1.0
-		DIM=(960, 720)
-		K=np.array([[676.4953507779437, 0.0, 485.52063689559924], [0.0, 673.0210851712478, 361.69019922623494], [0.0, 0.0, 1.0]])
-		D=np.array([[0.17623414178050884], [-0.3648169258817548], [0.6005180717950186], [-0.3442054161739578]])
-		dim1 = img.shape[:2][::-1]
-		dim2 = dim1
-		dim3 = dim1
-		scaled_K = K * dim1[0] / DIM[0]
-		scaled_K[2][2] = 1.0 
-		new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(scaled_K, D, dim2, np.eye(3), balance=balance)
-		map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
-		undistorted_img = cv2.remap(img, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-
-		return undistorted_img
-
-	def hist_equalise(self,im):
-
-		im_yuv = cv2.cvtColor(im, cv2.COLOR_BGR2YUV)
-
-		# equalize the histogram of the Y channel
-		im_yuv[:,:,0] = cv2.equalizeHist(im_yuv[:,:,0])
-
-		# convert the YUV image back to RGB format
-		im = cv2.cvtColor(im_yuv, cv2.COLOR_YUV2BGR)
-		return(im)
-
 	def text_finder(self,im):
 
 		# east + Tesseract
@@ -470,6 +395,10 @@ class warehouse_R:
 		text_box_x_min = 3000
 		text_box_x_max = 5000
 
+		frame_p, qrpoints, qrlist = main(frame)
+		if qrpoints != []:
+			frame = frame_p
+
 		text, corners, output = self.text_finder_for_position(frame)
 		if corners == []:
 			return output, -1             # Too Far
@@ -595,15 +524,34 @@ class warehouse_R:
 		v_put = 0.005*size_diff
 		return v_put
 
-	def scan(self, dist):
+	def correct_pos(self, frame):
+		output, feedback = self.rectifypos(frame)
+		print("feedback: "+str(feedback))
+		dist = self.motion_cmd_PID(feedback)
+		if dist>0:
+			dist = dist*2
+		if feedback == -1:
+			rcOut = [0,10,0,0]
+			print("Not visible, forward")
+		elif feedback == 0:
+			rcOut = [0,0,0,0]
+			print("No deviation")
+		else:
+			rcOut = [0,dist,0,0]
+			print("distance: "+str(dist))
+			print("PID cmd")
+		return rcOut, output
 
+	def scan(self):
+
+		total_time = 0
 		#cv2.namedWindow('Results',cv2.WINDOW_NORMAL)
 		qrprev_list = []                                   # For comparing with newer qr-codes from next shelf
 		qrlist = []
 		check_qr_num = 0
 		passed_shelf_var = False
-		min_dist = -10
-		max_dist = 20
+		should_correct_pos = False
+		num_corrections = 0
 
 		self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))
 		# f.close()
@@ -629,28 +577,28 @@ class warehouse_R:
 
 			if k == ord("m"):
 				
-				if dist > max_dist:
-					v = self.motion_cmd_PID(dist - max_dist)
+				if should_correct_pos == True:
+					print("Correcting.....")
+					rcOut, output = self.correct_pos(frame)
 					cv2.imshow("Results", output)
-					self.tello.send_rc_control(0,int(v),0,0)
-					print("Position correction: "+str(v))
-
-					continue
-				elif dist < min_dist:
-					v = self.motion_cmd_PID(dist - min_dist)
-					cv2.imshow("Results", output)
-					self.tello.send_rc_control(0,int(v),0,0)
-					print("Position correction:"+str(v))					
+					self.tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
+					# BREAK STATEMENT
+					if int(rcOut[1]) == 0:
+						num_corrections += 1		# Increase num_corrections by one for "NO Deflection"
+					if num_corrections == 3:		# Break when 3 correct predictions
+						num_corrections = 0			# num_corrections reset
+						should_correct_pos = False	
 					continue
 
 				print("m printing")
-				frame, qrpoints, qrlist = main(frame)
+				frame_1, qrpoints, qrlist = main(frame)
 				ret_val = self.qr_intersection(qrlist, qrprev_list)          #ret_val = 1 if no intersection otherwise 0
 
 				print("intersection: "+str(ret_val))
 
 				if qrpoints != [] and self.hover_time < 5 and ret_val == 1:	 # If QR detected, detect TEXT
 
+					frame = frame_1
 					print(qrlist)
 					self.rcout = [0,0,0,0]
 					
@@ -696,6 +644,10 @@ class warehouse_R:
 						break
 
 				else:
+					total_time = total_time + time.time() - start_time
+					if total_time > 5:              
+						should_correct_pos = True   			   ## Just ONCE every time this distance is reached
+						total_time = 0
 					self.rcout = [10,0,0,0]
 					self.reached_qrcode = 0
 					self.hover_time= 0
