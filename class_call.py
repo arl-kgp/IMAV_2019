@@ -9,13 +9,11 @@ class warehouse_overall:
 		self.txt_R = warehouse_R(tello)
 		self.txt_L = warehouse_L(tello)
 
-	def algo(self, Out_of_bounds):
+	def algo(self):
 		
-		while not Out_of_bounds:    	### EDIT, right bound
-			self.txt_R.scan()
+		self.txt_R.scan()
 		# GO_down_1.5m
 		
-		while not Out_of_bounds:		### EDIT, left bound
-			self.txt_L.scan()
+		#self.txt_L.scan()
 		# GO_up_1.5m
 		

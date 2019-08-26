@@ -17,11 +17,11 @@ import pytesseract
 from qrcode import *
 from text import *
 from imutils.object_detection import non_max_suppression
+from shelf_trav import FrontEnd as shelf_traversal
 from PIL import Image
 import scipy
 import scipy.misc
 from imutils.video import FPS
-
 
 class warehouse_R:
 	def __init__(self, tello):
@@ -35,7 +35,7 @@ class warehouse_R:
 		# cv2.waitKey(3000);
 		self.hover_time = 0
 		self.reached_qrcode = 0
-
+		self.should_stop = False
 
 
 	def text_better(self,text):
@@ -558,6 +558,10 @@ class warehouse_R:
 
 		# Read feed:
 		frame_read = self.tello.get_frame_read()
+
+		## Shelf Traversal Class Object
+		trav1 = shelf_traversal(self.tello)
+		
 		self.rcout = [0,0,0,0]
 		while True:
 			                            
@@ -577,6 +581,12 @@ class warehouse_R:
 
 			if k == ord("m"):
 				
+				trav1.run(frame)
+				if trav1.num_text_frames == 4:              # NO. of shelves in one row # 4
+					self.should_stop = True
+					print("Finished")
+					break
+
 				if should_correct_pos == True:
 					print("Correcting.....")
 					rcOut, output = self.correct_pos(frame)
@@ -589,7 +599,7 @@ class warehouse_R:
 						num_corrections = 0			# num_corrections reset
 						should_correct_pos = False	
 					continue
-
+				
 				print("m printing")
 				frame_1, qrpoints, qrlist = main(frame)
 				ret_val = self.qr_intersection(qrlist, qrprev_list)          #ret_val = 1 if no intersection otherwise 0
@@ -639,15 +649,15 @@ class warehouse_R:
 					qrprev_list = qrlist
 					
 					print("exceeded time")
-					if check_qr_num == 2:	# Since, ONLY 2 Shelves in experimental setup
-						self.tello.land()
-						break
+					#if check_qr_num == 2:	# Since, ONLY 2 Shelves in experimental setup
+					#	self.tello.land()
+					#	break
 
 				else:
 					total_time = total_time + time.time() - start_time
-					if total_time > 5:              
-						should_correct_pos = True   			   ## Just ONCE every time this distance is reached
-						total_time = 0
+					#if total_time > 5:              
+					#	should_correct_pos = True   			   ## Just ONCE every time this distance is reached
+					#	total_time = 0
 					self.rcout = [10,0,0,0]
 					self.reached_qrcode = 0
 					self.hover_time= 0
