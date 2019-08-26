@@ -1,0 +1,18 @@
+message image {
+    required int32 width = 1;
+    required int32 height = 2;
+    required bytes image_data = 3;
+}
+
+message depth_m {
+   required float d = 1;
+}
+
+message vel
+{
+   required float vx = 1;
+   required float vy = 2;
+   required float vz = 3;
+   required float rz = 4;
+}
+
