@@ -115,23 +115,34 @@ class FrontEnd(object):
             if frame_read.stopped:
                 frame_read.stop()
                 break
-            key, dst = self.preproccessAndKey(frame_read)
-            rect = tello_frame_detection.get_cnt(dst)
+            dst = self.preproccessAndKey(frame_read)
+            rect, ctlist = tello_frame_detection.get_cnt(dst)
+            if not rect is None:
+                cv2.drawContours(dst, [rect], -1, (0,255,0), 3)
+
+            cv2.imshow("rectified",dst) 
+
+            key = cv2.waitKey(1) & 0xFF;
 
             trigger = self.stateTrigger(key,"p")
+            self.manualRcControl(key)
 
             if not rect is None:
                 f=self.passFromWindow(trigger,key,rect,dst)
+            #cv2.drawContours(dst, ctlist, -1, (255,255,0), 3)
+            
 
-            self.sendRcControl()
-            cv2.drawContours(dst, [rect], -1, (0,255,0), 3)
-            cv2.imshow("rectified",dst) 
+            self.sendRcControl() 
+            
             
 
             if key == ord("q"):
                 break
             if key == ord("t"):
-                self.tello.takeoff()    
+                try:
+                    self.tello.takeoff()    
+                except:
+                    pass
             if key == ord("l"):
                 self.tello.land()
                 Height = 100
@@ -150,11 +161,10 @@ class FrontEnd(object):
             
         frame = frame2use 
 
-        key = cv2.waitKey(1) & 0xFF;
 
         dst = self.rectifyInputImage(frame2use)          
 
-        return key,dst
+        return dst
 
     def stateTrigger(self,key,char):
         if key == ord(char):
@@ -188,7 +198,7 @@ class FrontEnd(object):
     def passFromWindow(self,trigger,key,rect,dst):
         frameH,frameW = 20,75
         self.PoseEstimationfrmCnt(rect,dst,frameH,frameW)
-        self.manualRcControl(key)
+        #self.manualRcControl(key)
         self.algnToFrame(key)
         self.babyStepForward(trigger,key)
         result = self.passFromWindowModSccss
@@ -301,8 +311,8 @@ class FrontEnd(object):
 
     def rectifyInputImage(self,frame2use):
 
-        K = np.array([[5.277994366999020031e+02,0.000000000000000000e+00,3.711893449350251331e+02],[0.000000000000000000e+00,5.249025134499009937e+02,2.671209192674019732e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
-        dist = np.array([-1.428750372096417864e-01,-3.544750945429044758e-02,1.403740315118516459e-03,-2.734988255518019593e-02,1.149084393996809700e-01])
+        K = np.array([[7.092159469231584126e+02,0.000000000000000000e+00,3.681653710406367850e+02],[0.000000000000000000e+00,7.102890453175559742e+02,2.497677007139825491e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
+        dist = np.array([0,0,0,0,0])
         K_inv = np.linalg.inv(K)
 
         h , w = frame2use.shape[:2]

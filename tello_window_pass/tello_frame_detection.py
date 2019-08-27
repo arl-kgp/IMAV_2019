@@ -5,8 +5,9 @@ import math
 
 K1 = 3
 split = 5
-K2 = 5
+K2 = 2
 
+font = cv2.FONT_HERSHEY_COMPLEX
 maxc = 5
 def f1(img):
     img2 = cv2.resize(img, (img.shape[1]//2, img.shape[0]//2))
@@ -67,16 +68,16 @@ def get_cnt(img):
 
     frame_HSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-    frame_threshold = cv2.inRange(frame_HSV, (60, 50, 60), (255, 255, 255))/255
+    frame_threshold = cv2.inRange(frame_HSV, (40, 40, 40), (255, 255, 255))/255
     #print(frame_threshold)
     frame_threshold = np.repeat(frame_threshold[:, :, np.newaxis], 3, 2)
-    print(frame_threshold.shape)
+    #print(frame_threshold.shape)
     img = np.uint8(frame_threshold*np.int64(img))
-    img = cv2.resize(img, (img.shape[1]//2, img.shape[0]//2))
+    #img = cv2.resize(img, (img.shape[1]//2, img.shape[0]//2))
 
     Z = img.reshape((-1,3))
     Z = np.float32(Z)
-     
+    cv2.imshow("isee", img)
     # define criteria, number of clusters(K) and apply kmeans()
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10  , 0.01)
     K = K2
@@ -85,12 +86,16 @@ def get_cnt(img):
     res = center[label.flatten()]
     res2 = res.reshape((img.shape))  
     #print(center.shape)
+    cv2.imshow("isee2", res2)
+    cnt3 = []
+    cnt2 = []
+
     maxarea= 0
     for i in range(K):
        # print(np.all(res2==center[i], 2))
         a =  np.uint8(np.all(res2==center[i], 2)*255)
         contours, hierarchy = cv2.findContours(a, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        cnt2 = []
+        #cnt3.extend(contours)
         for cnt in contours: 
             # Contours detection
             area = cv2.contourArea(cnt)
@@ -98,15 +103,17 @@ def get_cnt(img):
             x = approx.ravel()[0]
             y = approx.ravel()[1]
 
-
             if area > 50:#param
+
                 if len(approx) == 4:
+
                     #cnt2.append(approx)
                     a1 = anglef(approx[0], approx[1], approx[2]) + anglef(approx[1], approx[2], approx[3]) + anglef(approx[2], approx[3], approx[0]) + anglef(approx[3], approx[0], approx[1])
                     #a1 = 0.9
-                    if a1 > 0.5:
+                    if a1 > 0.8:
                         #cv2.putText(res2, str(((int(a1*100)/100))), (x,y), font, 0.5, (0, 255, 0), 2, cv2.LINE_AA)
                         continue
+                    
                     if len(cnt) > 4:
                         (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
                         ar = MA/ma
@@ -118,9 +125,19 @@ def get_cnt(img):
                         if ar > 1:
                             ar=1/ar
                         solidity = 1.0
-                    if solidity > 0.9 and maxarea < area and area < 10000:# and ar < 0.4:
+                    #cv2.putText(img, str(((int(solidity*100)/100))), (x,y), font, 0.5, (0, 255, 0), 2, cv2.LINE_AA)
+
+                    cnt3.append(cnt)
+                    #print(solidity)
+                    if solidity > 0.9 and maxarea < area and area < img.shape[0]*img.shape[1]*0.5 and area > 800 and ar < 0.5:
                         maxarea = area
+                        #print("kya")
                         cnt2.append(approx)
-    return cnt2[-1]
+    cv2.imshow("isee3", img)
+        
+    if len(cnt2)==0:
+        return None, cnt3
+    #cnt2[-1]*=2
+    return cnt2[-1], cnt3
 
       
