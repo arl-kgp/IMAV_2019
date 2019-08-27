@@ -4,6 +4,7 @@ import cv2
 import imutils as im
 from time import sleep     
 
+import tello_height
 import image_pb2
 
 import zmq
@@ -63,6 +64,7 @@ velCallbaack(socket2, tello)
 capture = tello.get_video_capture()
 try:
     #tello.takeoff()
+    tello_height.goto_height(tello, 250)
     pass
 except:
     pass
