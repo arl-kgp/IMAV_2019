@@ -196,7 +196,7 @@ class FrontEnd(object):
             pass
 
     def passFromWindow(self,trigger,key,rect,dst):
-        frameH,frameW = 20,75
+        frameH,frameW = 40,150
         self.PoseEstimationfrmCnt(rect,dst,frameH,frameW)
         #self.manualRcControl(key)
         self.algnToFrame(key)
@@ -218,7 +218,7 @@ class FrontEnd(object):
             self.cntErNrm = 0
         
         
-        if self.telloPoseMean[0] < 170 and self.telloPoseMean[0] != 0:
+        if self.telloPoseMean[0] < 350 and self.telloPoseMean[0] != 0:
             if self.flag1 == 1:
                 startTime = time.time()
                 self.flag1 = 0
@@ -230,7 +230,7 @@ class FrontEnd(object):
             
                 
                 self.rcOut[0] = 0
-                self.rcOut[1] = 0
+                self.rcOut[1] = 30
                 self.rcOut[2] = 0
                 self.rcOut[3] = 0
                 self.passFromWindowModSccss = 0

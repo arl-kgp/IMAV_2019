@@ -68,7 +68,7 @@ def get_cnt(img):
 
     frame_HSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-    frame_threshold = cv2.inRange(frame_HSV, (40, 40, 40), (255, 255, 255))/255
+    frame_threshold = cv2.inRange(frame_HSV, (30, 30, 30), (255, 255, 255))/255
     #print(frame_threshold)
     frame_threshold = np.repeat(frame_threshold[:, :, np.newaxis], 3, 2)
     #print(frame_threshold.shape)
