@@ -27,6 +27,7 @@ int startDetect(bool servo)
 
 		vector<Vec3f> circles;
 		HoughCircles(gray, circles, CV_HOUGH_GRADIENT, 1, gray.rows / 8, 200, thres, 0, 0);
+		publish_vel_forward();
 
 		for (size_t i = 0; i < circles.size(); i++)
 		{
@@ -46,7 +47,6 @@ int startDetect(bool servo)
 			Mat res2;
 			Mat stats, centroids;
 
-			publish_vel_forward();
 
 			// Copy only the image under the white circle to black image
 			//gray.copyTo(res, mask);

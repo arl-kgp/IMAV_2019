@@ -67,6 +67,7 @@ try:
 except:
     pass
 while 1:
+    print(tello.get_bat())
     ret, frame = capture.read()
     frameBGR = np.copy(frame)
     frame2use = im.resize(frameBGR,width=720)

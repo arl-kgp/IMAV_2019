@@ -20,12 +20,21 @@ def fire_and_forget(f):
     return wrapped
 
 @fire_and_forget
-def velCallbaack(socks):
+def velCallbaack(socks, tellp):
     while 1:
         data = socks.recv()
         rl = image_pb2.vel()
         rl.ParseFromString(data)
         print("vel: ", rl.vx, rl.vy, rl.vz, rl.rz)
+        if abs(rl.vx) > 10:
+            rl.vx = rl.vx/abs(rl.vx)*10
+        if abs(rl.vy) > 10:
+            rl.vy = rl.vy/abs(rl.vy)*10
+        if abs(rl.vz) > 10:
+            rl.vz = rl.vz/abs(rl.vz)*10
+
+        tello.send_rc_control(int(-rl.vy),int(rl.vx),int(rl.vz),0)
+
         print("")
 
 port = "5556"
@@ -42,7 +51,6 @@ socket3 = context.socket(zmq.PUB)
 socket3.bind("tcp://*:%s" % 5558)
 
 
-velCallbaack(socket2)
 
 imf = image_pb2.image()
 dep = image_pb2.depth_m()
@@ -50,10 +58,16 @@ tello = Tello()
 tello.connect()
 tello.streamoff()
 tello.streamon()
+velCallbaack(socket2, tello)
 
 capture = tello.get_video_capture()
- 
+try:
+    #tello.takeoff()
+    pass
+except:
+    pass
 while 1:
+    print(tello.get_bat())
     ret, frame = capture.read()
     frameBGR = np.copy(frame)
     frame2use = im.resize(frameBGR,width=720)
@@ -74,6 +88,7 @@ while 1:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
+tello.land()
     #sleep(1/25)
 tello.end()
 capture.release()
