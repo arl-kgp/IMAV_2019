@@ -22,6 +22,7 @@ from PIL import Image
 import scipy
 import scipy.misc
 from imutils.video import FPS
+from align_to_frame import FrontEnd as correct_position # Use in left
 
 class warehouse_R:
 	def __init__(self, tello):
@@ -36,6 +37,7 @@ class warehouse_R:
 		self.hover_time = 0
 		self.reached_qrcode = 0
 		self.should_stop = False
+		self.align = correct_position(tello)  # Use in left
 
 
 	def text_better(self,text):
@@ -255,9 +257,9 @@ class warehouse_R:
 				conf_list_ref.append(conf_list[index])
 				corners_ref.append(corners[index])
 				print("Added: "+str(text))
-		if len(conf_list_ref) > 0:
-			text = text_list_ref[np.argmax(conf_list)]
-			corner_pts = corners_ref[np.argmax(conf_list)]
+		if len(conf_list_ref) > 0:   # Use in left
+			text = text_list_ref[np.argmax(conf_list_ref)]
+			corner_pts = corners_ref[np.argmax(conf_list_ref)]
 		
 		return text, corners, output
 
@@ -288,8 +290,7 @@ class warehouse_R:
 		vertical = cv2.bitwise_not(vertical)
 
 		# Step 1
-		edges = cv2.adaptiveThreshold(vertical, 255, cv2.ADAPTIVE_THRESH_MEAN_C, \
-		                            cv2.THRESH_BINARY, 3, -2)
+		edges = cv2.adaptiveThreshold(vertical, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, -2)
 		# Step 2
 		kernel = np.ones((2, 2), np.uint8)
 		edges = cv2.dilate(edges, kernel)
@@ -561,15 +562,18 @@ class warehouse_R:
 
 		## Shelf Traversal Class Object
 		trav1 = shelf_traversal(self.tello)
-		
+		z = 0    # Use in left
 		self.rcout = [0,0,0,0]
 		while True:
-			                            
+										
 			# for FPS:
 			start_time = time.time()
 
 			# BATTERY checker
-			self.tello.get_battery()
+			try:  # Use in left
+				self.tello.get_battery()
+			except:
+				pass
 
 			frame = frame_read.frame
 
@@ -581,12 +585,15 @@ class warehouse_R:
 
 			if k == ord("m"):
 				
-				trav1.run(frame)
+				trav1.run(frame)  # Use in left
+				print("text_frames_detected: " + str(trav1.num_text_frames))
 				if trav1.num_text_frames == 4:              # NO. of shelves in one row # 4
 					self.should_stop = True
 					print("Finished")
 					break
-
+				
+				## TEXT box detection and position correction
+				"""
 				if should_correct_pos == True:
 					print("Correcting.....")
 					rcOut, output = self.correct_pos(frame)
@@ -599,7 +606,24 @@ class warehouse_R:
 						num_corrections = 0			# num_corrections reset
 						should_correct_pos = False	
 					continue
-				
+				"""
+				# Use in left -->
+				## Text Box detection from coloured frames
+				if should_correct_pos == True:
+					trig = 1
+					print("Correcting.....")
+					dst,mask = self.align.preproccessAndKey(frame)
+					frameH,frameW,arSet = 10,20,0.4
+					#cv2.imshow("msk",mask)
+					self.align.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
+					trig = self.align.algnToFrame(trig,"m")
+					#print(trig)
+					#should_correct_pos = (trig == 1)
+					z += 1
+					if(z>20):
+						should_correct_pos = False
+					continue
+
 				print("m printing")
 				frame_1, qrpoints, qrlist = main(frame)
 				ret_val = self.qr_intersection(qrlist, qrprev_list)          #ret_val = 1 if no intersection otherwise 0
@@ -652,6 +676,7 @@ class warehouse_R:
 					#if check_qr_num == 2:	# Since, ONLY 2 Shelves in experimental setup
 					#	self.tello.land()
 					#	break
+					should_correct_pos = True  # Use in left
 
 				else:
 					total_time = total_time + time.time() - start_time
@@ -662,8 +687,13 @@ class warehouse_R:
 					self.reached_qrcode = 0
 					self.hover_time= 0
 		
-			elif k == ord("t"):
-				self.tello.takeoff()
+			elif k == ord("t"):  # Use in left
+				try:
+					self.tello.takeoff()
+				except:
+					print("takeoff done")
+				time.sleep(2)
+
 			elif k == ord("l"):
 				self.tello.land()
 			elif k == ord("w"):

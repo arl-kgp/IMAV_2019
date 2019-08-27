@@ -74,16 +74,13 @@ class FrontEnd(object):
 
     def run(self, frame, trigger):
 
-        Height = 100
         dst,mask = self.preproccessAndKey(frame)
 
-        self.takeoffToShelf(trigger,key,mask,dst)
+        self.takeoffToShelf(trigger,"m",mask,dst)
         self.sendRcControl()
 
-        cv2.imshow("rectified",dst) 
-        # print(self.lastValue3)
-
-        # time.sleep(1 / FPS)
+        cv2.imshow("rectified",dst)
+        time.sleep(1 / FPS)
 
         # Call it always before finishing. I deallocate resources.
         # self.tello.end()

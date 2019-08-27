@@ -21,6 +21,7 @@ class FrontEnd(object):
         self.bbox = (5,5,20,20)
 
         self.trigger = 0
+        self.prev_trigger = 0
         self.trigger_init = 0
 
         self.ar = 0
@@ -53,8 +54,11 @@ class FrontEnd(object):
         if self.trigger_init == 2:
 
             self.track(mask)
-            if self.trigger == 1:
-                self.num_text_frames += 1
+
+        if self.prev_trigger == 0 and self.trigger == 1:
+            self.num_text_frames += 1
+        self.prev_trigger = self.trigger
+                
 
     def manualRcControl(self,key):
         if key == ord("w"):

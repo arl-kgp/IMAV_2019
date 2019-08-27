@@ -131,7 +131,7 @@ class FrontEnd(object):
         # self.tello.end()
 
     def takeoffToShelf(self,trigger,key,mask,dst):
-        frameH,frameW,arSet = 10,20,0.4
+        frameH,frameW,arSet = 24,24,0.8
         cv2.imshow("msk",mask)
         self.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
         self.manualRcControl(key)
@@ -400,7 +400,7 @@ class FrontEnd(object):
                     # print "Angle",angle
                     # print "solidity",solidity
                     # print "ar",ar
-                    condition = ar < 0.6 and ar > arSet
+                    condition = ar < 1 and ar > arSet
                     if solidity > 0.9 and condition:
 
                         self.ar = ar
