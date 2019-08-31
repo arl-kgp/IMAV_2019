@@ -39,5 +39,5 @@ target_link_libraries(ibvs_test ${Eigen3_LIBRARIES})
 #target_link_libraries(ibvs_point ${OpenCV_LIBRARIES})
 #target_link_libraries(ibvs_point ${Eigen3_LIBRARIES})
 
-configure_file(src/tello_land.py tello_land.py COPYONLY)
-configure_file(src/image_pb2.py image_pb2.py COPYONLY)
+#configure_file(src/tello_land.py tello_land.py COPYONLY)
+#configure_file(src/image_pb2.py image_pb2.py COPYONLY)
