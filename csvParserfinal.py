@@ -5,13 +5,15 @@ def parser1():
 		
 	filename = 'warehouse.csv'
 
-	rows = []
-	fields = []
-
-	#open the csv file
-	with open(filename,'r') as csvfile:
-		csvreader = csv.reader(csvfile)
-
+	fields = [] 
+	rows = [] 
+	  
+	# reading csv file 
+	with open(filename, 'r') as csvfile: 
+		# creating a csv reader object 
+		csvreader = csv.reader(csvfile) 
+		  
+		# extracting field names through first row 
 		fields = next(csvreader)
 
 		for row in csvreader:
@@ -61,16 +63,58 @@ def parser1():
 			al.append(qr_actual[qr])
 			write.writerow(al)
 
+def parserdash():
+		
+	filename = "out2.csv"
+
+	rows = [] 
+	  
+	# reading csv file 
+	with open(filename, 'r') as csvfile: 
+		# creating a csv reader object 
+		csvreader = csv.reader(csvfile)
+
+		qr_alph = {}
+
+		for row in csvreader: 
+			rows.append(row) 
+
+		# extracting each data row one by one 
+		for row in rows:
+			try:
+				if(row[0] != row[1]):
+					qr_alph[row[0]].append(row[1])
+			except:
+				qr_alph.update({row[0]:[row[1]]})
+
+		for qr in qr_alph:
+			qr_alph[qr] = set(qr_alph[qr])
+
+		for qr in qr_alph:
+			qr_alph[qr] = list(qr_alph[qr])
+
+	out = 'out1.csv'
+
+	with open(out,'w') as outfile:
+		write = csv.writer(outfile)
+		
+		for qr in qr_alph:
+			for i in range(len(qr_alph[qr])):
+				al = []
+				al.append(qr)
+				al.append(qr_alph[qr][i])
+				write.writerow(al)
+	
+
 
 def parser2():
 
-	with open('output.csv', 'r', encoding="utf8", errors='ignore') as t1, open('out2.csv', 'r', encoding="utf8", errors='ignore') as t2:
+	with open('output.csv', 'r') as t1, open('out1.csv', 'r') as t2:
 		fileone = t1.readlines()
 		filetwo = t2.readlines()
 
 	with open('outputf.csv', 'w') as outFile:
 		for line in filetwo:
-			print(line)
 			lins = line.split(",")
 			print(lins)
 			q1 = lins[0]
@@ -86,12 +130,19 @@ def parser2():
 				t = t[:-1]
 				if q == q1:
 					outFile.write(q2+","+t+"\n")
-
-	with open('outputf.csv', 'rb') as tz:
+	
+	with open('outputf.csv', 'r') as tz:
 		filez = tz.readlines()
 		
-	with open('output.csv', 'a') as outFiledash:
+	with open('output.csv', 'a') as outFileza:
 		for line in filez:
-			outFiledash.write(str(line))
+			outFileza.write(str(line))
 
-			
+with open('outputf.csv', 'r') as tz:
+		filez = tz.readlines()
+		
+with open('output.csv', 'a') as outFileza:
+		for line in filez:
+			outFileza.write(str(line))
+	
+	

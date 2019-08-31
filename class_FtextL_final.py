@@ -441,7 +441,7 @@ class warehouse_L:
 					Data = str(qrlist[i]).strip("b'")
 					if(Data):
 						Data = str(Data).strip("b'")
-					self.f1.write('%s,%s,\n'%(prev_qr, Data))
+					self.f1.write('%s,%s,\n'%(prev_Data, Data))
 	
 
 	############### REDEFINED ROI_DETECT and TEXT_FINDER 
@@ -647,6 +647,7 @@ class warehouse_L:
 					break
 
 				rectangle_without_QR = trav1.detect_only_rectangle(frame)
+				print("rectangle = "+str(rectangle_without_QR))
 
 				## TEXT box detection and position correction
 				"""
@@ -672,6 +673,10 @@ class warehouse_L:
 					print("exited align_rect")
 					self.align_rect.clear()
 					should_correct_pos = False
+					#NOT SURE
+					trav1.prev_trigger = 1
+					trav1.trigger = 1
+
 					continue
 
 				# leftleft

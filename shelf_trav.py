@@ -37,19 +37,20 @@ class FrontEnd(object):
     def detect_only_rectangle(self, frame):
         dst,mask = self.preproccessAndKey(frame)
         
-        if(self.trigger_init==0):
-            rect = self.get_coordinates(mask,dst)
-
-            if(rect[0][0] == 0):
-                return False
-            else:
-                return True
+        
+        rect = self.get_coordinates(mask,dst)
+        print("rect in func " + str(rect))
+        if(rect[0][0] == 0):
+            return False
+        else:
+            return True
 
     def run(self, frame):
        
         dst,mask = self.preproccessAndKey(frame)
         
         if(self.trigger_init==0):
+
             rect = self.get_coordinates(mask,dst)
 
             if(rect[0][0] == 0):
@@ -322,12 +323,12 @@ class FrontEnd(object):
 
         else:
             print("LOST")
-            self.lost +=1
-            if self.lost>5 :
-                self.trigger = 1
-                #self.tracker = cv2.TrackerKCF_create()
-                self.tracker = cv2.TrackerKCF_create()
-                self.tracker.clear()
-                self.lost = 0
-                self.trigger_init = 0
+            #self.lost +=1
+            #if self.lost>5 :
+            self.trigger = 1
+            #self.tracker = cv2.TrackerKCF_create()
+            self.tracker = cv2.TrackerKCF_create()
+            self.tracker.clear()
+            self.lost = 0
+            self.trigger_init = 0
 

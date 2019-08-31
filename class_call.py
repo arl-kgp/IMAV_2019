@@ -14,14 +14,15 @@ class warehouse_overall:
 	def algo(self):
 		
 		self.txt_R.scan()
-		h = self.tello.get_h()
+		#h = self.tello.get_h()
 		# GO_down_1.5m
-		goto_height(self.tello, h - 150)
+		#goto_height(self.tello, h - 150)
 		
-		self.txt_L.scan()
+		#self.txt_L.scan()
 		# GO_up_1.5m
 
 		parser1()
+		parserdash()
 		parser2()
 
 
