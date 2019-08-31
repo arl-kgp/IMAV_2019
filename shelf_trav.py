@@ -33,6 +33,7 @@ class FrontEnd(object):
 
         self.lost = 0
         self.num_text_frames = 0
+        self.visible = 0
 
     def detect_only_rectangle(self, frame):
         dst,mask = self.preproccessAndKey(frame)
@@ -48,10 +49,9 @@ class FrontEnd(object):
     def run(self, frame):
        
         dst,mask = self.preproccessAndKey(frame)
+        rect = self.get_coordinates(mask,dst)
         
         if(self.trigger_init==0):
-
-            rect = self.get_coordinates(mask,dst)
 
             if(rect[0][0] == 0):
                 return
@@ -60,12 +60,13 @@ class FrontEnd(object):
                 self.trigger_init = 1
 
         if self.trigger_init == 1:
-            print(rect)
-            cv2.rectangle(dst, (rect[0][0], rect[0][1]), (rect[2][0], rect[2][1]),(0,0,255),3)
-            cv2.imshow("dst", dst)
-            time.sleep(2)
+            # print(rect)
+            # cv2.rectangle(dst, (rect[0][0], rect[0][1]), (rect[2][0], rect[2][1]),(0,0,255),3)
+            # cv2.imshow("dst", dst)
+            # time.sleep(2)
             ok = self.start_tracking(rect,mask)
-            self.trigger_init = 2
+            if(ok==True):
+                self.trigger_init = 2
 
         if self.trigger_init == 2:
 
@@ -78,9 +79,10 @@ class FrontEnd(object):
     def run_updown(self, frame):
        
         dst,mask = self.preproccessAndKey(frame)
+        rect = self.get_coordinates(mask,dst)
         
         if(self.trigger_init==0):
-            rect = self.get_coordinates(mask,dst)
+            # rect = self.get_coordinates(mask,dst)
 
             if(rect[0][0] == 0):
                 return
@@ -89,12 +91,13 @@ class FrontEnd(object):
                 self.trigger_init = 1
 
         if self.trigger_init == 1:
-            print(rect)
-            cv2.rectangle(dst, (rect[0][0], rect[0][1]), (rect[2][0], rect[2][1]),(0,0,255),3)
-            cv2.imshow("dst", dst)
-            time.sleep(2)
+            # print(rect)
+            # cv2.rectangle(dst, (rect[0][0], rect[0][1]), (rect[2][0], rect[2][1]),(0,0,255),3)
+            # cv2.imshow("dst", dst)
+            # time.sleep(2)
             ok = self.start_tracking(rect,mask)
-            self.trigger_init = 2
+            if(ok==True):
+                self.trigger_init = 2
 
         if self.trigger_init == 2:
 
@@ -321,8 +324,14 @@ class FrontEnd(object):
             self.trigger = 0
             self.lost = 0
 
+            self.visible +=1
+
         else:
+            if(self.visible<10):
+                self.trigger_init = 1
+                return
             print("LOST")
+            self.visible = 0
             #self.lost +=1
             #if self.lost>5 :
             self.trigger = 1
