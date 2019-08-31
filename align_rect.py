@@ -74,25 +74,16 @@ class FrontEnd(object):
 
     def run(self):
 
-        # if not self.tello.connect():
-        #     print("Tello not connected")
-        #     return
-
-        # # In case streaming is on. This happens when we quit this program without the escape key.
-        # if not self.tello.streamoff():
-        #     print("Could not stop video stream")
-        #     return
-
-        # if not self.tello.streamon():
-        #     print("Could not start video stream")
-        #     return
-
         frame_read = self.tello.get_frame_read()
+        print("reached align_rect")
 
         should_stop = False
 
         Height = 100
+        i=0
         while not should_stop:
+            print(i)
+            i=i+1
             if frame_read.stopped:
                 frame_read.stop()
                 break
@@ -123,7 +114,12 @@ class FrontEnd(object):
                 Height = 100
 
             if self.lastValue3 == 1:
-                break
+                print("now exiting")
+                cv2.destroyWindow("msk")
+                cv2.destroyWindow("rectified")
+                cv2.destroyWindow("Frame")
+                return 1
+                # break
 
             time.sleep(1 / FPS)
 
@@ -131,7 +127,7 @@ class FrontEnd(object):
         # self.tello.end()
 
     def takeoffToShelf(self,trigger,key,mask,dst):
-        frameH,frameW,arSet = 24,24,0.8
+        frameH,frameW,arSet = 10,20,0.4
         cv2.imshow("msk",mask)
         self.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
         self.manualRcControl(key)
@@ -145,6 +141,48 @@ class FrontEnd(object):
         result = 0
         return result
 
+    def clear(self):
+        
+        self.telloEulerAngles = np.zeros((1,3))
+
+        self.rcOut=np.zeros(4)
+        
+        self.R = np.zeros((3,3))
+        self.PoseFlag = 1
+        self.ar = 0
+
+        self.ARmean = np.array([0])
+        self.ARqueue = np.zeros((7,1))
+
+        self.telloPose = np.zeros((1,3))
+        self.poseQueue = np.zeros((7,3))
+        self.telloPoseVariance = np.zeros(3)
+        self.telloPoseMean = np.zeros(3)
+        self.telloPoseMean15 = np.zeros(3)
+        
+        self.cntErNrm = 0
+        self.cntError = np.array([0,0,0])
+        
+        self.tello.TIME_BTW_RC_CONTROL_COMMANDS = 20
+
+        self.frameCenter = np.zeros((1,2))
+
+
+        # variables for shelf passing
+        self.trigger = 0
+        self.lastValue = 0
+        self.lastValue1 = 0
+        self.lastValue2 = 0
+        self.lastValue3 = 0
+        self.flag1 = 1
+        self.distanceFrmRect = 0
+        self.apprchFlowFlag =0
+        self.passFromWindowModSccss = 0
+
+        #variables for aligning with the window
+        self.alnFlowFlag = 0
+        self.alnFlowFlag2 = 0
+
 
     def slideAndSearchRect(self,key):
         thresh = 200
@@ -154,7 +192,7 @@ class FrontEnd(object):
 
         # print "self.PoseFlag",self.PoseFlag
 
-        con = self.ARmean[0] > 0.8
+        con = self.ARmean[0] > 0.4
         con = con*1
         # print "con",con
         trig = self.interMtrigger2(con)
@@ -230,7 +268,7 @@ class FrontEnd(object):
             if self.cntErNrm > 10 or self.cntErNrm ==0:
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,150,0,20,0.35) # to align the drone 20 cm above the textbox frame
+                self.PoseController(key,30,0,0,0.35)
                 self.alnFlowFlag = 1
                 # print "self.cntErNrm",self.cntErNrm
 
@@ -328,52 +366,32 @@ class FrontEnd(object):
         return dst
 
     def getRectMask(self,frame):
-        kernel = np.ones((5,5),np.uint8)#param 1
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-        blurred = cv2.GaussianBlur(frame, (7, 7), 0)#param 1
+        h_low = 24
+        s_low = 78
+        v_low = 70
+        h_high = 116
+        s_high = 255
+        v_high = 174
 
-        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-        h,s,v = cv2.split(hsv)
+        # define range of blue color in HSV
+        lower_blue = np.array([h_low,s_low,v_low])
+        upper_blue = np.array([h_high,s_high,v_high])
 
-        dilS = cv2.dilate(s,kernel,iterations = 1)
-        newS = dilS-s
-        newS = cv2.equalizeHist(newS)
-        # newS = cv2.GaussianBlur(newS, (11, 11), 0)
+        # Threshold the HSV image to get only blue colors
+        mask = cv2.inRange(hsv, lower_blue, upper_blue)
 
+        # Bitwise-AND mask and original image
+        res = cv2.bitwise_and(frame,frame, mask= mask)
+        kernel = np.ones((5,5), np.uint8)
+        cv2.dilate(mask,kernel,iterations=1)
 
-        dilV = cv2.dilate(v,kernel,iterations = 1)#param 1
-        newV = dilV-v
-        newV = cv2.equalizeHist(newV)
-
-        dilH = cv2.dilate(h,kernel,iterations = 1)
-        newH = dilH-h
-        newH = cv2.equalizeHist(newH)
-
-
-        sabKaAnd = cv2.bitwise_or(newS,newV)
-        kernel2 = np.ones((3,3),np.uint8)#param 1
-        sabKaAnd = cv2.erode(sabKaAnd,kernel2,iterations = 1)#param 1
-        sabKaAnd = cv2.erode(sabKaAnd,kernel2,iterations = 1)#param 1
-
-        sabKaAnd = cv2.dilate(sabKaAnd,kernel2,iterations = 1)#param 1
-        sabKaAnd = cv2.GaussianBlur(sabKaAnd, (11, 11), 0)
-
-        maskSab = cv2.inRange(sabKaAnd,120,255)#param 1****
-
-        maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
-        maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
-
-        maskSab = cv2.bitwise_and(maskSab,newV)
-        maskSab = cv2.equalizeHist(maskSab)
-        maskSab = cv2.inRange(maskSab,190,255)# param *****
-
-        kernel2 = np.ones((2,2),np.uint8) #param ****
-        maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
-        maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
-
-        return maskSab
+        return mask
 
     def PoseEstimationfrmMask(self,mask,frame,frameH,frameW,arSet):
+
+        print("pose estimation....")
         # Contours detection
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -440,8 +458,8 @@ class FrontEnd(object):
                             varN = np.linalg.norm(self.telloPoseVariance)
                             # print "varN",varN
                         oldArea =area
-        # cv2.imshow("Frame", frame)
-        # cv2.imshow("Mask", mask)
+        cv2.imshow("Frame", frame)
+        #cv2.imshow("Mask", mask)
 
     
 

@@ -11,7 +11,7 @@ class warehouse_overall:
 
 	def algo(self):
 		
-		self.txt_R.scan()
+		self.txt_L.scan()
 		# GO_down_1.5m
 		
 		#self.txt_L.scan()

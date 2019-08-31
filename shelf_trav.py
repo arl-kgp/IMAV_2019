@@ -16,7 +16,8 @@ class FrontEnd(object):
         # self.tello = Tello()
 
         self.cap = cv2.VideoCapture(0)
-        self.tracker = cv2.TrackerMedianFlow_create()
+        #self.tracker = cv2.TrackerKCF_create()
+        self.tracker = cv2.TrackerKCF_create()
         self.rcOut = np.zeros(4)
         self.bbox = (5,5,20,20)
 
@@ -33,6 +34,17 @@ class FrontEnd(object):
         self.lost = 0
         self.num_text_frames = 0
 
+    def detect_only_rectangle(self, frame):
+        dst,mask = self.preproccessAndKey(frame)
+        
+        if(self.trigger_init==0):
+            rect = self.get_coordinates(mask,dst)
+
+            if(rect[0][0] == 0):
+                return False
+            else:
+                return True
+
     def run(self, frame):
        
         dst,mask = self.preproccessAndKey(frame)
@@ -47,7 +59,10 @@ class FrontEnd(object):
                 self.trigger_init = 1
 
         if self.trigger_init == 1:
-
+            print(rect)
+            cv2.rectangle(dst, (rect[0][0], rect[0][1]), (rect[2][0], rect[2][1]),(0,0,255),3)
+            cv2.imshow("dst", dst)
+            time.sleep(2)
             ok = self.start_tracking(rect,mask)
             self.trigger_init = 2
 
@@ -57,6 +72,35 @@ class FrontEnd(object):
 
         if self.prev_trigger == 0 and self.trigger == 1:
             self.num_text_frames += 1
+        self.prev_trigger = self.trigger
+
+    def run_updown(self, frame):
+       
+        dst,mask = self.preproccessAndKey(frame)
+        
+        if(self.trigger_init==0):
+            rect = self.get_coordinates(mask,dst)
+
+            if(rect[0][0] == 0):
+                return
+            else:
+                print("Triggered")
+                self.trigger_init = 1
+
+        if self.trigger_init == 1:
+            print(rect)
+            cv2.rectangle(dst, (rect[0][0], rect[0][1]), (rect[2][0], rect[2][1]),(0,0,255),3)
+            cv2.imshow("dst", dst)
+            time.sleep(2)
+            ok = self.start_tracking(rect,mask)
+            self.trigger_init = 2
+
+        if self.trigger_init == 2:
+
+            self.track(mask)
+
+        #if self.prev_trigger == 0 and self.trigger == 1:
+        #    self.num_text_frames += 1
         self.prev_trigger = self.trigger
                 
 
@@ -104,7 +148,7 @@ class FrontEnd(object):
         return dst,mask
 
     def getRectMask(self,frame):
-
+        """
         kernel = np.ones((5,5),np.uint8)#param 1
 
         blurred = cv2.GaussianBlur(frame, (7, 7), 0)#param 1
@@ -148,7 +192,30 @@ class FrontEnd(object):
         maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
         maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
 
-        return maskSab
+        return maskSab"""
+
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        h_low = 24
+        s_low = 78
+        v_low = 70
+        h_high = 116
+        s_high = 255
+        v_high = 174
+
+        # define range of blue color in HSV
+        lower_blue = np.array([h_low,s_low,v_low])
+        upper_blue = np.array([h_high,s_high,v_high])
+
+        # Threshold the HSV image to get only blue colors
+        mask = cv2.inRange(hsv, lower_blue, upper_blue)
+
+        # Bitwise-AND mask and original image
+        res = cv2.bitwise_and(frame,frame, mask= mask)
+        kernel = np.ones((5,5), np.uint8)
+        cv2.dilate(mask,kernel,iterations=1)
+
+        return mask
 
 
     def order_points(self, pts):
@@ -193,7 +260,11 @@ class FrontEnd(object):
             if area > 300:#param
 
                 if len(approx) == 4:
-                    (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
+                    try:
+                        (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
+                    except:
+                        print("Not found 5 points in fitellipse")
+                        return [[0,0], [0,0], [0, 0], [0,0]]
                     ar = MA/ma
 
                     hull = cv2.convexHull(cnt)
@@ -227,6 +298,7 @@ class FrontEnd(object):
 
     def start_tracking(self, rect,frame):
 
+        print("tracking started")
         self.bbox = (rect[0][0],rect[0][1],rect[2][0]-rect[0][0],rect[2][1]-rect[0][1])
         ok = self.tracker.init(frame,self.bbox)
         return ok
@@ -234,7 +306,7 @@ class FrontEnd(object):
     def track(self,frame):
 
         ok, self.bbox = self.tracker.update(frame)
-
+        print("tracked\n\n\n")
         if ok:
             # p1 = (int(self.bbox[0]), int(self.bbox[1]))
             # p2 = (int(self.bbox[0]+ self.bbox[2]), int(self.bbox[1]+self.bbox[3]))
@@ -251,6 +323,11 @@ class FrontEnd(object):
         else:
             print("LOST")
             self.lost +=1
-            if(self.lost>15):
+            if self.lost>5 :
                 self.trigger = 1
+                #self.tracker = cv2.TrackerKCF_create()
+                self.tracker = cv2.TrackerKCF_create()
+                self.tracker.clear()
+                self.lost = 0
+                self.trigger_init = 0
 

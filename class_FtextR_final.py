@@ -24,6 +24,8 @@ import scipy.misc
 from imutils.video import FPS
 from align_to_frame import FrontEnd as correct_position # Use in left
 
+from align_rect import FrontEnd as align_rect
+
 class warehouse_R:
 	def __init__(self, tello):
 		self.tello = tello
@@ -31,13 +33,16 @@ class warehouse_R:
 		self.east = "frozen_east_text_detection.pb" 			#enter the full path to east model
 		print("[INFO] loading east text detector...")
 		self.net = cv2.dnn.readNet(self.east)
-		self.f = open('warehouse.csv','a+')
+		self.f = open('warehouse.csv','w')
+		self.f1 = open('out2.csv','w')
 		print("file opened")
 		# cv2.waitKey(3000);
 		self.hover_time = 0
 		self.reached_qrcode = 0
 		self.should_stop = False
 		self.align = correct_position(tello)  # Use in left
+
+		self.align_rect = align_rect(self.tello)
 
 
 	def text_better(self,text):
@@ -88,7 +93,7 @@ class warehouse_R:
 		min_confidence = 0.5
 		height = width = 320
 
-		padding = 0.05
+		padding = 0.06
 
 		orig = image.copy()
 		# origH = 1080
@@ -415,6 +420,30 @@ class warehouse_R:
 		else:							  # Perfect
 			return output, 0
 
+	# GO UP , include in leftleft
+	def go_up(self, frame, qrprev_list):
+		
+		frame, qrpoints, qrlist = main(frame)
+		
+		#dst,mask = frontend.preproccessAndKey(frame)
+		#rect = frontend.get_coordinates(mask,dst)
+		#if rect[0][0] == 0:
+		#	return False
+		self.write_in_file2(qrprev_list, qrlist)
+		return True
+
+	def write_in_file2(self, prev_qr, qrlist):
+		for j in range(len(prev_qr)):
+			prev_Data = prev_qr[j]
+			if prev_Data:
+				prev_Data = str(prev_Data).strip("b'")
+				for i in range(len(qrlist)):
+					Data = str(qrlist[i]).strip("b'")
+					if(Data):
+						Data = str(Data).strip("b'")
+					self.f1.write('%s,%s,\n'%(prev_qr, Data))
+	
+
 	############### REDEFINED ROI_DETECT and TEXT_FINDER 
 	def roi_detect_for_position(self,image):
 
@@ -553,6 +582,14 @@ class warehouse_R:
 		passed_shelf_var = False
 		should_correct_pos = False
 		num_corrections = 0
+		go_up = False
+		go_down = False
+		start_height = 0
+		should_track = False
+		vertical_motion = False
+		
+		align_without_QR = False
+		rectangle_without_QR = False
 
 		self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))
 		# f.close()
@@ -562,7 +599,6 @@ class warehouse_R:
 
 		## Shelf Traversal Class Object
 		trav1 = shelf_traversal(self.tello)
-		z = 0    # Use in left
 		self.rcout = [0,0,0,0]
 		while True:
 										
@@ -585,13 +621,33 @@ class warehouse_R:
 
 			if k == ord("m"):
 				
-				trav1.run(frame)  # Use in left
+				if go_up or go_down:
+					vertical_motion = True
+				else:
+					vertical_motion = False
+
+				##################################### NOT SURE ON THIS tho, Loses tracking perhaps
+				#if not vertical_motion:
+				#print("No vertical motion, tracking")
+				
+				initial_no_of_frames = trav1.num_text_frames
+				if vertical_motion:
+					trav1.run_updown(frame)  # Use in left
+				else:
+					trav1.run(frame)  # Use in left
+				cv2.destroyWindow("dst")
 				print("text_frames_detected: " + str(trav1.num_text_frames))
-				if trav1.num_text_frames == 4:              # NO. of shelves in one row # 4
+
+				if ((trav1.num_text_frames - initial_no_of_frames) > 0) and align_without_QR:
+					align_without_QR = False
+
+				if trav1.num_text_frames == 3:              # NO. of shelves in one row # 4
 					self.should_stop = True
 					print("Finished")
 					break
-				
+
+				rectangle_without_QR = trav1.detect_only_rectangle(frame)
+
 				## TEXT box detection and position correction
 				"""
 				if should_correct_pos == True:
@@ -607,21 +663,48 @@ class warehouse_R:
 						should_correct_pos = False	
 					continue
 				"""
+
 				# Use in left -->
 				## Text Box detection from coloured frames
 				if should_correct_pos == True:
-					trig = 1
-					print("Correcting.....")
-					dst,mask = self.align.preproccessAndKey(frame)
-					frameH,frameW,arSet = 10,20,0.4
-					#cv2.imshow("msk",mask)
-					self.align.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
-					trig = self.align.algnToFrame(trig,"m")
-					#print(trig)
-					#should_correct_pos = (trig == 1)
-					z += 1
-					if(z>20):
-						should_correct_pos = False
+
+					self.align_rect.run()
+					print("exited align_rect")
+					self.align_rect.clear()
+					should_correct_pos = False
+					continue
+
+				# leftleft
+				if go_up:
+					print("up")
+					if (self.tello.get_h() - start_height) > 75:
+						go_up = False
+						go_down = True
+						cv2.imshow("Results",frame)
+						continue
+					check = self.go_up(frame, qrprev_list)
+					if not check or trav1.detect_only_rectangle(frame):
+						go_up = False
+						go_down = True
+						cv2.imshow("Results",frame)
+						continue
+					#self.rcOut = [0, 0, 10, 0]
+					self.tello.send_rc_control(0, 0, 20, 0)
+					cv2.imshow("Results",frame)
+					continue
+
+				if go_down:
+					print("down")
+					#if self.tello.get_h() <= start_height and trav1.detect_only_rectangle(frame):
+					if self.tello.get_h() <= start_height:
+						go_down = False
+						#trav1.num_text_frames = trav1.num_text_frames-1
+						should_correct_pos = True
+						continue
+
+					#self.rcOut = [0, 0, -10, 0]
+					self.tello.send_rc_control(0, 0, -20, 0)
+					cv2.imshow("Results",frame)
 					continue
 
 				print("m printing")
@@ -630,7 +713,7 @@ class warehouse_R:
 
 				print("intersection: "+str(ret_val))
 
-				if qrpoints != [] and self.hover_time < 5 and ret_val == 1:	 # If QR detected, detect TEXT
+				if qrpoints != [] and self.hover_time < 3 and ret_val == 1:	 # If QR detected, detect TEXT
 
 					frame = frame_1
 					print(qrlist)
@@ -661,7 +744,7 @@ class warehouse_R:
 					self.hover_time = self.hover_time + time.time() - start_time 
 
 				
-				elif self.hover_time > 5:
+				elif self.hover_time > 3:
 					print("hover time: "+str(self.hover_time))
 
 					self.rcout = [25,0,0,0]
@@ -676,14 +759,26 @@ class warehouse_R:
 					#if check_qr_num == 2:	# Since, ONLY 2 Shelves in experimental setup
 					#	self.tello.land()
 					#	break
+
+					# leftleft
+					start_height = self.tello.get_h()
+					go_up = True
+					
+
 					should_correct_pos = True  # Use in left
+
+				elif rectangle_without_QR and not align_without_QR:
+
+					should_correct_pos = True  # Use in left
+					align_without_QR = True
+					print("No QR, ONLY text")
 
 				else:
 					total_time = total_time + time.time() - start_time
 					#if total_time > 5:              
 					#	should_correct_pos = True   			   ## Just ONCE every time this distance is reached
 					#	total_time = 0
-					self.rcout = [10,0,0,0]
+					self.rcout = [20,0,0,0]
 					self.reached_qrcode = 0
 					self.hover_time= 0
 		
@@ -720,6 +815,7 @@ class warehouse_R:
 				self.rcout[3] = -50
 			elif k == ord("q"):
 				self.f.close()
+				self.f1.close()
 				self.tello.land()
 				print("file closed")
 				break
@@ -730,6 +826,8 @@ class warehouse_R:
 			print("FPS: ", 1.0 / (time.time() - start_time))
 
 		self.f.close()
+		self.f1.close()
+
 
 
 

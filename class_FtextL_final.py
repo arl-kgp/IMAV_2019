@@ -17,11 +17,14 @@ import pytesseract
 from qrcode import *
 from text import *
 from imutils.object_detection import non_max_suppression
+from shelf_trav import FrontEnd as shelf_traversal
 from PIL import Image
 import scipy
 import scipy.misc
 from imutils.video import FPS
-	
+from align_to_frame import FrontEnd as correct_position # Use in left
+
+from align_rect import FrontEnd as align_rect
 
 class warehouse_L:
 	def __init__(self, tello):
@@ -30,11 +33,16 @@ class warehouse_L:
 		self.east = "frozen_east_text_detection.pb" 			#enter the full path to east model
 		print("[INFO] loading east text detector...")
 		self.net = cv2.dnn.readNet(self.east)
-		self.f = open('warehouse.csv','a+')
+		self.f = open('warehouse.csv','w')
+		self.f1 = open('out2.csv','w')
 		print("file opened")
 		# cv2.waitKey(3000);
 		self.hover_time = 0
 		self.reached_qrcode = 0
+		self.should_stop = False
+		self.align = correct_position(tello)  # Use in left
+
+		self.align_rect = align_rect(self.tello)
 
 
 	def text_better(self,text):
@@ -85,7 +93,7 @@ class warehouse_L:
 		min_confidence = 0.5
 		height = width = 320
 
-		padding = 0.05
+		padding = 0.06
 
 		orig = image.copy()
 		# origH = 1080
@@ -102,7 +110,7 @@ class warehouse_L:
 		image = cv2.resize(image, (newW, newH))
 		(H, W) = image.shape[:2]
 
-		# define the two output layer names for the self.east detector model that
+		# define the two output layer names for the east detector model that
 		# we are interested -- the first is the output probabilities and the
 		# second can be used to derive the bounding box coordinates of text
 		layerNames = [
@@ -237,12 +245,12 @@ class warehouse_L:
 
 	def text_finder(self,im):
 
-		# self.east + Tesseract
+		# east + Tesseract
 		text = None
 		text_list, conf_list, corners, output = self.roi_detect(im)
 		if(corners):
 			print("Area: "+str(self.find_area(corners)))
-		
+
 		text_list_ref = []			## FINAL RETURN VALUES
 		conf_list_ref = []
 		corners_ref = []
@@ -254,9 +262,9 @@ class warehouse_L:
 				conf_list_ref.append(conf_list[index])
 				corners_ref.append(corners[index])
 				print("Added: "+str(text))
-		if len(conf_list_ref) > 0:
-			text = text_list_ref[np.argmax(conf_list)]
-			corner_pts = corners_ref[np.argmax(conf_list)]
+		if len(conf_list_ref) > 0:   # Use in left
+			text = text_list_ref[np.argmax(conf_list_ref)]
+			corner_pts = corners_ref[np.argmax(conf_list_ref)]
 		
 		return text, corners, output
 
@@ -287,8 +295,7 @@ class warehouse_L:
 		vertical = cv2.bitwise_not(vertical)
 
 		# Step 1
-		edges = cv2.adaptiveThreshold(vertical, 255, cv2.ADAPTIVE_THRESH_MEAN_C, \
-		                            cv2.THRESH_BINARY, 3, -2)
+		edges = cv2.adaptiveThreshold(vertical, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, -2)
 		# Step 2
 		kernel = np.ones((2, 2), np.uint8)
 		edges = cv2.dilate(edges, kernel)
@@ -402,7 +409,7 @@ class warehouse_L:
 		if corners == []:
 			return output, -1             # Too Far
 
-		text_box_x = self.find_area(self,corners)
+		text_box_x = self.find_area(corners)
 		print("AREA calculated: "+str(text_box_x))
 		if text_box_x > text_box_x_max:   # More than Ideal
 			fb = text_box_x_max-text_box_x
@@ -413,6 +420,29 @@ class warehouse_L:
 		else:							  # Perfect
 			return output, 0
 
+	# GO UP , include in leftleft
+	def go_up(self, frame, qrprev_list):
+		
+		frame, qrpoints, qrlist = main(frame)
+		
+		#dst,mask = frontend.preproccessAndKey(frame)
+		#rect = frontend.get_coordinates(mask,dst)
+		#if rect[0][0] == 0:
+		#	return False
+		self.write_in_file2(qrprev_list, qrlist)
+		return True
+
+	def write_in_file2(self, prev_qr, qrlist):
+		for j in range(len(prev_qr)):
+			prev_Data = prev_qr[j]
+			if prev_Data:
+				prev_Data = str(prev_Data).strip("b'")
+				for i in range(len(qrlist)):
+					Data = str(qrlist[i]).strip("b'")
+					if(Data):
+						Data = str(Data).strip("b'")
+					self.f1.write('%s,%s,\n'%(prev_qr, Data))
+	
 
 	############### REDEFINED ROI_DETECT and TEXT_FINDER 
 	def roi_detect_for_position(self,image):
@@ -437,7 +467,7 @@ class warehouse_L:
 		image = cv2.resize(image, (newW, newH))
 		(H, W) = image.shape[:2]
 
-		# define the two output layer names for the self.east detector model that
+		# define the two output layer names for the east detector model that
 		# we are interested -- the first is the output probabilities and the
 		# second can be used to derive the bounding box coordinates of text
 		layerNames = [
@@ -511,7 +541,7 @@ class warehouse_L:
 
 	def text_finder_for_position(self,im):
 
-		# self.east + Tesseract
+		# east + Tesseract
 		text = None
 		text_list, conf_list, corners, output = self.roi_detect_for_position(im)
 		if len(conf_list) > 0:
@@ -530,7 +560,6 @@ class warehouse_L:
 		dist = self.motion_cmd_PID(feedback)
 		if dist>0:
 			dist = dist*2
-		dist = dist*2
 		if feedback == -1:
 			rcOut = [0,10,0,0]
 			print("Not visible, forward")
@@ -545,50 +574,137 @@ class warehouse_L:
 
 	def scan(self):
 
-		#cv2.namedWindow('Results',cv2.WINDOW_NORMAL)
 		total_time = 0
+		#cv2.namedWindow('Results',cv2.WINDOW_NORMAL)
 		qrprev_list = []                                   # For comparing with newer qr-codes from next shelf
 		qrlist = []
 		check_qr_num = 0
 		passed_shelf_var = False
 		should_correct_pos = False
 		num_corrections = 0
+		go_up = False
+		go_down = False
+		start_height = 0
+		should_track = False
+		vertical_motion = False
+		
+		align_without_QR = False
+		rectangle_without_QR = False
 
 		self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))
 		# f.close()
 
 		# Read feed:
 		frame_read = self.tello.get_frame_read()
-		self.rcOut = [0,0,0,0]
+
+		## Shelf Traversal Class Object
+		trav1 = shelf_traversal(self.tello)
+		self.rcout = [0,0,0,0]
 		while True:
-			                            
+										
 			# for FPS:
 			start_time = time.time()
 
 			# BATTERY checker
-			self.tello.get_battery()
+			try:  # Use in left
+				self.tello.get_battery()
+			except:
+				pass
 
 			frame = frame_read.frame
 
-			#Undistortion --Uncomment for tello-001
+			# Undistortion --Uncomment for tello-001
 			#frame = undistort(frame)
 
 			# QR-codes detect
 			k = cv2.waitKey(1) & 0xFF
 
 			if k == ord("m"):
+				
+				if go_up or go_down:
+					vertical_motion = True
+				else:
+					vertical_motion = False
 
+				##################################### NOT SURE ON THIS tho, Loses tracking perhaps
+				#if not vertical_motion:
+				#print("No vertical motion, tracking")
+				
+				initial_no_of_frames = trav1.num_text_frames
+				if vertical_motion:
+					trav1.run_updown(frame)  # Use in left
+				else:
+					trav1.run(frame)  # Use in left
+				cv2.destroyWindow("dst")
+				print("text_frames_detected: " + str(trav1.num_text_frames))
+
+				if ((trav1.num_text_frames - initial_no_of_frames) > 0) and align_without_QR:
+					align_without_QR = False
+
+				if trav1.num_text_frames == 3:              # NO. of shelves in one row # 4
+					self.should_stop = True
+					print("Finished")
+					break
+
+				rectangle_without_QR = trav1.detect_only_rectangle(frame)
+
+				## TEXT box detection and position correction
+				"""
 				if should_correct_pos == True:
 					print("Correcting.....")
 					rcOut, output = self.correct_pos(frame)
 					cv2.imshow("Results", output)
 					self.tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
 					# BREAK STATEMENT
-					if rcOut[1] == 0:
+					if int(rcOut[1]) == 0:
 						num_corrections += 1		# Increase num_corrections by one for "NO Deflection"
 					if num_corrections == 3:		# Break when 3 correct predictions
 						num_corrections = 0			# num_corrections reset
 						should_correct_pos = False	
+					continue
+				"""
+
+				# Use in left -->
+				## Text Box detection from coloured frames
+				if should_correct_pos == True:
+
+					self.align_rect.run()
+					print("exited align_rect")
+					self.align_rect.clear()
+					should_correct_pos = False
+					continue
+
+				# leftleft
+				if go_up:
+					print("up")
+					if (self.tello.get_h() - start_height) > 75:
+						go_up = False
+						go_down = True
+						cv2.imshow("Results",frame)
+						continue
+					check = self.go_up(frame, qrprev_list)
+					if not check or trav1.detect_only_rectangle(frame):
+						go_up = False
+						go_down = True
+						cv2.imshow("Results",frame)
+						continue
+					#self.rcOut = [0, 0, 10, 0]
+					self.tello.send_rc_control(0, 0, 20, 0)
+					cv2.imshow("Results",frame)
+					continue
+
+				if go_down:
+					print("down")
+					#if self.tello.get_h() <= start_height and trav1.detect_only_rectangle(frame):
+					if self.tello.get_h() <= start_height:
+						go_down = False
+						#trav1.num_text_frames = trav1.num_text_frames-1
+						should_correct_pos = True
+						continue
+
+					#self.rcOut = [0, 0, -10, 0]
+					self.tello.send_rc_control(0, 0, -20, 0)
+					cv2.imshow("Results",frame)
 					continue
 
 				print("m printing")
@@ -597,30 +713,30 @@ class warehouse_L:
 
 				print("intersection: "+str(ret_val))
 
-				if qrpoints != [] and self.hover_time < 5 and ret_val == 1:	 # If QR detected, detect TEXT
+				if qrpoints != [] and self.hover_time < 3 and ret_val == 1:	 # If QR detected, detect TEXT
 
 					frame = frame_1
 					print(qrlist)
-					self.rcOut = [0,0,0,0]
+					self.rcout = [0,0,0,0]
 					
 					if self.reached_qrcode == 0:
 						self.reached_qrcode=1
 						print("New QRs found")
-					
+
 					frame, check_text, txt_corners = self.find_text_and_write(frame, qrlist, qrpoints)
 					
 					if check_text == 0:
-						self.rcOut = [-5,0,0,0]
+						self.rcout = [-5,0,0,0]
 						print("text not found")
-						self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
+						self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))
 						cv2.imshow("Results",frame)
 						continue
 
 					if check_text == 2:
 						# move until further code is detected.
-						self.rcOut = [-5,0,0,0]
+						self.rcout = [-5,0,0,0]
 						print("text and QR in different Shelves")
-						self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
+						self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))
 						cv2.imshow("Results",frame)
 						continue
 
@@ -628,9 +744,10 @@ class warehouse_L:
 					self.hover_time = self.hover_time + time.time() - start_time 
 
 				
-				elif self.hover_time > 5:
+				elif self.hover_time > 3:
 					print("hover time: "+str(self.hover_time))
-					self.rcOut = [-25,0,0,0]
+
+					self.rcout = [-25,0,0,0]
 					
 					check_qr_num += 1
 					
@@ -639,52 +756,77 @@ class warehouse_L:
 					qrprev_list = qrlist
 					
 					print("exceeded time")
-					if check_qr_num == 2:	# Since, ONLY 2 Shelves in experimental setup
-						self.tello.land()
-						break
+					#if check_qr_num == 2:	# Since, ONLY 2 Shelves in experimental setup
+					#	self.tello.land()
+					#	break
+
+					# leftleft
+					start_height = self.tello.get_h()
+					go_up = True
+					
+
+					should_correct_pos = True  # Use in left
+
+				elif rectangle_without_QR and not align_without_QR:
+
+					should_correct_pos = True  # Use in left
+					align_without_QR = True
+					print("No QR, ONLY text")
 
 				else:
 					total_time = total_time + time.time() - start_time
-					if total_time > 5:              
-						should_correct_pos = True   			   ## Just ONCE every time this distance is reached
-						total_time = 0
-					self.rcOut = [-10,0,0,0]
+					#if total_time > 5:              
+					#	should_correct_pos = True   			   ## Just ONCE every time this distance is reached
+					#	total_time = 0
+					self.rcout = [-20,0,0,0]
 					self.reached_qrcode = 0
 					self.hover_time= 0
+		
+			elif k == ord("t"):  # Use in left
+				try:
+					self.tello.takeoff()
+				except:
+					print("takeoff done")
+				time.sleep(2)
 
-			elif k == ord("t"):
-				self.tello.takeoff()
 			elif k == ord("l"):
 				self.tello.land()
 			elif k == ord("w"):
-				self.rcOut[1] = 50
+				# front
+				self.rcout[1] = 50
 			elif k == ord("a"):
-				self.rcOut[0] = -50
+				# left
+				self.rcout[0] = -50
 			elif k == ord("s"):
-				self.rcOut[1] = -50
+				# back
+				self.rcout[1] = -50
 			elif k == ord("d"):
-				self.rcOut[0] = 50
+				# right
+				self.rcout[0] = 50
 			elif k == ord("u"):
-				self.rcOut[2] = 50
+				# up
+				self.rcout[2] = 50
 			elif k == ord("j"):
-				self.rcOut[2] = -50
+				# down
+				self.rcout[2] = -50
 			elif k == ord("c"):
-				self.rcOut[3] = 50
+				self.rcout[3] = 50
 			elif k == ord("v"):
-				self.rcOut[3] = -50
+				self.rcout[3] = -50
 			elif k == ord("q"):
 				self.f.close()
+				self.f1.close()
 				self.tello.land()
 				print("file closed")
 				break
 
 			cv2.imshow("Results",frame)
-			self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
-			self.rcOut = [0,0,0,0]
+			self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))
+			self.rcout = [0,0,0,0]
 			print("FPS: ", 1.0 / (time.time() - start_time))
 
 		self.f.close()
-		
+		self.f1.close()
 
 
 
