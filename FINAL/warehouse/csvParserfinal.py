@@ -54,7 +54,7 @@ def parser1():
 
 	out = 'output.csv'
 
-	with open(out,'w') as outfile:
+	with open(out,'a+') as outfile:
 		write = csv.writer(outfile)
 
 		for qr in qr_actual:
