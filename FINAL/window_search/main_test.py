@@ -13,13 +13,13 @@ from orient_yaw import Orient as orient
 
 class starting(object):
 
-    def __init__(self):
+    def __init__(self,tello):
 
-        self.tello = Tello()
+        self.tello = tello
         # self.joy = xbox.Joystick()
-        self.tello.connect()
-        self.tello.streamoff()
-        self.tello.streamon()
+        # self.tello.connect()
+        # self.tello.streamoff()
+        # self.tello.streamon()
         # print("nooooooooo")
 
         self.left_right = left_right(self.tello)
@@ -50,7 +50,7 @@ class starting(object):
 
             # else:
         initial_yaw = self.tello.get_yaw()
-        while(True):
+        while(self.right<2):
             # print("yooooo")
             print("now in up down wali class")
             self.trig = self.up_down.run()
@@ -61,11 +61,18 @@ class starting(object):
             if(self.trig==1):
                 if(self.tello.get_h()>180):
                     self.up = 1
-                    return self.up,self.right
+                    return self.up,self.right,1
             else:
                 print("mow in left right wali class")
                 self.right = self.left_right.run(self.right)
                 self.left_right.clear()
+
+
+
+        return 0,2,0
+
+            # if(self.right>3):
+
 
             # print("adgfduasjdjjdahgvafshjskssgvhjxjnvvdh")
             # self.right = self.left_right.run(self.right)
@@ -88,8 +95,12 @@ class starting(object):
 
 def main():
     print("now i am gonna start the mission")
-    start = starting()
-    a,b = start.run()
+    tello = Tello()
+    tello.connect()
+    tello.streamoff()
+    tello.streamon()
+    start = starting(tello)
+    a,b,c = start.run()
     print("UP is {} and right is {}".format(a,b))
 
 if __name__ == '__main__':

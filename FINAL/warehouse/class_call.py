@@ -25,5 +25,10 @@ class warehouse_overall:
 		parserdash()
 		parser2()
 
+	def clear(self):
+		self.txt_R = warehouse_R(tello)
+		self.txt_L = warehouse_L(tello)
+
+
 
 		

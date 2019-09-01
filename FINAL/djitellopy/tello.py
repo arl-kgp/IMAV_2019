@@ -84,7 +84,7 @@ class Tello:
         in order to not block the main thread."""
         while True:
             try:
-                self.response, _ = self.clientSocket.recvfrom(256)  # buffer size is 1024 bytes
+                self.response, _ = self.clientSocket.recvfrom(1024)  # buffer size is 1024 bytes
             except Exception as e:
                 self.LOGGER.error(e)
                 break
@@ -102,23 +102,17 @@ class Tello:
         """Call this function to attain the states of Tello"""
         if self.response_state == 'ok':
             return False
-            # print(self.response_state)
-            # print(self.response_state.decode('ASCII'))
         else:
-            try:
-                return self.response_state.decode('ASCII')
-            except:
-                print("Exception in getting initial state only")
-                return 0
+            return self.response_state.decode('ASCII')
 
     def get_pitch(self):
         if self.response_state == 'ok':
             return False
         else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
             try:
-                response = self.get_current_state_all()
-                response = response.replace(';',':')
-                response = response.split(':')
                 return float(response[1])
             except:
                 print("Exception in pitch occured")
@@ -128,10 +122,10 @@ class Tello:
         if self.response_state == 'ok':
             return False
         else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
             try:
-                response = self.get_current_state_all()
-                response = response.replace(';',':')
-                response = response.split(':')
                 return float(response[3])
             except:
                 print("Exception in roll occured")
@@ -141,10 +135,10 @@ class Tello:
         if self.response_state == 'ok':
             return False
         else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
             try:
-                response = self.get_current_state_all()
-                response = response.replace(';',':')
-                response = response.split(':')
                 return float(response[5])
             except:
                 print("Exception in yaw occured")
@@ -154,10 +148,10 @@ class Tello:
         if self.response_state == 'ok':
             return False
         else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
             try:
-                response = self.get_current_state_all()
-                response = response.replace(';',':')
-                response = response.split(':')
                 return float(response[7])
             except:
                 print("Exception in velocity in x occured")
@@ -167,10 +161,10 @@ class Tello:
         if self.response_state == 'ok':
             return False
         else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
             try:
-                response = self.get_current_state_all()
-                response = response.replace(';',':')
-                response = response.split(':')
                 return float(response[9])
             except:
                 print("Exception in velocity in y occured")
@@ -180,10 +174,10 @@ class Tello:
         if self.response_state == 'ok':
             return False
         else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
             try:
-                response = self.get_current_state_all()
-                response = response.replace(';',':')
-                response = response.split(':')
                 return float(response[11])
             except:
                 print("Exception in velocity in z occured")
@@ -193,10 +187,10 @@ class Tello:
         if self.response_state == 'ok':
             return False
         else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
             try:
-                response = self.get_current_state_all()
-                response = response.replace(';',':')
-                response = response.split(':')
                 return float(response[27])
             except:
                 print("Exception in acceleration in x")
@@ -206,10 +200,10 @@ class Tello:
         if self.response_state == 'ok':
             return False
         else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
             try:
-                response = self.get_current_state_all()
-                response = response.replace(';',':')
-                response = response.split(':')
                 return float(response[29])
             except:
                 print("Exception in acceleration in y")
@@ -219,10 +213,10 @@ class Tello:
         if self.response_state == 'ok':
             return False
         else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
             try:
-                response = self.get_current_state_all()
-                response = response.replace(';',':')
-                response = response.split(':')
                 return float(response[31])
             except:
                 print("Exception in acceleration in z")
@@ -232,10 +226,10 @@ class Tello:
         if self.response_state == 'ok':
             return False
         else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
             try:
-                response = self.get_current_state_all()
-                response = response.replace(';',':')
-                response = response.split(':')
                 return float(response[19])
             except:
                 print("Exception in height")
@@ -245,10 +239,10 @@ class Tello:
         if self.response_state == 'ok':
             return False
         else:
+            response = self.get_current_state_all()
+            response = response.replace(';',':')
+            response = response.split(':')
             try:
-                response = self.get_current_state_all()
-                response = response.replace(';',':')
-                response = response.split(':')
                 return float(response[21])
             except:
                 print("Exception in battery")

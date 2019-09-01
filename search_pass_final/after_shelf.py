@@ -194,15 +194,12 @@ class FrontEnd(object):
 
     def clear():
         
-        # self.cap = cv2.VideoCapture(0)
         self.tracker = cv2.TrackerKCF_create()
         # self.tracker = cv2.CSRT_create()
         self.rcOut = np.zeros(4)
         self.bbox = (5,5,20,20)
 
         self.trigger = 0
-        self.trigger_init_start = 0
-
         self.trigger_init = 0
 
         self.ar = 0
@@ -211,11 +208,10 @@ class FrontEnd(object):
         self.ARqueue = np.zeros((7,1))
         self.ARvar = np.array([0])
 
-        self.lost = 0
+        self.lost = 0 
 
-        self.visible = 0
 
-        self.align_rect = align_rect(self.tello)   
+        self.visible = 0     
 
 
     def manualRcControl(self,key):

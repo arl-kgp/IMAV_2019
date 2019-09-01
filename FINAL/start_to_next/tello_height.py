@@ -22,6 +22,10 @@ def goto_height(tello, Height):
     off = False
     while not should_stop:
 
+
+        # gray = cv2.cvtColor(frame2use, cv2.COLOR_BGR2GRAY)
+        
+        #FindPose(result,K_inv)
         rcOut = [0,0,0,0]
         h = tello.get_h()
      
@@ -31,7 +35,8 @@ def goto_height(tello, Height):
             rcOut[2] = int((Height - h) * 0.5)
         elif abs(Height- h) <= 15 :
             return
-            
+
+
         print(h-Height)
         try:
             tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
