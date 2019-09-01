@@ -38,9 +38,12 @@ class starting(object):
         self.align_initial.run()
         print("Now have aligned in front of first frame")
         self.skip_first.run()
+        self.skip_first.clear()
         print("skipped the first frame")
         self.align_next.run()
         print("Now have aligned in front of second frame")
+        self.skip_first.run()
+        self.skip_first.clear()
 
         # go more distance now
 

@@ -8,7 +8,7 @@ import imutils as im
 from left_right import FrontEnd as left_right
 from up_down import FrontEnd as up_down
 from passFrmWindow import FrontEnd as passWin
-# from after_shelf import FrontEnd as after
+from after_shelf import FrontEnd as after
 
 class starting(object):
 
@@ -36,14 +36,24 @@ class starting(object):
             self.trig, self.up = self.up_down.run()   #up down return two values
             self.up_down.clear()
 
-            if(self.trig == 0):
-                self.right = self.left_right.run(self.right)   #left right returns only one value
-                self.left_right.clear()
-
             if(self.trig == 1):
-                self.passing.run()
-                # self.after.run(self.up,self.right)
+                if(self.tello.get_h()>180):
+                    self.up = 1
                 break
+
+            else:
+                self.right = self.left_right.run(self.right)
+
+            # if(self.trig == 0):
+            #     self.right = self.left_right.run(self.right)   #left right returns only one value
+            #     self.left_right.clear()
+
+            # if(self.trig == 1):
+            #     self.passing.run()
+            #     self.after.run(self.up,self.right)
+            #     break
+
+        self.after.run(self.up,self.right)
 
         self.tello.land()
         print("Ended")

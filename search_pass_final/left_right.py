@@ -4,6 +4,8 @@ import numpy as np
 import time
 import imutils as im
 
+from align_rect import FrontEnd as align_rect
+
 font = cv2.FONT_HERSHEY_COMPLEX
 
 class FrontEnd(object):
@@ -13,7 +15,8 @@ class FrontEnd(object):
         # self.tello = Tello()
 
         self.cap = cv2.VideoCapture(0)
-        self.tracker = cv2.TrackerMedianFlow_create()
+        self.tracker = cv2.TrackerKCF_create()
+        # self.tracker = cv2.CSRT_create()
         self.rcOut = np.zeros(4)
         self.bbox = (5,5,20,20)
 
@@ -27,6 +30,8 @@ class FrontEnd(object):
         self.ARvar = np.array([0])
 
         self.lost = 0
+
+        self.align_rect = align_rect(self.tello)
 
     def run(self,right):
 
@@ -50,34 +55,68 @@ class FrontEnd(object):
                     
                     rect = self.get_coordinates(mask,dst)
                     if(rect[0][0] == 0):
+                        print("rectangle pehle nhi mila")
                         continue
                     else:
                         print("hahahah")
                         self.trigger_init = 1
 
-                if self.trigger_init == 1:
+                print(self.trigger_init)
 
-                    ok = self.start_tracking(rect,mask)
+             # dikha toh uske saamne align kra, ho gya to tracking wala part start kr dia.
+
+                if self.trigger_init == 1:  # now align in front
+
+                    self.align_rect.run()
+                    print("align ho gya hai ab toh")
+                    # print(self.trigger_init)
                     self.trigger_init = 2
+                    # print(self.trigger_init)
+                    self.align_rect.clear()
 
-                if self.trigger_init == 2:
+
+                if self.trigger_init == 2:  # now start tracking
+                    # cv2.rectangle(dst,rect[0],rect[2],(255,255,255),3)
+
+                    ok = self.start_tracking(rect,dst)
+                    self.trigger_init = 3
+
+                if self.trigger_init == 3:   # now update tracking
             
-                    self.track(mask)
+                    self.track(dst)
                     if self.trigger == 1:
-                        right = right + 1
-                        should_stop = True
-                        # self.tello.land()
-                        # self.tello.end()
-                        return right
+                        self.trigger_init = 4
+                        self.trigger = 0
+
+                if self.trigger_init == 4:
+                    rect = self.get_coordinates(mask,dst)
+                    print("searching for new rectangle now")
+                    if(rect[0][0] == 0):
+                        self.rcOut[0] = 20
+                        self.rcOut[1] = 0
+                        self.rcOut[2] = 0
+                        self.rcOut[3] = 0
+                    else:
+                        print("ahhhahahah")
+                        self.trigger_init = 5
+
+                if self.trigger_init == 5:
+                    print("ab phirse align kro")
+                    self.align_rect.run()
+                    right = right + 1
+                    should_stop = True
+                    self.align_rect.clear()
+                    return right
 
             else:
                 self.manualRcControl(key)
 
             self.sendRcControl()
 
-    def clear():
+    def clear(self):
         
-        self.tracker = cv2.TrackerMedianFlow_create()
+        self.tracker = cv2.TrackerKCF_create()
+        # self.tracker = cv2.CSRT_create()
         self.rcOut = np.zeros(4)
         self.bbox = (5,5,20,20)
 
@@ -183,6 +222,21 @@ class FrontEnd(object):
 
         return maskSab
 
+    # def getRectMask(self,frame):
+
+    #     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    #     # define range of blue color in HSV
+    #     lower_blue = np.array([98,79,78])
+    #     upper_blue = np.array([128,245,169])
+
+    #     # Threshold the HSV image to get only blue colors
+    #     mask = cv2.inRange(hsv, lower_blue, upper_blue)
+    #     cv2.imshow("mask",mask)
+
+    #     return mask
+
+
 
     def order_points(self, pts):
 
@@ -222,7 +276,7 @@ class FrontEnd(object):
             approx = cv2.approxPolyDP(cnt, 0.012*cv2.arcLength(cnt, True), True) # 0.012 param
             x = approx.ravel()[0]
             y = approx.ravel()[1]
-            arSet = 0.8
+            arSet = 0.4  #change krde for different sizes
             if area > 300:#param
 
                 if len(approx) == 4:
@@ -233,7 +287,7 @@ class FrontEnd(object):
                     hull_area = cv2.contourArea(hull)
                     solidity = float(area)/hull_area
 
-                    condition = ar < 1 and ar > arSet
+                    condition = ar < 0.6 and ar > arSet #change for different rrect size
                     if solidity > 0.9 and condition:
 
                         self.ar = ar
@@ -269,12 +323,12 @@ class FrontEnd(object):
         ok, self.bbox = self.tracker.update(frame)
 
         if ok:
-            # p1 = (int(self.bbox[0]), int(self.bbox[1]))
-            # p2 = (int(self.bbox[0]+ self.bbox[2]), int(self.bbox[1]+self.bbox[3]))
-            # cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
-            # cv2.imshow("with frame",frame)
+            p1 = (int(self.bbox[0]), int(self.bbox[1]))
+            p2 = (int(self.bbox[0]+ self.bbox[2]), int(self.bbox[1]+self.bbox[3]))
+            cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
+            cv2.imshow("with frame",frame)
             print("still visible")
-            self.rcOut[0] = 30
+            self.rcOut[0] = 20
             self.rcOut[1] = 0
             self.rcOut[2] = 0
             self.rcOut[3] = 0
@@ -283,9 +337,9 @@ class FrontEnd(object):
 
         else:
             print("LOST")
-            self.lost +=1
-            if(self.lost>15):
-                self.trigger = 1
+            # self.lost +=1
+            # if(self.lost>10):
+            self.trigger = 1
 
 def main():
     tello = Tello()

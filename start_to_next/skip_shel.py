@@ -12,8 +12,9 @@ class FrontEnd(object):
         self.tello = tello
         # self.tello = Tello()
 
-        self.cap = cv2.VideoCapture(0)
-        self.tracker = cv2.TrackerMedianFlow_create()
+        # self.cap = cv2.VideoCapture(0)
+        self.tracker = cv2.TrackerKCF_create()
+        # self.tracker = cv2.CSRT_create()
         self.rcOut = np.zeros(4)
         self.bbox = (5,5,20,20)
 
@@ -27,6 +28,25 @@ class FrontEnd(object):
         self.ARvar = np.array([0])
 
         self.lost = 0
+
+    def clear(self):
+
+        self.tracker = cv2.TrackerKCF_create()
+        # self.tracker = cv2.CSRT_create()
+        self.rcOut = np.zeros(4)
+        self.bbox = (5,5,20,20)
+
+        self.trigger = 0
+        self.trigger_init = 0
+
+        self.ar = 0
+
+        self.ARmean = np.array([0])
+        self.ARqueue = np.zeros((7,1))
+        self.ARvar = np.array([0])
+
+        self.lost = 0
+
 
     def run(self):
         
@@ -262,10 +282,10 @@ class FrontEnd(object):
         ok, self.bbox = self.tracker.update(frame)
 
         if ok:
-            # p1 = (int(self.bbox[0]), int(self.bbox[1]))
-            # p2 = (int(self.bbox[0]+ self.bbox[2]), int(self.bbox[1]+self.bbox[3]))
-            # cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
-            # cv2.imshow("with frame",frame)
+            p1 = (int(self.bbox[0]), int(self.bbox[1]))
+            p2 = (int(self.bbox[0]+ self.bbox[2]), int(self.bbox[1]+self.bbox[3]))
+            cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
+            cv2.imshow("with frame",frame)
             print("still visible")
             self.rcOut[0] = 30
             self.rcOut[1] = 0
@@ -276,9 +296,9 @@ class FrontEnd(object):
 
         else:
             print("LOST")
-            self.lost +=1
-            if(self.lost>15):
-                self.trigger = 1
+            # self.lost +=1
+            # if(self.lost>15):
+            self.trigger = 1
 
 def main():
     tello = Tello()

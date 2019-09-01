@@ -131,9 +131,6 @@ class FrontEnd(object):
                 self.tello.land()
                 Height = 100
 
-            if key == ord('q'):
-                break
-
             time.sleep(1 / FPS)
 
         # Call it always before finishing. I deallocate resources.
