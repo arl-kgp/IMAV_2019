@@ -23,12 +23,15 @@ class starting(object):
         self.skip_first = skip_first(self.tello)
         self.align_next = align_initial(self.tello)
 
-        self.height = 150
+        self.height = 90
 
     def run(self,init_yaw):
 
         # takeoff
-        # self.tello.takeoff()
+        # try:
+        #     self.tello.takeoff()
+        # except:
+        #     pass
         # time.sleep(2)
 
         self.orient.orient(init_yaw)
@@ -54,6 +57,8 @@ class starting(object):
         # self.skip_first.clear()
 
         # go more distance now
+        self.tello.move_right(80)
+        self.tello.rotate_counter_clockwise(90)
 
         # do warehouse
 
@@ -62,8 +67,8 @@ class starting(object):
         # 
 
 
-        self.tello.land()
-        print("Ended")
+        # self.tello.land()
+        # print("Ended")
 
 def main():
     print("now i am gonna start the mission")
@@ -72,7 +77,7 @@ def main():
     tello.streamoff()
     tello.streamon()
     start = starting(tello)
-    start.run()
+    start.run(100)
 
 if __name__ == '__main__':
     main()

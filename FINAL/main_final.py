@@ -45,7 +45,11 @@ class hoohah(object):
     def run(self):
         trig = 0
 
-        self.tello.takeoff()
+        try:
+            self.tello.takeoff()
+        except:
+            print("Ab toh takeoff ho gya lol")
+            
         time.sleep(2)
 
         self.starting.run(self.initial_yaw)
