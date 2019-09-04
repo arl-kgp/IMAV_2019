@@ -44,6 +44,8 @@ class warehouse_R:
 
 		self.align_rect = align_rect(self.tello)
 
+		self.yaw = self.tello.get_yaw()
+
 
 	def text_better(self,text):
 		list1 = list(text)
@@ -574,6 +576,8 @@ class warehouse_R:
 
 	def scan(self):
 
+		self.yaw = self.tello.get_yaw()
+
 		total_time = 0
 		#cv2.namedWindow('Results',cv2.WINDOW_NORMAL)
 		qrprev_list = []                                   # For comparing with newer qr-codes from next shelf
@@ -669,7 +673,7 @@ class warehouse_R:
 				## Text Box detection from coloured frames
 				if should_correct_pos == True:
 
-					self.align_rect.run()
+					self.align_rect.run(self.yaw)
 					print("exited align_rect")
 					self.align_rect.clear()
 					should_correct_pos = False
@@ -682,13 +686,14 @@ class warehouse_R:
 				# leftleft
 				if go_up:
 					print("up")
-					if (self.tello.get_h() - start_height) > 75:
+					present_height = self.tello.get_h()
+					if (present_height - start_height) > 75:
 						go_up = False
 						go_down = True
 						cv2.imshow("Results",frame)
 						continue
 					check = self.go_up(frame, qrprev_list)
-					if not check or trav1.detect_only_rectangle(frame):
+					if (not check or trav1.detect_only_rectangle(frame)) and (present_height-start_height)>40:
 						go_up = False
 						go_down = True
 						cv2.imshow("Results",frame)
@@ -752,7 +757,7 @@ class warehouse_R:
 				elif self.hover_time > 3:
 					print("hover time: "+str(self.hover_time))
 
-					self.rcout = [25,0,0,0]
+					self.rcout = [15,0,0,0]
 					
 					check_qr_num += 1
 					
@@ -783,7 +788,7 @@ class warehouse_R:
 					#if total_time > 5:              
 					#	should_correct_pos = True   			   ## Just ONCE every time this distance is reached
 					#	total_time = 0
-					self.rcout = [20,0,0,0]
+					self.rcout = [15,0,0,0]
 					self.reached_qrcode = 0
 					self.hover_time= 0
 		

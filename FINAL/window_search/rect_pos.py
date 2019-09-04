@@ -4,12 +4,12 @@ import numpy as np
 class detect(object):
 
     def __init__(self):
-        self.h_low = 86
-        self.h_high = 121
-        self.s_low = 78
+        self.h_low = 72
+        self.h_high = 141
+        self.s_low = 62
         self.s_high = 255
-        self.v_low = 122
-        self.v_high = 234    
+        self.v_low = 90
+        self.v_high = 248    
         self.trig = 0   
 
     def run(self,frame):
@@ -20,7 +20,7 @@ class detect(object):
 
         # Threshold the HSV image to get only blue colors
         mask = cv2.inRange(hsv, lower_blue, upper_blue)
-
+        cv2.imshow("mask",mask)
         # Bitwise-AND mask and original image
         res = cv2.bitwise_and(frame,frame, mask= mask)
 

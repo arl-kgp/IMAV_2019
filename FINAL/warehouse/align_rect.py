@@ -6,6 +6,8 @@ import numpy as np
 import time
 import imutils as im
 
+from orient_yaw import Orient as orient
+
 # Speed of the drone
 S = 60
 # Frames per second of the pygame window display
@@ -69,10 +71,16 @@ class FrontEnd(object):
         self.alnFlowFlag = 0
         self.alnFlowFlag2 = 0
 
+        self.centerCounter = 0
+        self.c = 0
         # self.telloPose = np.array([])
             # self.telloEulerAngles = EulerAngles
 
-    def run(self):
+        self.orient = orient(self.tello)
+
+    def run(self,yaw):
+
+        self.orient.orient(yaw)
 
         frame_read = self.tello.get_frame_read()
         print("reached align_rect")
@@ -81,6 +89,7 @@ class FrontEnd(object):
 
         Height = 100
         i=0
+        # yaw = self.tello.get_yaw()
         while not should_stop:
             print(i)
             i=i+1
@@ -92,7 +101,7 @@ class FrontEnd(object):
 
             trigger = self.stateTrigger(key,"p")
             if key == ord("m"):
-                self.takeoffToShelf(trigger,key,mask,dst)
+                self.takeoffToShelf(trigger,key,mask,dst,yaw)
             else :
                 self.manualRcControl(key)
                 pass
@@ -126,14 +135,14 @@ class FrontEnd(object):
         # Call it always before finishing. I deallocate resources.
         # self.tello.end()
 
-    def takeoffToShelf(self,trigger,key,mask,dst):
+    def takeoffToShelf(self,trigger,key,mask,dst,yaw):
         frameH,frameW,arSet = 10,20,0.4
         cv2.imshow("msk",mask)
         self.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
         self.manualRcControl(key)
         trig = self.slideAndSearchRect(key)
         trig = self.interMtrigger(trig)
-        trig = self.algnToFrame(trig,key)
+        trig = self.algnToFrame(trig,key,yaw)
         # print "Trigger",trig
         trig = self.interMtrigger3(trig)
         # self.algToSqr(trig,key)
@@ -254,18 +263,18 @@ class FrontEnd(object):
         return trigger
 
     
-    def algnToFrame(self,val,key):
+    def algnToFrame(self,val,key,yaw):
         # print "key",key,"Flag",self.alnFlowFlag
         if val == 1:
             self.alnFlowFlag = 1
             self.cntErNrm = 0
-            # print "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
             
         if self.alnFlowFlag == 1:
+            # print ("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
             # print "ya1"
             # print "self.cntErNrm",self.cntErNrm
 
-            if self.cntErNrm > 10 or self.cntErNrm ==0:
+            if self.cntErNrm > 18 or self.cntErNrm ==0:
                 # print "Norm ",self.cntErNrm
                 
                 self.PoseController(key,30,0,0,0.35)
@@ -279,7 +288,7 @@ class FrontEnd(object):
                 # print "ya3"
                 self.alnFlowFlag = 0
                 return 0
-            if self.cntErNrm < 10 and self.cntErNrm != 0:
+            if self.cntErNrm < 18 and self.cntErNrm != 0:
                 self.alnFlowFlag = 0
                 # print "self.cntErNrm",self.cntErNrm
                 
@@ -291,9 +300,10 @@ class FrontEnd(object):
                 # print "ya5"
                 return 0 
         else:
-            if self.cntErNrm < 10 and self.cntErNrm != 0:
+            if self.cntErNrm < 18 and self.cntErNrm != 0:
                 # print "self.cntErNrm",self.cntErNrm
                 # print "ya6"
+                self.orient.orient(yaw)
                 return 1
             else:
                 # print "ya5"
@@ -441,6 +451,8 @@ class FrontEnd(object):
                             
                             Pose = self.PoseEstimation(rect,frameH,frameW)
                             if self.PoseFlag == 1:
+                                self.c = 1
+                                self.centerCounter = 0
                                 # print "PoseFlag",self.PoseFlag
                                 self.telloPose = np.transpose(Pose)
 
@@ -452,12 +464,14 @@ class FrontEnd(object):
                                 # print "PoseQueue",self.poseQueue
                                 # print "PoseMean",self.telloPoseMean
                                 # print "telloPoseVariance" , self.telloPoseVariance
-                            else:
-                                pass
-
                             varN = np.linalg.norm(self.telloPoseVariance)
-                            # print "varN",varN
                         oldArea =area
+                    else:
+                        if self.c == 1:
+                            self.centerCounter = self.centerCounter + 1
+                            # print "frameCenter",self.frameCenter 
+                            # print "centerCounter",self.centerCounter  
+
         cv2.imshow("Frame", frame)
         #cv2.imshow("Mask", mask)
 

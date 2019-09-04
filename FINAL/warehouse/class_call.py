@@ -4,21 +4,34 @@ from class_FtextR_final import warehouse_R
 from class_FtextL_final import warehouse_L
 from csvParserfinal import *
 from tello_height import *
+from orient_yaw import Orient as orient
 
 class warehouse_overall:
 	def __init__(self, tello):
 		self.tello = tello
 		self.txt_R = warehouse_R(tello)
 		self.txt_L = warehouse_L(tello)
+		self.orient = orient(self.tello)
 
 	def algo(self):
+
+		goto_height(self.tello,170)
+
+		yaw = self.tello.get_yaw()
 		
-		self.txt_R.scan()
-		#h = self.tello.get_h()
+		self.txt_R.scan(yaw)
+		h = self.tello.get_h()
 		# GO_down_1.5m
-		#goto_height(self.tello, h - 150)
+
+		self.orient.orient(yaw)
+
+		goto_height(self.tello, h - 150)
+
+		self.orient.orient(yaw)
 		
-		#self.txt_L.scan()
+		self.txt_L.scan(yaw)
+
+		self.orient.orient(yaw)
 		# GO_up_1.5m
 
 		parser1()
@@ -26,8 +39,8 @@ class warehouse_overall:
 		parser2()
 
 	def clear(self):
-		self.txt_R = warehouse_R(tello)
-		self.txt_L = warehouse_L(tello)
+		self.txt_R = warehouse_R(self.tello)
+		self.txt_L = warehouse_L(self.tello)
 
 
 

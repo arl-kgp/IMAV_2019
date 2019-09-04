@@ -138,11 +138,5 @@ def parser2():
 		for line in filez:
 			outFileza.write(str(line))
 
-with open('outputf.csv', 'r') as tz:
-		filez = tz.readlines()
-		
-with open('output.csv', 'a') as outFileza:
-		for line in filez:
-			outFileza.write(str(line))
 	
 	

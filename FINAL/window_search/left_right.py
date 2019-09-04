@@ -114,6 +114,7 @@ class FrontEnd(object):
                     # self.align_rect.run()
                     right = right + 1
                     should_stop = True
+                    self.rcOut = [0,0,0,0]
                     # self.align_rect.clear()
                     return right
 

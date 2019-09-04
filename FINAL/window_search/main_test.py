@@ -55,13 +55,16 @@ class starting(object):
             print("now in up down wali class")
             self.trig = self.up_down.run()
             self.up_down.clear()
+
             print("now yaw correction started")
             self.orient.orient(initial_yaw)
             # cv2.destroyAllWindows()
+
             if(self.trig==1):
                 if(self.tello.get_h()>180):
                     self.up = 1
                     return self.up,self.right,1
+                    
             else:
                 print("mow in left right wali class")
                 self.right = self.left_right.run(self.right)

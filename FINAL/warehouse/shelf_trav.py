@@ -15,7 +15,7 @@ class FrontEnd(object):
         self.tello = tello
         # self.tello = Tello()
 
-        self.cap = cv2.VideoCapture(0)
+        # self.cap = cv2.VideoCapture(0)
         #self.tracker = cv2.TrackerKCF_create()
         self.tracker = cv2.TrackerKCF_create()
         self.rcOut = np.zeros(4)

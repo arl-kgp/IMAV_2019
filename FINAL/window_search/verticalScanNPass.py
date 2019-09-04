@@ -33,8 +33,6 @@ class FrontEnd(object):
         self.skipLineDetect = detect()
         self.telloEulerAngles = np.zeros((1,3))
 
-        # print("reched 1")
-
         self.rcOut=np.zeros(4)
         
         self.R = np.zeros((3,3))
@@ -57,8 +55,6 @@ class FrontEnd(object):
 
         self.frameCenter = np.zeros((1,2))
 
-        # print("reached 2")
-
 
         # variables for shelf passing
         
@@ -78,9 +74,9 @@ class FrontEnd(object):
         self.trigger_init = 0
 
         # self.cap = cv2.VideoCapture(0)
-        self.tracker = cv2.TrackerMedianFlow_create()
+        # self.tracker = cv2.TrackerMedianFlow_create()
         self.rcOut = np.zeros(4)
-        self.bbox = (5,5,20,20)
+        # self.bbox = (5,5,20,20)
 
         self.trigger = 0
         self.trigger_init = 0
@@ -97,23 +93,17 @@ class FrontEnd(object):
 
         self.flagM1 = 1
         self.flagM2 = 0
-        self.flagM3 = 0
-        self.flagM4 = 0
-        self.flagM5 = 0
-        self.flagM6 = 0
-        self.flagM7 = 0
-
-        # print("reched 3")
-
+        
+        self.centerCounter = 0
+        self.c = 0
 
         # self.telloPose = np.array([])
             # self.telloEulerAngles = EulerAngles
 
     def clear(self):
 
+        self.skipLineDetect = detect()
         self.telloEulerAngles = np.zeros((1,3))
-
-        # print("reched 1")
 
         self.rcOut=np.zeros(4)
         
@@ -137,8 +127,6 @@ class FrontEnd(object):
 
         self.frameCenter = np.zeros((1,2))
 
-        # print("reached 2")
-
 
         # variables for shelf passing
         
@@ -158,9 +146,9 @@ class FrontEnd(object):
         self.trigger_init = 0
 
         # self.cap = cv2.VideoCapture(0)
-        self.tracker = cv2.TrackerMedianFlow_create()
+        # self.tracker = cv2.TrackerMedianFlow_create()
         self.rcOut = np.zeros(4)
-        self.bbox = (5,5,20,20)
+        # self.bbox = (5,5,20,20)
 
         self.trigger = 0
         self.trigger_init = 0
@@ -177,12 +165,9 @@ class FrontEnd(object):
 
         self.flagM1 = 1
         self.flagM2 = 0
-        self.flagM3 = 0
-        self.flagM4 = 0
-        self.flagM5 = 0
-        self.flagM6 = 0
-        self.flagM7 = 0
-
+        
+        self.centerCounter = 0
+        self.c = 0
 
     def run(self):
 
@@ -209,7 +194,9 @@ class FrontEnd(object):
                 if self.flagM2 == 1 and self.passFlag != 2:
                     print ("Module 2")
                     self.algnToLine()
-                    self.passWindow()
+                    ret = self.passWindow()
+                    if ret:
+                        return ret
                 if self.passFlag == 2:
                     print ("Module3 ")
                     t = self.algnToFrameFinal(key,mask,dst)
@@ -253,12 +240,12 @@ class FrontEnd(object):
 
                 self.rcOut[0] = 0
                 self.rcOut[1] = 0
-                self.rcOut[2] = 40                                                                      # changed by parakh
+                self.rcOut[2] = 32 # go up and search line
                 self.rcOut[3] = 0
 
         elif self.lineIsVisible == 1 and self.passFlag ==0:
             Kp = 0.16 # proportional constant
-            setLoc = 30
+            setLoc = 300
             # print "line ki location",self.lineLoc
             err = setLoc - self.lineLoc #error
 
@@ -299,15 +286,21 @@ class FrontEnd(object):
                 self.flag1 = 0
             eTime =  time.time() - self.startTime
             
+            shootTime = 1.5 
             # print "eTime",eTime
-            if eTime < 5: # shoot time
+            if eTime < shootTime: # shoot time
                 # print "ffffffffffffffffffffffffffffffffffffffffffffff"
 
                 self.rcOut[0] = 0
                 self.rcOut[1] = 50
                 self.rcOut[2] = 0
                 self.rcOut[3] = 0
-            elif eTime >5 :
+            elif eTime >shootTime and eTime < (shootTime+0.2):
+                self.rcOut[0] = 0
+                self.rcOut[1] = 0
+                self.rcOut[2] = 0
+                self.rcOut[3] = 0
+            elif eTime > (shootTime+0.2):
                 return 1 # returning 1 for completing the module by passing the rectangle 
                 
 
@@ -368,7 +361,7 @@ class FrontEnd(object):
         else :
             self.rcOut[0] = 0
             self.rcOut[1] = 0
-            self.rcOut[2] = -50 # come down and search                         #changed by parakh
+            self.rcOut[2] = -30 # come down and search
             self.rcOut[3] = 0
 
             return 0
@@ -418,10 +411,12 @@ class FrontEnd(object):
             # print "ya1"
             # print "self.cntErNrm",self.cntErNrm
 
-            if self.cntErNrm > 8 or self.cntErNrm ==0:
+            if self.cntErNrm > 10 or self.cntErNrm ==0:
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,40,0,0,0.55)
+                self.PoseController(key,35,8,8,0.55)
+                if self.centerCounter > 20 and self.centerCounter < 180:
+                    self.rcOut = [0,-20,0,0]
                 self.alnFlowFlag = 1
                 # print "self.cntErNrm",self.cntErNrm
 
@@ -432,7 +427,7 @@ class FrontEnd(object):
                 # print "ya3"
                 self.alnFlowFlag = 0
                 return 0
-            if self.cntErNrm <8 and self.cntErNrm != 0:
+            if self.cntErNrm < 10 and self.cntErNrm != 0:
                 self.alnFlowFlag = 0
                 # print "self.cntErNrm",self.cntErNrm
                 
@@ -444,7 +439,7 @@ class FrontEnd(object):
                 # print "ya5"
                 return 0 
         else:
-            if self.cntErNrm < 8 and self.cntErNrm != 0:
+            if self.cntErNrm < 10 and self.cntErNrm != 0:
                 # print "self.cntErNrm",self.cntErNrm
                 # print "ya6"
                 return 1
@@ -499,11 +494,9 @@ class FrontEnd(object):
 
     def rectifyInputImage(self,frame2use):
 
-
-
 # 0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00
-        K = np.array([[6.870158650712294275e+02,0.000000000000000000e+00,3.679051766481443337e+02],[0.000000000000000000e+00,6.871629191230022116e+02,2.711299621081446389e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
-        dist = np.array([7.969682740110426572e-03,-2.775679368619643483e-01,-2.068145646789100109e-03,-6.024091820982999113e-04,1.032835856194985968e+00])
+        K = np.array([[7.092159469231584126e+02,0.000000000000000000e+00,3.681653710406367850e+02],[0.000000000000000000e+00,7.102890453175559742e+02,2.497677007139825491e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
+        dist = np.array([2.439122447395965926e-02,-1.174125872015051447e-01,-7.226737851943197850e-03,-2.109186754013973528e-03,6.156184110527554987e-01])
         K_inv = np.linalg.inv(K)
 
         h , w = frame2use.shape[:2]
@@ -614,6 +607,8 @@ class FrontEnd(object):
                             
                             Pose = self.PoseEstimation(rect,frameH,frameW)
                             if self.PoseFlag == 1:
+                                self.c = 1
+                                self.centerCounter = 0
                                 # print "PoseFlag",self.PoseFlag
                                 self.telloPose = np.transpose(Pose)
 
@@ -622,15 +617,20 @@ class FrontEnd(object):
 
                                 self.telloPoseVariance = np.var(self.poseQueue,axis=0)
                                 self.telloPoseMean = np.mean(self.poseQueue,axis = 0)
+                                self.frameCenter = [[cx,cy]]
                                 # print "PoseQueue",self.poseQueue
                                 # print "PoseMean",self.telloPoseMean
                                 # print "telloPoseVariance" , self.telloPoseVariance
-                            else:
-                                pass
-
                             varN = np.linalg.norm(self.telloPoseVariance)
-                            # print "varN",varN
                         oldArea =area
+                    else:
+                        if self.c == 1:
+                            self.centerCounter = self.centerCounter + 1
+                            # print "frameCenter",self.frameCenter 
+                            # print "centerCounter",self.centerCounter  
+
+
+                            # print "varN",varN
         # cv2.imshow("Frame", frame)
         # cv2.imshow("Mask", mask)
 
@@ -842,20 +842,9 @@ class FrontEnd(object):
 
 def main():
     tello = Tello()
-
-    if not tello.connect():
-        print("Tello not connected")
-        return
-
-# In case streaming is on. This happens when we quit this program without the escape key.
-    if not tello.streamoff():
-        print("Could not stop video stream")
-        return
-
-    if not tello.streamon():
-        print("Could not start video stream")
-        return
-
+    tello.connect()
+    tello.streamoff()
+    tello.streamon()
     frontend = FrontEnd(tello)
 
     # run frontend

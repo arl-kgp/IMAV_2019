@@ -22,6 +22,8 @@ sys.path.remove(os.path.abspath("/home/carry/IMAV/IMAV_2019/FINAL/window_search"
 
 from after_shelf import FrontEnd as after
 
+from orient_yaw import Orient as orient
+
 Out_of_bounds = False
 
 class hoohah(object):
@@ -40,7 +42,7 @@ class hoohah(object):
 
         self.after = after(self.tello)
 
-
+        self.orient = orient(self.tello)
 
     def run(self):
         trig = 0
@@ -52,11 +54,19 @@ class hoohah(object):
             
         time.sleep(2)
 
-        self.starting.run(self.initial_yaw)
+        # self.starting.run(self.initial_yaw)
 
-        self.warehouse.algo()
+        # yaw = self.tello.get_yaw()
 
-        self.warehouse.clear()
+        # self.warehouse.algo(yaw)
+
+        # self.orient.orient(yaw)
+
+        # self.warehouse.clear()
+
+        self.tello.move_right(40)
+
+        print("have moved right")
 
         while(trig == 0):
 
@@ -66,15 +76,16 @@ class hoohah(object):
 
         trig = 0
 
-        self.warehouse.algo()
 
-        self.warehouse.clear()
+        # self.warehouse.algo()
 
-        while(trig == 0):
+        # self.warehouse.clear()
 
-            up, left, trig = self.rect_pass.run()
+        # while(trig == 0):
 
-            self.after.run(left,up)
+        #     up, left, trig = self.rect_pass.run()
+
+        #     self.after.run(left,up)
 
         self.tello.land()
         print("Ended")
