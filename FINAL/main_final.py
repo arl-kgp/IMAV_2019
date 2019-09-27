@@ -56,13 +56,13 @@ class hoohah(object):
 
         # self.starting.run(self.initial_yaw)
 
-        # yaw = self.tello.get_yaw()
+        yaw = self.tello.get_yaw()
 
-        # self.warehouse.algo(yaw)
+        self.warehouse.algo(yaw)
 
-        # self.orient.orient(yaw)
+        self.orient.orient(yaw)
 
-        # self.warehouse.clear()
+        self.warehouse.clear()
 
         self.tello.move_right(40)
 
@@ -70,24 +70,36 @@ class hoohah(object):
 
         while(trig == 0):
 
-            up, left, trig = self.rect_pass.run()
+            up, left, trig = self.rect_pass.run(yaw)
+            print("up = {}, left = {}, trig = {}".format(up,left,trig))
 
-            self.after.run(left,up)
+            self.after.run(left,up,yaw)
 
         trig = 0
 
 
-        # self.warehouse.algo()
 
-        # self.warehouse.clear()
+        # print("now going for after run")
 
-        # while(trig == 0):
+        # self.after.run(2,0,yaw)
 
-        #     up, left, trig = self.rect_pass.run()
 
-        #     self.after.run(left,up)
+        # 3,0,yaw
+
+        self.warehouse.algo(yaw)
+
+        self.orient.orient(yaw)
+
+        self.warehouse.clear()
+
+        while(trig == 0):
+
+            up, left, trig = self.rect_pass.run(yaw)
+
+        # self.after.run(left,up,yaw)
 
         self.tello.land()
+        self.tello.end()
         print("Ended")
 
 

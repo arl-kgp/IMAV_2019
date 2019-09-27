@@ -574,9 +574,9 @@ class warehouse_R:
 			print("PID cmd")
 		return rcOut, output
 
-	def scan(self):
+	def scan(self,yaw):
 
-		self.yaw = self.tello.get_yaw()
+		self.yaw = yaw
 
 		total_time = 0
 		#cv2.namedWindow('Results',cv2.WINDOW_NORMAL)
@@ -736,6 +736,7 @@ class warehouse_R:
 					frame, check_text, txt_corners = self.find_text_and_write(frame, qrlist, qrpoints)
 					
 					if check_text == 0:
+						# if text is not visible and qr is visible 
 						self.rcout = [5,0,0,0]
 						print("text not found")
 						self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))
@@ -743,7 +744,8 @@ class warehouse_R:
 						continue
 
 					if check_text == 2:
-						# move until further code is detected.
+						# move until further code is detected. 
+						# pichle shelf ka alphanumeric and current ka qr
 						self.rcout = [5,0,0,0]
 						print("text and QR in different Shelves")
 						self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))

@@ -5,7 +5,6 @@ from pygame.locals import *
 import numpy as np
 import time
 import imutils as im
-from rect_pos import detect
 
 # Speed of the drone
 S = 60
@@ -30,7 +29,6 @@ class FrontEnd(object):
         # Init pygame
         # Init Tello object that interacts with the Tello drone
         self.tello = tello
-        self.skipLineDetect = detect()
         self.telloEulerAngles = np.zeros((1,3))
 
         self.rcOut=np.zeros(4)
@@ -57,11 +55,12 @@ class FrontEnd(object):
 
 
         # variables for shelf passing
-        
+        self.trigger = 0
         self.lastValue = 0
         self.lastValue1 = 0
         self.lastValue2 = 0
         self.lastValue3 = 0
+        self.flag1 = 1
         self.distanceFrmRect = 0
         self.apprchFlowFlag =0
         self.passFromWindowModSccss = 0
@@ -69,105 +68,12 @@ class FrontEnd(object):
         #variables for aligning with the window
         self.alnFlowFlag = 0
         self.alnFlowFlag2 = 0
-        self.skipFlowFlag = 0
 
-        self.trigger_init = 0
-
-        # self.cap = cv2.VideoCapture(0)
-        # self.tracker = cv2.TrackerMedianFlow_create()
-        self.rcOut = np.zeros(4)
-        # self.bbox = (5,5,20,20)
-
-        self.trigger = 0
-        self.trigger_init = 0
-        self.lost = 0
-
-        self.lineLoc = 0
-        self.flag1 =1
-        self.passFlag = 0
-
-        self.maxSearchH = 250 #maximum search height for the rectangle
-        self.midSearchH = 75
-
-        self.startTime = 0
-
-        self.flagM1 = 1
-        self.flagM2 = 0
-        
         self.centerCounter = 0
         self.c = 0
 
         # self.telloPose = np.array([])
             # self.telloEulerAngles = EulerAngles
-
-    def clear(self):
-
-        self.skipLineDetect = detect()
-        self.telloEulerAngles = np.zeros((1,3))
-
-        self.rcOut=np.zeros(4)
-        
-        self.R = np.zeros((3,3))
-        self.PoseFlag = 1
-        self.ar = 0
-
-        self.ARmean = np.array([0])
-        self.ARqueue = np.zeros((7,1))
-
-        self.telloPose = np.zeros((1,3))
-        self.poseQueue = np.zeros((7,3))
-        self.telloPoseVariance = np.zeros(3)
-        self.telloPoseMean = np.zeros(3)
-        self.telloPoseMean15 = np.zeros(3)
-        
-        self.cntErNrm = 0
-        self.cntError = np.array([0,0,0])
-        
-        self.tello.TIME_BTW_RC_CONTROL_COMMANDS = 20
-
-        self.frameCenter = np.zeros((1,2))
-
-
-        # variables for shelf passing
-        
-        self.lastValue = 0
-        self.lastValue1 = 0
-        self.lastValue2 = 0
-        self.lastValue3 = 0
-        self.distanceFrmRect = 0
-        self.apprchFlowFlag =0
-        self.passFromWindowModSccss = 0
-
-        #variables for aligning with the window
-        self.alnFlowFlag = 0
-        self.alnFlowFlag2 = 0
-        self.skipFlowFlag = 0
-
-        self.trigger_init = 0
-
-        # self.cap = cv2.VideoCapture(0)
-        # self.tracker = cv2.TrackerMedianFlow_create()
-        self.rcOut = np.zeros(4)
-        # self.bbox = (5,5,20,20)
-
-        self.trigger = 0
-        self.trigger_init = 0
-        self.lost = 0
-
-        self.lineLoc = 0
-        self.flag1 =1
-        self.passFlag = 0
-
-        self.maxSearchH = 250 #maximum search height for the rectangle
-        self.midSearchH = 50
-
-        self.startTime = 0
-
-        self.flagM1 = 1
-        self.flagM2 = 0
-        
-        self.centerCounter = 0
-        self.c = 0
 
     def run(self):
 
@@ -183,154 +89,39 @@ class FrontEnd(object):
 
             key,dst,mask = self.preproccessAndKey(frame_read)
 
-            self.lineIsVisible,self.lineLoc = self.skipLineDetect.run(dst) 
-
+            trigger = self.stateTrigger(key,"p")
             if key == ord("m"):
-                if self.flagM1 == 1 and self.passFlag != 2: 
-                    print ("Module 1")
-                    self.flagM2 = self.algnToFrameFinal(key,mask,dst)
-                    self.flagM1 = 1- self.flagM2
-                
-                if self.flagM2 == 1 and self.passFlag != 2:
-                    print ("Module 2")
-                    self.algnToLine()
-                    ret = self.passWindow()
-                    if ret:
-                        return ret
-                if self.passFlag == 2:
-                    print ("Module3 ")
-                    t = self.algnToFrameFinal(key,mask,dst)
-                    if t == 1:
-                        return 0# exiting the program and 0 for not passing from rectangle
-
+                self.takeoffToShelf(trigger,key,mask,dst)
             else :
                 self.manualRcControl(key)
                 pass
 
-            ###############################
-            # key = cv2.waitKey(1) & 0xFF;
-            
-            ###############################
-
             self.sendRcControl()
 
             cv2.imshow("rectified",dst) 
-            
+            # print(self.lastValue3)
 
             if key == ord("q"):
                 break
             if key == ord("t"):
                 try:
-                    self.tello.takeoff()
+                    self.tello.takeoff()   
                 except:
-                    print("takeoff toh ho gya lol")
+                    print("lol")    
             if key == ord("l"):
                 self.tello.land()
                 Height = 100
 
+            if self.lastValue3 == 1:
+                return 1
+                # break
+
             time.sleep(1 / FPS)
 
         # Call it always before finishing. I deallocate resources.
-        self.tello.end()
+        # self.tello.end()
 
-    def algnToLine(self):
-
-        if self.tello.get_h() <self.maxSearchH and self.lineIsVisible == 0:
-            if self.passFlag == 0:
-
-                self.rcOut[0] = 0
-                self.rcOut[1] = 0
-                self.rcOut[2] = 32 # go up and search line
-                self.rcOut[3] = 0
-
-        elif self.lineIsVisible == 1 and self.passFlag ==0:
-            Kp = 0.16 # proportional constant
-            setLoc = 300
-            # print "line ki location",self.lineLoc
-            err = setLoc - self.lineLoc #error
-
-            u =  Kp*err
-            # print "line ka u",u
-            # u = 0
-
-            thresh = 50 #error threshold 
-            if abs(err) < thresh:
-                # print "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-                self.rcOut[0] = 0
-                self.rcOut[1] = 0
-                self.rcOut[2] = 0
-                self.rcOut[3] = 0
-
-                self.passFlag = 1
-
-            else:
-                self.rcOut[0] = 0
-                self.rcOut[1] = 0
-                self.rcOut[2] = int(u)
-                self.rcOut[3] = 0
-
-        if self.tello.get_h() >= self.maxSearchH:
-            # print "height escape"
-            # self.flagM1
-            self.telloPoseMean = np.zeros(3)
-            self.passFlag = 2
-            self.cntErNrm = 0
-            self.alnFlowFlag = 0
-            ###########################left here
-
-    def passWindow(self):
-        if self.passFlag ==1:
-
-            if self.flag1 == 1:
-                self.startTime = time.time()
-                self.flag1 = 0
-            eTime =  time.time() - self.startTime
-            
-            shootTime = 1.5 
-            # print "eTime",eTime
-            if eTime < shootTime: # shoot time
-                # print "ffffffffffffffffffffffffffffffffffffffffffffff"
-
-                self.rcOut[0] = 0
-                self.rcOut[1] = 50
-                self.rcOut[2] = 0
-                self.rcOut[3] = 0
-            elif eTime >shootTime and eTime < (shootTime+0.2):
-                self.rcOut[0] = 0
-                self.rcOut[1] = 0
-                self.rcOut[2] = 0
-                self.rcOut[3] = 0
-            elif eTime > (shootTime+0.2):
-                return 1 # returning 1 for completing the module by passing the rectangle 
-                
-
-    def order_points(self,pts):
-
-            pts = pts.reshape(4,2)
-            # initialzie a list of coordinates that will be ordered
-            # such that the first entry in the list is the top-left,
-            # the second entry is the top-right, the third is the
-            # bottom-right, and the fourth is the bottom-left
-            rect = np.zeros((4, 2), dtype = "float32")
-         
-            # the top-left point will have the smallest sum, whereas
-            # the bottom-right point will have the largest sum
-            s = pts.sum(axis = 1)
-            # print "dim",pts.shape
-            # print "s",s 
-            rect[0] = pts[np.argmin(s)]
-            rect[2] = pts[np.argmax(s)]
-         
-            # now, compute the difference between the points, the
-            # top-right point will have the smallest difference,
-            # whereas the bottom-left will have the largest difference
-            diff = np.diff(pts, axis = 1)
-            rect[1] = pts[np.argmin(diff)]
-            rect[3] = pts[np.argmax(diff)]
-         
-            # return the ordered coordinates
-            return rect
-    def algnToFrameFinal(self,key,mask,dst):
+    def takeoffToShelf(self,trigger,key,mask,dst):
         frameH,frameW,arSet = 10,20,0.4
         cv2.imshow("msk",mask)
         self.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
@@ -338,8 +129,54 @@ class FrontEnd(object):
         trig = self.slideAndSearchRect(key)
         trig = self.interMtrigger(trig)
         trig = self.algnToFrame(trig,key)
+        # print "Trigger",trig
+        trig = self.interMtrigger3(trig)
+        # self.algToSqr(trig,key)
+        
+        result = 0
+        return result
 
-        return trig
+    def clear(self):
+        
+        self.telloEulerAngles = np.zeros((1,3))
+
+        self.rcOut=np.zeros(4)
+        
+        self.R = np.zeros((3,3))
+        self.PoseFlag = 1
+        self.ar = 0
+
+        self.ARmean = np.array([0])
+        self.ARqueue = np.zeros((7,1))
+
+        self.telloPose = np.zeros((1,3))
+        self.poseQueue = np.zeros((7,3))
+        self.telloPoseVariance = np.zeros(3)
+        self.telloPoseMean = np.zeros(3)
+        self.telloPoseMean15 = np.zeros(3)
+        
+        self.cntErNrm = 0
+        self.cntError = np.array([0,0,0])
+        
+        self.tello.TIME_BTW_RC_CONTROL_COMMANDS = 20
+
+        self.frameCenter = np.zeros((1,2))
+
+
+        # variables for shelf passing
+        self.trigger = 0
+        self.lastValue = 0
+        self.lastValue1 = 0
+        self.lastValue2 = 0
+        self.lastValue3 = 0
+        self.flag1 = 1
+        self.distanceFrmRect = 0
+        self.apprchFlowFlag =0
+        self.passFromWindowModSccss = 0
+
+        #variables for aligning with the window
+        self.alnFlowFlag = 0
+        self.alnFlowFlag2 = 0
 
 
     def slideAndSearchRect(self,key):
@@ -350,18 +187,19 @@ class FrontEnd(object):
 
         # print "self.PoseFlag",self.PoseFlag
 
-        con = self.ARmean[0] > 0.4 and self.tello.get_h() < self.midSearchH
+        con = self.ARmean[0] > 0.4
+        con = con*1
         # print "con",con
-        if self.PoseFlag == 1 and con: 
-            
-            self.manualRcControl(key)
+        trig = self.interMtrigger2(con)
 
+        if self.PoseFlag == 1 and con: 
+            self.manualRcControl(key)
             return 1
 
         else :
-            self.rcOut[0] = 0
+            self.rcOut[0] = 20
             self.rcOut[1] = 0
-            self.rcOut[2] = -30 # come down and search
+            self.rcOut[2] = 0
             self.rcOut[3] = 0
 
             return 0
@@ -385,6 +223,17 @@ class FrontEnd(object):
 
         trigger = value - self.lastValue1
         self.lastValue1 = value
+
+        return trigger
+
+    def interMtrigger2(self,val):
+        if val == 1:
+            value = 1
+        else:
+            value = 0
+
+        trigger = value - self.lastValue2
+        self.lastValue2 = value
 
         return trigger
 
@@ -414,7 +263,7 @@ class FrontEnd(object):
             if self.cntErNrm > 10 or self.cntErNrm ==0:
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,35,10,8,0.55)
+                self.PoseController(key,65,0,20,0.35)
                 if self.centerCounter > 16 and self.centerCounter < 180:
                     self.rcOut = [0,-20,0,0]
                 self.alnFlowFlag = 1
@@ -494,9 +343,11 @@ class FrontEnd(object):
 
     def rectifyInputImage(self,frame2use):
 
+
+
 # 0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00
-        K = np.array([[7.092159469231584126e+02,0.000000000000000000e+00,3.681653710406367850e+02],[0.000000000000000000e+00,7.102890453175559742e+02,2.497677007139825491e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
-        dist = np.array([2.439122447395965926e-02,-1.174125872015051447e-01,-7.226737851943197850e-03,-2.109186754013973528e-03,6.156184110527554987e-01])
+        K = np.array([[6.870158650712294275e+02,0.000000000000000000e+00,3.679051766481443337e+02],[0.000000000000000000e+00,6.871629191230022116e+02,2.711299621081446389e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
+        dist = np.array([7.969682740110426572e-03,-2.775679368619643483e-01,-2.068145646789100109e-03,-6.024091820982999113e-04,1.032835856194985968e+00])
         K_inv = np.linalg.inv(K)
 
         h , w = frame2use.shape[:2]
@@ -627,10 +478,7 @@ class FrontEnd(object):
                         if self.c == 1:
                             self.centerCounter = self.centerCounter + 1
                             # print "frameCenter",self.frameCenter 
-                            # print "centerCounter",self.centerCounter  
-
-
-                            # print "varN",varN
+                            # print "centerCounter",self.centerCounter
         # cv2.imshow("Frame", frame)
         # cv2.imshow("Mask", mask)
 
@@ -724,7 +572,6 @@ class FrontEnd(object):
         # print "varN",varN
         Pose = self.telloPoseMean
 
-
         xEr = xSetPt - Pose[0]   
         yEr = ySetPt - Pose[1]
         zEr = zSetPt - Pose[2]
@@ -763,88 +610,35 @@ class FrontEnd(object):
         else :
             self.manualRcControl(key)
 
-    def get_coordinates(self, mask,frame):
+    def order_points(self,pts):
 
-        _,contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        rect = np.zeros((4,2), dtype ="float32")
-        oldArea = 300
-        for cnt in contours:
-            area = cv2.contourArea(cnt)
-            approx = cv2.approxPolyDP(cnt, 0.012*cv2.arcLength(cnt, True), True) # 0.012 param
-            x = approx.ravel()[0]
-            y = approx.ravel()[1]
-            arSet = 0.4
-            if area > 300:#param
-
-                if len(approx) == 4:
-                    (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
-                    ar = MA/ma
-
-                    hull = cv2.convexHull(cnt)
-                    hull_area = cv2.contourArea(hull)
-                    solidity = float(area)/hull_area
-
-                    condition = ar < 0.6 and ar > arSet
-                    if solidity > 0.9 and condition:
-
-                        self.ar = ar
-                        # print "ar",self.ar
-
-                        self.ARqueue = np.roll(self.ARqueue,1,axis = 0)
-                        self.ARqueue[0,:] = [ar]
-
-                        self.ARvar = np.var(self.ARqueue,axis=0)
-                        self.ARmean = np.mean(self.ARqueue,axis = 0)
-
-                        if area > oldArea:
-                            cv2.drawContours(frame, [approx], 0, (0, 0, 0), 5)
-                            cv2.circle(frame,(int(cx),int(cy)), 3, (0,0,255), -1)
-                            cv2.putText(frame, "Rectangle" + str(angle), (x, y), font, 1, (0, 0, 0))
-
-                            cntMain = approx
-                            rect = self.order_points(cntMain)
-                            # print("reached here")
-
-                        oldArea = area
-
+        pts = pts.reshape(4,2)
+        # initialzie a list of coordinates that will be ordered
+        # such that the first entry in the list is the top-left,
+        # the second entry is the top-right, the third is the
+        # bottom-right, and the fourth is the bottom-left
+        rect = np.zeros((4, 2), dtype = "float32")
+     
+        # the top-left point will have the smallest sum, whereas
+        # the bottom-right point will have the largest sum
+        s = pts.sum(axis = 1)
+        # print "dim",pts.shape
+        # print "s",s 
+        rect[0] = pts[np.argmin(s)]
+        rect[2] = pts[np.argmax(s)]
+     
+        # now, compute the difference between the points, the
+        # top-right point will have the smallest difference,
+        # whereas the bottom-left will have the largest difference
+        diff = np.diff(pts, axis = 1)
+        rect[1] = pts[np.argmin(diff)]
+        rect[3] = pts[np.argmax(diff)]
+     
+        # return the ordered coordinates
         return rect
-
-    def start_tracking(self, rect,frame):
-
-        self.bbox = (rect[0][0],rect[0][1],rect[2][0]-rect[0][0],rect[2][1]-rect[0][1])
-        ok = self.tracker.init(frame,self.bbox)
-        return ok
-
-    def track(self,frame):
-
-        ok, self.bbox = self.tracker.update(frame)
-
-        if ok:
-            # p1 = (int(self.bbox[0]), int(self.bbox[1]))
-            # p2 = (int(self.bbox[0]+ self.bbox[2]), int(self.bbox[1]+self.bbox[3]))
-            # cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
-            # cv2.imshow("with frame",frame)
-            print("still visible")
-            self.rcOut[0] = 0
-            self.rcOut[1] = 0
-            self.rcOut[2] = 20
-            self.rcOut[3] = 0
-            self.trigger = 0
-            self.lost = 0
-
-        else:
-            print("LOST")
-            self.lost +=1
-            if(self.lost>15):
-                self.trigger = 1
-
-        
 
 def main():
     tello = Tello()
-    tello.connect()
-    tello.streamoff()
-    tello.streamon()
     frontend = FrontEnd(tello)
 
     # run frontend
@@ -853,4 +647,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-            
+

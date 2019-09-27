@@ -39,7 +39,7 @@ class FrontEnd(object):
 
         self.align_rect = align_rect(self.tello)
 
-    def run(self,left,up):
+    def run(self,left,up,yaw):
 
         frame_read = self.tello.get_frame_read()
 
@@ -63,46 +63,53 @@ class FrontEnd(object):
             key = cv2.waitKey(1) & 0xFF;
             
             if (key == ord("m")):
-                print(self.tello.get_bat())
+                # print(self.tello.get_bat())
                 dst,mask = self.preproccessAndKey(frame)
                 # rect =
                 if(self.trigger_init_start==0):
+                    # print("tfadygsuhijfsfjhtgdyuhjkdfgytucijcdfgyusijcdf")
                     
                     rect = self.get_coordinates(mask,dst)
+                    print(rect)
                     if(rect[0][0] == 0):
-                        self.rcOut[2] = -10
+                        self.rcOut[2] = -20
                         self.rcOut[0] = 0
                         self.rcOut[1] = 0
                         self.rcOut[3] = 0
-                        continue
+                        # continue
                     else:
                         print("hahahah")
                         self.trigger_init_start = 1
 
                 if(self.trigger_init_start==1):
-                    self.align_rect.run()
+                    self.align_rect.run(yaw)
                     self.trigger_init_start = 2
                     self.align_rect.clear()
+                    # print("gfcxgfhjkhgcfxdfghfxdghjcftyghxfgfhvfxdfgh")
 
 
                 if(self.trigger_init_start==2):
 
                     if(up==0):
                         print("up was 0 so going up")
-                        print(self.trigger_init)
+                        # print(self.trigger_init)
 
                         rect = self.get_coordinates(mask,dst)
 
                         if(self.trigger_init==0):
                             
                             if(rect[0][0] == 0):
+                                # self.rcOut[0] = 0
+                                # self.rcOut[1] = 0
+                                # self.rcOut[2] = -10
+                                # self.rcOut[3] = 0
                                 continue
                             else:
                                 print("ahhahaha")
                                 self.trigger_init = 1
 
                         if(self.trigger_init == 1):
-                            self.align_rect.run()
+                            self.align_rect.run(yaw)
                             self.trigger_init = 2
                             self.align_rect.clear()
 
@@ -131,7 +138,7 @@ class FrontEnd(object):
 
                         if(self.trigger_init == 5):
 
-                            self.align_rect.run()
+                            self.align_rect.run(yaw)
                             self.trigger_init = 0
                             up = 1
                             self.align_rect.clear()
@@ -150,7 +157,7 @@ class FrontEnd(object):
                                 self.trigger_init = 1
 
                         if(self.trigger_init == 1):
-                            self.align_rect.run()
+                            self.align_rect.run(yaw)
                             self.trigger_init = 2
                             self.align_rect.clear()
 
@@ -169,7 +176,7 @@ class FrontEnd(object):
                             rect = self.get_coordinates(mask,dst)
                             if(rect[0][0] == 0):
                                 self.rcOut[2] = 0
-                                self.rcOut[0] = -10
+                                self.rcOut[0] = -20
                                 self.rcOut[1] = 0
                                 self.rcOut[3] = 0 
                             else:
@@ -178,7 +185,7 @@ class FrontEnd(object):
 
                         if(self.trigger_init == 5):
 
-                            self.align_rect.run()
+                            self.align_rect.run(yaw)
                             self.trigger_init = 0
                             left = left -1
                             self.align_rect.clear()
@@ -406,7 +413,7 @@ class FrontEnd(object):
             cv2.imshow("with frame",frame)
             # cv2.waitKey(10)
             print("still visible")
-            self.rcOut[0] = -30
+            self.rcOut[0] = -20
             self.rcOut[1] = 0
             self.rcOut[2] = 0
             self.rcOut[3] = 0
@@ -433,7 +440,7 @@ class FrontEnd(object):
             print("still visible")
             self.rcOut[0] = 0
             self.rcOut[1] = 0
-            self.rcOut[2] = 30
+            self.rcOut[2] = 40
             self.rcOut[3] = 0
             self.trigger = 0
             self.lost = 0

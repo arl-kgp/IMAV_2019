@@ -36,7 +36,7 @@ class starting(object):
         self.right = 0
         self.trig = 0
 
-    def run(self):
+    def run(self,yaw):
 
         # while(self.right<2):
 
@@ -49,15 +49,19 @@ class starting(object):
             #     break
 
             # else:
-        initial_yaw = self.tello.get_yaw()
-        while(self.right<2):
+        initial_yaw = yaw
+        while(self.right<3):
             # print("yooooo")
+            
+            
+            self.orient.orient(initial_yaw)
             print("now in up down wali class")
             self.trig = self.up_down.run()
             self.up_down.clear()
 
             print("now yaw correction started")
             self.orient.orient(initial_yaw)
+            print("yaw correction complete")
             # cv2.destroyAllWindows()
 
             if(self.trig==1):

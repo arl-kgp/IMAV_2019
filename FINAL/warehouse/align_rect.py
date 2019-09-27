@@ -274,10 +274,10 @@ class FrontEnd(object):
             # print "ya1"
             # print "self.cntErNrm",self.cntErNrm
 
-            if self.cntErNrm > 18 or self.cntErNrm ==0:
+            if self.cntErNrm > 12 or self.cntErNrm ==0:
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,30,0,0,0.35)
+                self.PoseController(key,30,0,0,0.55)
                 self.alnFlowFlag = 1
                 # print "self.cntErNrm",self.cntErNrm
 
@@ -288,7 +288,7 @@ class FrontEnd(object):
                 # print "ya3"
                 self.alnFlowFlag = 0
                 return 0
-            if self.cntErNrm < 18 and self.cntErNrm != 0:
+            if self.cntErNrm < 12 and self.cntErNrm != 0:
                 self.alnFlowFlag = 0
                 # print "self.cntErNrm",self.cntErNrm
                 
@@ -300,7 +300,7 @@ class FrontEnd(object):
                 # print "ya5"
                 return 0 
         else:
-            if self.cntErNrm < 18 and self.cntErNrm != 0:
+            if self.cntErNrm < 12 and self.cntErNrm != 0:
                 # print "self.cntErNrm",self.cntErNrm
                 # print "ya6"
                 self.orient.orient(yaw)

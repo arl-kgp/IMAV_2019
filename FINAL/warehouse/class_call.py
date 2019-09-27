@@ -13,11 +13,11 @@ class warehouse_overall:
 		self.txt_L = warehouse_L(tello)
 		self.orient = orient(self.tello)
 
-	def algo(self):
+	def algo(self,yaw):
 
 		goto_height(self.tello,170)
 
-		yaw = self.tello.get_yaw()
+		# yaw = self.tello.get_yaw()
 		
 		self.txt_R.scan(yaw)
 		h = self.tello.get_h()
@@ -25,7 +25,11 @@ class warehouse_overall:
 
 		self.orient.orient(yaw)
 
-		goto_height(self.tello, h - 150)
+		k = h-150
+		if(k<30):
+			k=30
+
+		goto_height(self.tello, k)
 
 		self.orient.orient(yaw)
 		
