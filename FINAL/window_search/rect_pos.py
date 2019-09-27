@@ -3,14 +3,14 @@ import numpy as np
 
 class detect(object):
 
-    def __init__(self):
-        self.h_low = 72
+    def __init__(self):                                                 # to change 
+        self.h_low = 72                                                 # change all these variables
         self.h_high = 141
         self.s_low = 62
         self.s_high = 255
         self.v_low = 90
         self.v_high = 248    
-        self.trig = 0   
+        self.trig = 0                                                   # till here
 
     def run(self,frame):
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -31,10 +31,10 @@ class detect(object):
 
         n_max = np.amax(row_avg)
 
-        if (n_max>=80):
+        if (n_max>=80):                                                     # to change 80
             k = row_avg.argmax()
             k_val = np.amax(row_avg)
-            row_avg[k-20:k+20] = 0
+            row_avg[k-20:k+20] = 0                                          # to change 20
             t = row_avg.argmax()
             t_val = np.amax(row_avg)
             row_avg[t-20:t+20] = 0

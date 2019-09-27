@@ -50,7 +50,7 @@ class starting(object):
 
             # else:
         initial_yaw = yaw
-        while(self.right<3):
+        while(self.right<3):                                                    #parameter. Might have to update it to 4
             # print("yooooo")
             
             

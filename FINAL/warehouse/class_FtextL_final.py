@@ -583,19 +583,19 @@ class warehouse_L:
 		qrprev_list = []                                   # For comparing with newer qr-codes from next shelf
 		qrlist = []
 		check_qr_num = 0
-		passed_shelf_var = False
-		should_correct_pos = False
-		num_corrections = 0
-		go_up = False
-		go_down = False
-		start_height = 0
-		should_track = False
-		vertical_motion = False
+		passed_shelf_var = False							#
+		should_correct_pos = False							#
+		num_corrections = 0									#
+		go_up = False										#	These lines tell if the particular function is to be executed or not
+		go_down = False										#
+		start_height = 0									#
+		should_track = False								#
+		vertical_motion = False								#
 		
 		align_without_QR = False
 		rectangle_without_QR = False
 
-		self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))
+		self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))							#remove this line
 		# f.close()
 
 		# Read feed:
@@ -645,7 +645,7 @@ class warehouse_L:
 				if ((trav1.num_text_frames - initial_no_of_frames) > 0) and align_without_QR:
 					align_without_QR = False
 
-				if trav1.num_text_frames == 3:              # NO. of shelves in one row # 4
+				if trav1.num_text_frames == 4:              # NO. of shelves in one row # 4			#update done
 					self.should_stop = True
 					print("Finished")
 					break

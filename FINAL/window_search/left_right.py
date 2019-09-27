@@ -51,9 +51,9 @@ class FrontEnd(object):
 
             key = cv2.waitKey(1) & 0xFF;
             
-            if (key == ord("m")):
-                dst,mask = self.preproccessAndKey(frame)
-                rect = self.get_coordinates(mask,dst)
+            if (key == ord("m")):                                                           # to update automate
+                dst,mask = self.preproccessAndKey(frame)                                    # to update
+                rect = self.get_coordinates(mask,dst)                                       # to update
                 if(self.trigger_init==0):                    
                     if(rect[0][0] == 0):
                         print("rectangle pehle nhi mila")

@@ -15,7 +15,7 @@ class warehouse_overall:
 
 	def algo(self,yaw):
 
-		goto_height(self.tello,170)
+		goto_height(self.tello,170)												# to change height parameter
 
 		# yaw = self.tello.get_yaw()
 		
@@ -26,7 +26,7 @@ class warehouse_overall:
 		self.orient.orient(yaw)
 
 		k = h-150
-		if(k<30):
+		if(k<30):																# change k minimum height
 			k=30
 
 		goto_height(self.tello, k)

@@ -23,7 +23,7 @@ class starting(object):
         self.skip_first = skip_first(self.tello)
         self.align_next = align_initial(self.tello)
 
-        self.height = 90
+        self.height = 90                                                                         #to change along with line 40
 
     def run(self,init_yaw):
 
@@ -37,7 +37,7 @@ class starting(object):
         self.orient.orient(init_yaw)
         # yaw orientation correct
 
-        goto_height(self.tello,self.height)
+        goto_height(self.tello,self.height)                                                      #to change along with line 26
         # go to height
 
         # read flag
@@ -45,7 +45,7 @@ class starting(object):
         # rotate cloclwise/anti 180
 
         print("mission started")
-        self.align_initial.run()
+        self.align_initial.run()                                                                 #todo variables
         print("Now have aligned in front of first frame")
         self.skip_first.run()
         self.skip_first.clear()
@@ -57,7 +57,7 @@ class starting(object):
         # self.skip_first.clear()
 
         # go more distance now
-        self.tello.move_right(80)
+        self.tello.move_right(80)                                                                #declare how much to move right so that reach the shelf
         self.tello.rotate_counter_clockwise(90)
 
         # do warehouse
