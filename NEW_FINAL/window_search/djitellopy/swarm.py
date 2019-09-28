@@ -1,5 +1,5 @@
 from djitellopy import Tello
-from threading import Thread, Barrier
+#from threading import Thread, Barrier
 from queue import Queue
 
 class TelloSwarm:
