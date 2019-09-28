@@ -77,8 +77,6 @@ class hoohah(object):
 
         trig = 0
 
-
-
         # print("now going for after run")
 
         # self.after.run(2,0,yaw)

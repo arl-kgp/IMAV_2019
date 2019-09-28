@@ -23,7 +23,7 @@ class starting(object):
         self.skip_first = skip_first(self.tello)
         self.align_next = align_initial(self.tello)
 
-        self.height = 90
+        self.height = 90 
 
     def run(self,init_yaw):
 

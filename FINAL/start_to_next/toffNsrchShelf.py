@@ -230,7 +230,7 @@ class FrontEnd(object):
             if self.cntErNrm > 10 or self.cntErNrm ==0:
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,150,0,0,0.35)
+                self.PoseController(key,150,0,0,0.35) 
                 self.alnFlowFlag = 1
                 # print "self.cntErNrm",self.cntErNrm
 
