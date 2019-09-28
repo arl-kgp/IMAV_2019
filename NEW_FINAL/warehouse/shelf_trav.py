@@ -108,36 +108,38 @@ class FrontEnd(object):
         self.prev_trigger = self.trigger
                 
 
-    def manualRcControl(self,key):
-        if key == ord("w"):
-            self.rcOut[1] = 50
-        elif key == ord("a"):
-            self.rcOut[0] = -50
-        elif key == ord("s"):
-            self.rcOut[1] = -50
-        elif key == ord("d"):
-            self.rcOut[0] = 50
-        elif key == ord("u"):
-            self.rcOut[2] = 50
-        elif key == ord("j"):
-            self.rcOut[2] = -50
-        elif key == ord("l"):
-            self.tello.land()
-        elif key == ord("t"):
-            try:
-                self.tello.takeoff()
-            except:
-                print("takeoff toh ho gya lol")
-            time.sleep(2)
-        else:
-            self.rcOut = [0,0,0,0]
-        return
+    def manualRcControl(self,key):		                        #commented manualRcControl
+    	pass
+        # if key == ord("w"):
+        #     self.rcOut[1] = 50
+        # elif key == ord("a"):
+        #     self.rcOut[0] = -50
+        # elif key == ord("s"):
+        #     self.rcOut[1] = -50
+        # elif key == ord("d"):
+        #     self.rcOut[0] = 50
+        # elif key == ord("u"):
+        #     self.rcOut[2] = 50
+        # elif key == ord("j"):
+        #     self.rcOut[2] = -50
+        # elif key == ord("l"):
+        #     self.tello.land()
+        # elif key == ord("t"):
+        #     try:
+        #         self.tello.takeoff()
+        #     except:
+        #         print("takeoff toh ho gya lol")
+        #     time.sleep(2)
+        # else:
+        #     self.rcOut = [0,0,0,0]
+        # return
 
-    def sendRcControl(self):
-        self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
-        self.rcOut = [0,0,0,0]
+    def sendRcControl(self):                                     # commented sendRcControl
+    	pass
+        # self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
+        # self.rcOut = [0,0,0,0]
 
-        return
+        # return
 
     def preproccessAndKey(self,frame_read):
 
@@ -264,13 +266,13 @@ class FrontEnd(object):
             if area > 300:#param
 
                 if len(approx) == 4:
-                    if len(cnt) > 4:
+                    try:
                         (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
-                        ar = MA/ma
-                    else:
-                        ar = (np.linalg.norm(approx[0] - approx[1]) + np.linalg.norm(approx[2] - approx[3]))/(np.linalg.norm(approx[2]-approx[1])+np.linalg.norm(approx[0]-approx[3]))
-                        if ar > 1:
-                            ar=1/ar
+                    except:
+                        print("Not found 5 points in fitellipse")
+                        return [[0,0], [0,0], [0, 0], [0,0]]
+                    ar = MA/ma
+
                     hull = cv2.convexHull(cnt)
                     hull_area = cv2.contourArea(hull)
                     solidity = float(area)/hull_area

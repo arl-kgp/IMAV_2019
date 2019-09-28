@@ -2,7 +2,7 @@ from djitellopy import Tello
 import cv2
 from class_FtextR_final import warehouse_R
 from class_FtextL_final import warehouse_L
-from csvParserArchit import *
+from csvParserfinal import *
 from tello_height import *
 from orient_yaw import Orient as orient
 
@@ -37,8 +37,10 @@ class warehouse_overall:
 
 		self.orient.orient(yaw)
 		# GO_up_1.5m
-		
+
 		parser1()
+		parserdash()
+		parser2()
 
 	def clear(self):
 		self.txt_R = warehouse_R(self.tello)

@@ -80,7 +80,7 @@ class FrontEnd(object):
 
             key = cv2.waitKey(1) & 0xFF;
             
-            if (key == ord("m")):                                                               #to change automate
+            if (1):                                                               # changed automated key == ord("m")
                 dst,mask = self.preproccessAndKey(frame)
                 rect = self.get_coordinates(mask,dst)                                           # 0 3       order of rect coordinates
                 if(self.trigger_init==0):                                                       # 1 2
@@ -112,35 +112,37 @@ class FrontEnd(object):
             self.sendRcControl()
 
     def manualRcControl(self,key):
-        if key == ord("w"):
-            self.rcOut[1] = 50
-        elif key == ord("a"):
-            self.rcOut[0] = -50
-        elif key == ord("s"):
-            self.rcOut[1] = -50
-        elif key == ord("d"):
-            self.rcOut[0] = 50
-        elif key == ord("u"):
-            self.rcOut[2] = 50
-        elif key == ord("j"):
-            self.rcOut[2] = -50
-        elif key == ord("l"):
-            self.tello.land()
-        elif key == ord("t"):
-            try:
-                self.tello.takeoff()
-            except:
-                print("takeoff toh ho gya lol")
-            time.sleep(2)
-        else:
-            self.rcOut = [0,0,0,0]
-        return
+    	pass
+        # if key == ord("w"):
+        #     self.rcOut[1] = 50
+        # elif key == ord("a"):
+        #     self.rcOut[0] = -50
+        # elif key == ord("s"):
+        #     self.rcOut[1] = -50
+        # elif key == ord("d"):
+        #     self.rcOut[0] = 50
+        # elif key == ord("u"):
+        #     self.rcOut[2] = 50
+        # elif key == ord("j"):
+        #     self.rcOut[2] = -50
+        # elif key == ord("l"):
+        #     self.tello.land()
+        # elif key == ord("t"):
+        #     try:
+        #         self.tello.takeoff()
+        #     except:
+        #         print("takeoff toh ho gya lol")
+        #     time.sleep(2)
+        # else:
+        #     self.rcOut = [0,0,0,0]
+        # return
 
     def sendRcControl(self):
-        self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
-        self.rcOut = [0,0,0,0]
+    	pass
+        # self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
+        # self.rcOut = [0,0,0,0]
 
-        return
+        # return
 
     def preproccessAndKey(self,frame_read):
 
@@ -244,13 +246,9 @@ class FrontEnd(object):
             if area > 300:#param
 
                 if len(approx) == 4:
-                    if len(cnt) > 4:
-                        (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
-                        ar = MA/ma
-                    else:
-                        ar = (np.linalg.norm(approx[0] - approx[1]) + np.linalg.norm(approx[2] - approx[3]))/(np.linalg.norm(approx[2]-approx[1])+np.linalg.norm(approx[0]-approx[3]))
-                        if ar > 1:
-                            ar=1/ar
+                    (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
+                    ar = MA/ma
+
                     hull = cv2.convexHull(cnt)
                     hull_area = cv2.contourArea(hull)
                     solidity = float(area)/hull_area

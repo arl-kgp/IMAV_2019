@@ -23,7 +23,7 @@ while not should_stop:
 	cv2.imshow("original",frame)
 
 	key = cv2.waitKey(1) & 0xFF;
-	if (key == ord("m")):
+	if (1):                                            #  automated   key == ord("m")
 		trav1.run(frame)
 		if trav1.num_text_frames == 1:
 			should_stop = True

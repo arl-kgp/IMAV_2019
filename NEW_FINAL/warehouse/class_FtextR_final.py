@@ -623,7 +623,7 @@ class warehouse_R:
 			# QR-codes detect
 			k = cv2.waitKey(1) & 0xFF
 
-			if k == ord("m"):
+			if 1:                                                  ###k == ord("m")   updated automated
 				
 				if go_up or go_down:
 					vertical_motion = True
@@ -794,43 +794,43 @@ class warehouse_R:
 					self.reached_qrcode = 0
 					self.hover_time= 0
 		
-			elif k == ord("t"):  # Use in left
-				try:
-					self.tello.takeoff()
-				except:
-					print("takeoff done")
-				time.sleep(2)
+			# elif k == ord("t"):  	                               ### removed manual control
+			# 	try:
+			# 		self.tello.takeoff()
+			# 	except:
+			# 		print("takeoff done")
+			# 	time.sleep(2)
 
-			elif k == ord("l"):
-				self.tello.land()
-			elif k == ord("w"):
-				# front
-				self.rcout[1] = 50
-			elif k == ord("a"):
-				# left
-				self.rcout[0] = -50
-			elif k == ord("s"):
-				# back
-				self.rcout[1] = -50
-			elif k == ord("d"):
-				# right
-				self.rcout[0] = 50
-			elif k == ord("u"):
-				# up
-				self.rcout[2] = 50
-			elif k == ord("j"):
-				# down
-				self.rcout[2] = -50
-			elif k == ord("c"):
-				self.rcout[3] = 50
-			elif k == ord("v"):
-				self.rcout[3] = -50
-			elif k == ord("q"):
-				self.f.close()
-				self.f1.close()
-				self.tello.land()
-				print("file closed")
-				break
+			# elif k == ord("l"):
+			# 	self.tello.land()
+			# elif k == ord("w"):
+			# 	# front
+			# 	self.rcout[1] = 50
+			# elif k == ord("a"):
+			# 	# left
+			# 	self.rcout[0] = -50
+			# elif k == ord("s"):
+			# 	# back
+			# 	self.rcout[1] = -50
+			# elif k == ord("d"):
+			# 	# right
+			# 	self.rcout[0] = 50
+			# elif k == ord("u"):
+			# 	# up
+			# 	self.rcout[2] = 50
+			# elif k == ord("j"):
+			# 	# down
+			# 	self.rcout[2] = -50
+			# elif k == ord("c"):
+			# 	self.rcout[3] = 50
+			# elif k == ord("v"):
+			# 	self.rcout[3] = -50
+			# elif k == ord("q"):
+			# 	self.f.close()
+			# 	self.f1.close()
+			# 	self.tello.land()
+			# 	print("file closed")
+			# 	break
 
 			cv2.imshow("Results",frame)
 			self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))

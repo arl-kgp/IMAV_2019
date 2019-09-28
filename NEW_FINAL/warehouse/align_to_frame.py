@@ -1,4 +1,4 @@
-from djitellopy import Tello
+ffrom djitellopy import Tello
 import cv2
 import pygame
 from pygame.locals import *
@@ -234,29 +234,31 @@ class FrontEnd(object):
         pass
 
     def manualRcControl(self,key):
-        if key == ord("w"):
-            self.rcOut[1] = 50
-        elif key == ord("a"):
-            self.rcOut[0] = -50
-        elif key == ord("s"):
-            self.rcOut[1] = -50
-        elif key == ord("d"):
-            self.rcOut[0] = 50
-        elif key == ord("u"):
-            self.rcOut[2] = 50
-        elif key == ord("j"):
-            self.rcOut[2] = -50
-        else:
-            self.rcOut = [0,0,0,0]
+    	pass
+        # if key == ord("w"):									#commented manualRcContol
+        #     self.rcOut[1] = 50
+        # elif key == ord("a"):
+        #     self.rcOut[0] = -50
+        # elif key == ord("s"):
+        #     self.rcOut[1] = -50
+        # elif key == ord("d"):
+        #     self.rcOut[0] = 50
+        # elif key == ord("u"):
+        #     self.rcOut[2] = 50
+        # elif key == ord("j"):
+        #     self.rcOut[2] = -50
+        # else:
+        #     self.rcOut = [0,0,0,0]
 
-        return
+        # return
 
     def sendRcControl(self):
-        # print "rcOut", self.rcOut
-        self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
-        self.rcOut = [0,0,0,0]
+    	pass                                                     #commened sendRcControl
+	    # print "rcOut", self.rcOut
+        # self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
+        # self.rcOut = [0,0,0,0]
 
-        return
+        # return
 
     def rectifyInputImage(self,frame2use):
 
@@ -342,13 +344,9 @@ class FrontEnd(object):
                 # if len(approx) == 3:
                     # cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
                 if len(approx) == 4:
-                    if len(cnt) > 4:
-                        (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
-                        ar = MA/ma
-                    else:
-                        ar = (np.linalg.norm(approx[0] - approx[1]) + np.linalg.norm(approx[2] - approx[3]))/(np.linalg.norm(approx[2]-approx[1])+np.linalg.norm(approx[0]-approx[3]))
-                        if ar > 1:
-                            ar=1/ar
+                    (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
+                    ar = MA/ma
+
                     hull = cv2.convexHull(cnt)
                     hull_area = cv2.contourArea(hull)
                     solidity = float(area)/hull_area

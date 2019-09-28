@@ -100,7 +100,7 @@ class FrontEnd(object):
             key,dst,mask = self.preproccessAndKey(frame_read)
 
             trigger = self.stateTrigger(key,"p")                                    #to change automate
-            if key == ord("m"):                                                     #to change automate
+            if 1:                                                     #changed automated,  key == ord("m")
                 self.takeoffToShelf(trigger,key,mask,dst)
             else :
                 self.manualRcControl(key)
@@ -111,16 +111,16 @@ class FrontEnd(object):
             cv2.imshow("rectified",dst) 
             # print(self.lastValue3)
 
-            if key == ord("q"):                                                     #to change automate
-                break
-            if key == ord("t"):                                                     #to change automate
-                try:
-                    self.tello.takeoff()   
-                except:
-                    print("lol")    
-            if key == ord("l"):                                                     #to change automate
-                self.tello.land()
-                Height = 100
+            # if key == ord("q"):                                                     #changed automated
+            #     break
+            # if key == ord("t"):                                                     #changed automated
+            #     try:
+            #         self.tello.takeoff()   
+            #     except:
+            #         print("lol")    
+            # if key == ord("l"):                                                     #changed automated   doubt
+            #     self.tello.land()
+            #     Height = 100
 
             if self.lastValue3 == 1:
                 break
@@ -282,29 +282,31 @@ class FrontEnd(object):
         pass
 
     def manualRcControl(self,key):
-        if key == ord("w"):
-            self.rcOut[1] = 50
-        elif key == ord("a"):
-            self.rcOut[0] = -50
-        elif key == ord("s"):
-            self.rcOut[1] = -50
-        elif key == ord("d"):
-            self.rcOut[0] = 50
-        elif key == ord("u"):
-            self.rcOut[2] = 50
-        elif key == ord("j"):
-            self.rcOut[2] = -50
-        else:
-            self.rcOut = [0,0,0,0]
+    	pass
+        # if key == ord("w"):
+        #     self.rcOut[1] = 50
+        # elif key == ord("a"):
+        #     self.rcOut[0] = -50
+        # elif key == ord("s"):
+        #     self.rcOut[1] = -50
+        # elif key == ord("d"):
+        #     self.rcOut[0] = 50
+        # elif key == ord("u"):
+        #     self.rcOut[2] = 50
+        # elif key == ord("j"):
+        #     self.rcOut[2] = -50
+        # else:
+        #     self.rcOut = [0,0,0,0]
 
-        return
+        # return
 
     def sendRcControl(self):
+    	pass
         # print "rcOut", self.rcOut
-        self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
-        self.rcOut = [0,0,0,0]
+        # self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
+        # self.rcOut = [0,0,0,0]
 
-        return
+        # return
 
     def rectifyInputImage(self,frame2use):
 
@@ -390,13 +392,9 @@ class FrontEnd(object):
                 # if len(approx) == 3:
                     # cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
                 if len(approx) == 4:
-                    if len(cnt) > 4:
-                        (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
-                        ar = MA/ma
-                    else:
-                        ar = (np.linalg.norm(approx[0] - approx[1]) + np.linalg.norm(approx[2] - approx[3]))/(np.linalg.norm(approx[2]-approx[1])+np.linalg.norm(approx[0]-approx[3]))
-                        if ar > 1:
-                            ar=1/ar
+                    (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
+                    ar = MA/ma
+
                     hull = cv2.convexHull(cnt)
                     hull_area = cv2.contourArea(hull)
                     solidity = float(area)/hull_area
