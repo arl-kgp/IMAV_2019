@@ -15,7 +15,7 @@ int startDetect(bool servo)
 	while (1)
 	{
 		Mat img = get_new_frame();
-		cout << "!@#$";
+		//cout << "!@#$";
 		Mat img2 = img.clone();
 
 		Mat gray;
