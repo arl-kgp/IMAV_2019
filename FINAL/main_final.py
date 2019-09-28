@@ -54,7 +54,7 @@ class hoohah(object):
             
         time.sleep(2)
 
-        # self.starting.run(self.initial_yaw)
+        # self.starting.run(self.initial_yaw)										#uncomment this VERY IMPORTANT!!!!! 	
 
         yaw = self.tello.get_yaw()
 
@@ -64,7 +64,7 @@ class hoohah(object):
 
         self.warehouse.clear()
 
-        self.tello.move_right(40)
+        self.tello.move_right(40)													# to update
 
         print("have moved right")
 

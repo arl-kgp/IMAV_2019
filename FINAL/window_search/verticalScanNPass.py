@@ -185,7 +185,7 @@ class FrontEnd(object):
 
             self.lineIsVisible,self.lineLoc = self.skipLineDetect.run(dst) 
 
-            if key == ord("m"):
+            if key == ord("m"):                                                                 # to change automate
                 if self.flagM1 == 1 and self.passFlag != 2: 
                     print ("Module 1")
                     self.flagM2 = self.algnToFrameFinal(key,mask,dst)
@@ -240,12 +240,12 @@ class FrontEnd(object):
 
                 self.rcOut[0] = 0
                 self.rcOut[1] = 0
-                self.rcOut[2] = 32 # go up and search line
+                self.rcOut[2] = 32 # go up and search line                                      # parameter
                 self.rcOut[3] = 0
 
         elif self.lineIsVisible == 1 and self.passFlag ==0:
-            Kp = 0.16 # proportional constant
-            setLoc = 300
+            Kp = 0.16 # proportional constant                                                   # parameter
+            setLoc = 300                                                                        # to update
             # print "line ki location",self.lineLoc
             err = setLoc - self.lineLoc #error
 
@@ -253,7 +253,7 @@ class FrontEnd(object):
             # print "line ka u",u
             # u = 0
 
-            thresh = 50 #error threshold 
+            thresh = 50 #error threshold                                                        # to update
             if abs(err) < thresh:
                 # print "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
                 self.rcOut[0] = 0
@@ -286,13 +286,13 @@ class FrontEnd(object):
                 self.flag1 = 0
             eTime =  time.time() - self.startTime
             
-            shootTime = 1.5 
+            shootTime = 1.5                                                                     # to update
             # print "eTime",eTime
             if eTime < shootTime: # shoot time
                 # print "ffffffffffffffffffffffffffffffffffffffffffffff"
 
                 self.rcOut[0] = 0
-                self.rcOut[1] = 50
+                self.rcOut[1] = 50                                                              # to update. Try not to change
                 self.rcOut[2] = 0
                 self.rcOut[3] = 0
             elif eTime >shootTime and eTime < (shootTime+0.2):
@@ -331,7 +331,7 @@ class FrontEnd(object):
             # return the ordered coordinates
             return rect
     def algnToFrameFinal(self,key,mask,dst):
-        frameH,frameW,arSet = 10,20,0.4
+        frameH,frameW,arSet = 10,20,0.4                                                         # to update VERY IMPORTANT!!!!!
         cv2.imshow("msk",mask)
         self.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
         self.manualRcControl(key)
@@ -343,7 +343,7 @@ class FrontEnd(object):
 
 
     def slideAndSearchRect(self,key):
-        thresh = 200
+        thresh = 200                                                                                                                                
         speed = 20
 
         # print "aspectRatio",self.ARmean[0]
@@ -361,7 +361,7 @@ class FrontEnd(object):
         else :
             self.rcOut[0] = 0
             self.rcOut[1] = 0
-            self.rcOut[2] = -30 # come down and search
+            self.rcOut[2] = -30 # come down and search                                          # parameter
             self.rcOut[3] = 0
 
             return 0
@@ -411,11 +411,11 @@ class FrontEnd(object):
             # print "ya1"
             # print "self.cntErNrm",self.cntErNrm
 
-            if self.cntErNrm > 10 or self.cntErNrm ==0:
+            if self.cntErNrm > 10 or self.cntErNrm ==0:                                                 # parameter 10
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,35,10,8,0.55)
-                if self.centerCounter > 16 and self.centerCounter < 180:
+                self.PoseController(key,35,10,8,0.55)                                                   # parameter 10
+                if self.centerCounter > 16 and self.centerCounter < 180:                                # to update
                     self.rcOut = [0,-20,0,0]
                 self.alnFlowFlag = 1
                 # print "self.cntErNrm",self.cntErNrm
@@ -427,7 +427,7 @@ class FrontEnd(object):
                 # print "ya3"
                 self.alnFlowFlag = 0
                 return 0
-            if self.cntErNrm < 10 and self.cntErNrm != 0:
+            if self.cntErNrm < 10 and self.cntErNrm != 0:                                               # parameter 10
                 self.alnFlowFlag = 0
                 # print "self.cntErNrm",self.cntErNrm
                 
@@ -439,7 +439,7 @@ class FrontEnd(object):
                 # print "ya5"
                 return 0 
         else:
-            if self.cntErNrm < 10 and self.cntErNrm != 0:
+            if self.cntErNrm < 10 and self.cntErNrm != 0:                                   
                 # print "self.cntErNrm",self.cntErNrm
                 # print "ya6"
                 return 1
@@ -495,8 +495,8 @@ class FrontEnd(object):
     def rectifyInputImage(self,frame2use):
 
 # 0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00
-        K = np.array([[7.092159469231584126e+02,0.000000000000000000e+00,3.681653710406367850e+02],[0.000000000000000000e+00,7.102890453175559742e+02,2.497677007139825491e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
-        dist = np.array([2.439122447395965926e-02,-1.174125872015051447e-01,-7.226737851943197850e-03,-2.109186754013973528e-03,6.156184110527554987e-01])
+        K = np.array([[7.092159469231584126e+02,0.000000000000000000e+00,3.681653710406367850e+02],[0.000000000000000000e+00,7.102890453175559742e+02,2.497677007139825491e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])      # to update
+        dist = np.array([2.439122447395965926e-02,-1.174125872015051447e-01,-7.226737851943197850e-03,-2.109186754013973528e-03,6.156184110527554987e-01])                                                                                                          # to update
         K_inv = np.linalg.inv(K)
 
         h , w = frame2use.shape[:2]
@@ -573,7 +573,7 @@ class FrontEnd(object):
             if area > 300:#param
                 # if len(approx) == 3:
                     # cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
-                if len(approx) == 4:
+                if len(approx) == 4:                                                        # to update. Insert Archit's code
                     (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
                     ar = MA/ma
 
@@ -584,8 +584,8 @@ class FrontEnd(object):
                     # print "Angle",angle
                     # print "solidity",solidity
                     # print "ar",ar
-                    condition = ar < 0.6 and ar > arSet
-                    if solidity > 0.9 and condition:
+                    condition = ar < 0.6 and ar > arSet                                     # to update
+                    if solidity > 0.9 and condition:                                        # to update
 
                         self.ar = ar
                         # print "ar",self.ar
@@ -638,7 +638,7 @@ class FrontEnd(object):
 
     def PoseEstimation(self,rect,frameH,frameW):
 
-        K = np.array([[6.981060802052014651e+02,0.000000000000000000e+00,3.783628172155137577e+02],[0.000000000000000000e+00,6.932839845949604296e+02,2.823973488087042369e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
+        K = np.array([[6.981060802052014651e+02,0.000000000000000000e+00,3.783628172155137577e+02],[0.000000000000000000e+00,6.932839845949604296e+02,2.823973488087042369e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]]) # to update
         # dist = np.array([-1.428750372096417864e-01,-3.544750945429044758e-02,1.403740315118516459e-03,-2.734988255518019593e-02,1.149084393996809700e-01])
 
         # K = np.array([[6.331284731799049723e+02,0.000000000000000000e+00,3.240546706735938187e+02],[0.000000000000000000e+00,6.276117931324869232e+02,2.404437048001034611e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
@@ -744,7 +744,7 @@ class FrontEnd(object):
                 self.rcOut = [MtnCmd[1], MtnCmd[0],MtnCmd[2],0]
 
                 if self.rcOut[0] > 35:
-                    self.rcOut[0] = 35
+                    self.rcOut[0] = 35                                      
                 elif self.rcOut[0] < -35:
                     self.rcOut[0] = -35
 
@@ -776,7 +776,7 @@ class FrontEnd(object):
             arSet = 0.4
             if area > 300:#param
 
-                if len(approx) == 4:
+                if len(approx) == 4:                                                                    # to update. Insert Archit's code
                     (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
                     ar = MA/ma
 
@@ -784,8 +784,8 @@ class FrontEnd(object):
                     hull_area = cv2.contourArea(hull)
                     solidity = float(area)/hull_area
 
-                    condition = ar < 0.6 and ar > arSet
-                    if solidity > 0.9 and condition:
+                    condition = ar < 0.6 and ar > arSet                                                 # to update
+                    if solidity > 0.9 and condition:                                                    # to update
 
                         self.ar = ar
                         # print "ar",self.ar
@@ -827,7 +827,7 @@ class FrontEnd(object):
             print("still visible")
             self.rcOut[0] = 0
             self.rcOut[1] = 0
-            self.rcOut[2] = 20
+            self.rcOut[2] = 20                                                      # to update
             self.rcOut[3] = 0
             self.trigger = 0
             self.lost = 0

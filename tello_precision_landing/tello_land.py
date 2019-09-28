@@ -57,38 +57,42 @@ imf = image_pb2.image()
 dep = image_pb2.depth_m()
 tello = Tello()
 tello.connect()
-tello.streamoff()
-tello.streamon()
 velCallbaack(socket2, tello)
 
-capture = tello.get_video_capture()
 try:
-    #tello.takeoff()
-    tello_height.goto_height(tello, 250)
+    tello.takeoff()
+    tello_height.goto_height(tello, 100)
     pass
 except:
     pass
+tello.streamoff()
+tello.streamon()
+capture = tello.get_video_capture()
+
 while 1:
     print(tello.get_bat())
-    ret, frame = capture.read()
-    frameBGR = np.copy(frame)
-    frame2use = im.resize(frameBGR,width=720)
-    imf.width = 720
-    imf.height = frame2use.shape[0]
-    imf.image_data  = frame2use.tobytes()
-    data = imf.SerializeToString()
-    socket.send(data)
     try:
-        dep.d = float(tello.get_h())
-        data = dep.SerializeToString()
-        socket3.send(data)
+        ret, frame = capture.read()
+        frameBGR = np.copy(frame)
+        frame2use = im.resize(frameBGR,width=720)
+        imf.width = 720
+        imf.height = frame2use.shape[0]
+        imf.image_data  = frame2use.tobytes()
+        data = imf.SerializeToString()
+        socket.send(data)
+        try:
+            dep.d = float(tello.get_h())
+            data = dep.SerializeToString()
+            socket3.send(data)
 
-    except Exception as e:
-        print(e)
+        except Exception as e:
+            print(e)
+            pass
+        cv2.imshow("haha",frame2use)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    except:
         pass
-    cv2.imshow("haha",frame2use)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
 
 tello.land()
     #sleep(1/25)

@@ -99,8 +99,8 @@ class FrontEnd(object):
 
             key,dst,mask = self.preproccessAndKey(frame_read)
 
-            trigger = self.stateTrigger(key,"p")
-            if key == ord("m"):
+            trigger = self.stateTrigger(key,"p")                                    #to change automate
+            if key == ord("m"):                                                     #to change automate
                 self.takeoffToShelf(trigger,key,mask,dst)
             else :
                 self.manualRcControl(key)
@@ -111,14 +111,14 @@ class FrontEnd(object):
             cv2.imshow("rectified",dst) 
             # print(self.lastValue3)
 
-            if key == ord("q"):
+            if key == ord("q"):                                                     #to change automate
                 break
-            if key == ord("t"):
+            if key == ord("t"):                                                     #to change automate
                 try:
                     self.tello.takeoff()   
                 except:
                     print("lol")    
-            if key == ord("l"):
+            if key == ord("l"):                                                     #to change automate
                 self.tello.land()
                 Height = 100
 
@@ -131,7 +131,7 @@ class FrontEnd(object):
         # self.tello.end()
 
     def takeoffToShelf(self,trigger,key,mask,dst):
-        frameH,frameW,arSet = 24,24,0.8
+        frameH,frameW,arSet = 24,24,0.8                                              #to change (might)
         cv2.imshow("msk",mask)
         self.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
         self.manualRcControl(key)
@@ -147,14 +147,14 @@ class FrontEnd(object):
 
 
     def slideAndSearchRect(self,key):
-        thresh = 200
-        speed = 20
+        thresh = 200                                                                        #remove
+        speed = 20                                                                          #remove
 
         # print "aspectRatio",self.ARmean[0]
 
         # print "self.PoseFlag",self.PoseFlag
 
-        con = self.ARmean[0] > 0.8
+        con = self.ARmean[0] > 0.8                                                          #to change
         con = con*1
         # print "con",con
         trig = self.interMtrigger2(con)
@@ -164,7 +164,7 @@ class FrontEnd(object):
             return 1
 
         else :
-            self.rcOut[0] = 20
+            self.rcOut[0] = 20                                                              #to change speed
             self.rcOut[1] = 0
             self.rcOut[2] = 0
             self.rcOut[3] = 0
@@ -227,10 +227,9 @@ class FrontEnd(object):
             # print "ya1"
             # print "self.cntErNrm",self.cntErNrm
 
-            if self.cntErNrm > 10 or self.cntErNrm ==0:
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,150,0,0,0.35) 
+                self.PoseController(key,150,0,0,0.35)                                               #to change key,x,y,z,Kp     x,y,z are relative, Kp is extremely tested, y is right, z is top
                 self.alnFlowFlag = 1
                 # print "self.cntErNrm",self.cntErNrm
 
@@ -311,8 +310,8 @@ class FrontEnd(object):
 
 
 # 0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00
-        K = np.array([[7.092159469231584126e+02,0.000000000000000000e+00,3.681653710406367850e+02],[0.000000000000000000e+00,7.102890453175559742e+02,2.497677007139825491e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
-        dist = np.array([2.439122447395965926e-02,-1.174125872015051447e-01,-7.226737851943197850e-03,-2.109186754013973528e-03,6.156184110527554987e-01])
+        K = np.array([[7.092159469231584126e+02,0.000000000000000000e+00,3.681653710406367850e+02],[0.000000000000000000e+00,7.102890453175559742e+02,2.497677007139825491e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])          #to change camera parameters
+        dist = np.array([2.439122447395965926e-02,-1.174125872015051447e-01,-7.226737851943197850e-03,-2.109186754013973528e-03,6.156184110527554987e-01])                                                                                                              #to change distortion coefficients
         K_inv = np.linalg.inv(K)
 
         h , w = frame2use.shape[:2]
@@ -377,16 +376,16 @@ class FrontEnd(object):
         # Contours detection
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-        oldArea = 300
+        oldArea = 300                                                                                                
         for cnt in contours:
             area = cv2.contourArea(cnt)
-            approx = cv2.approxPolyDP(cnt, 0.012*cv2.arcLength(cnt, True), True) # 0.012 param
+            approx = cv2.approxPolyDP(cnt, 0.012*cv2.arcLength(cnt, True), True)                                     #to change 0.012 param IMP
             x = approx.ravel()[0]
             y = approx.ravel()[1]
 
             
 
-            if area > 300:#param
+            if area > 300:#param                                                                                     #to change
                 # if len(approx) == 3:
                     # cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
                 if len(approx) == 4:
@@ -401,7 +400,7 @@ class FrontEnd(object):
                     # print "solidity",solidity
                     # print "ar",ar
                     condition = ar < 1 and ar > arSet
-                    if solidity > 0.9 and condition:
+                    if solidity > 0.9 and condition:                                                                #to change
 
                         self.ar = ar
                         # print "ar",self.ar
@@ -447,7 +446,7 @@ class FrontEnd(object):
 
     def PoseEstimation(self,rect,frameH,frameW):
 
-        K = np.array([[6.981060802052014651e+02,0.000000000000000000e+00,3.783628172155137577e+02],[0.000000000000000000e+00,6.932839845949604296e+02,2.823973488087042369e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
+        K = np.array([[6.981060802052014651e+02,0.000000000000000000e+00,3.783628172155137577e+02],[0.000000000000000000e+00,6.932839845949604296e+02,2.823973488087042369e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])          #to change camera parameter
         # dist = np.array([-1.428750372096417864e-01,-3.544750945429044758e-02,1.403740315118516459e-03,-2.734988255518019593e-02,1.149084393996809700e-01])
 
         # K = np.array([[6.331284731799049723e+02,0.000000000000000000e+00,3.240546706735938187e+02],[0.000000000000000000e+00,6.276117931324869232e+02,2.404437048001034611e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
@@ -459,7 +458,7 @@ class FrontEnd(object):
 
         crnList = rect
 
-        frameH = frameH/2 
+        frameH = frameH/2                                                                           
         frameW = frameW/2
 
         src = np.array([[-1*frameH,-1*frameW],[frameH,-1*frameW],[frameH,frameW],[-1*frameH,frameW]])

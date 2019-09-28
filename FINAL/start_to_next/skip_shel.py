@@ -80,10 +80,10 @@ class FrontEnd(object):
 
             key = cv2.waitKey(1) & 0xFF;
             
-            if (key == ord("m")):
+            if (key == ord("m")):                                                               #to change automate
                 dst,mask = self.preproccessAndKey(frame)
-                rect = self.get_coordinates(mask,dst)
-                if(self.trigger_init==0):
+                rect = self.get_coordinates(mask,dst)                                           # 0 3       order of rect coordinates
+                if(self.trigger_init==0):                                                       # 1 2
                 
                     if(rect[0][0] == 0):
                         continue
@@ -150,7 +150,7 @@ class FrontEnd(object):
         frame = frame2use 
         
         dst = frame2use            
-        mask = self.getRectMask(dst)
+        mask = self.getRectMask(dst)                        
 
         return dst,mask
 
@@ -293,7 +293,7 @@ class FrontEnd(object):
             cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
             cv2.imshow("with frame",frame)
             print("still visible")
-            self.rcOut[0] = 30
+            self.rcOut[0] = 30                                                  #to update speed along x axis
             self.rcOut[1] = 0
             self.rcOut[2] = 0
             self.rcOut[3] = 0

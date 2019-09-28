@@ -323,10 +323,10 @@ class warehouse_L:
 			
 		avg_int_list = np.array(avg_int_list)
 
-		idx = avg_int_list.argsort()[:15]
+		idx = avg_int_list.argsort()[:15]														# minimum 15 to update
 		coloured_list = []
 		for x in idx:
-			if np.sum(src[:,x]) != 0 and avg_int_list[x]<150:
+			if np.sum(src[:,x]) != 0 and avg_int_list[x]<150:									# to update
 				for i in range(10):
 					if x+i<cols:
 						src[:, x+i] = 0
@@ -335,7 +335,7 @@ class warehouse_L:
 
 	def diff_shelf(self,im, qrpoints, textpoints):
 		vert = self.check_shelf_edge(im)
-		im, idx = self.check_bars(vert, im, 5)
+		im, idx = self.check_bars(vert, im, 5)													# 5 = width of bar to update
 		x1 = 0
 		for polygon in qrpoints:
 			for point in polygon:
@@ -371,7 +371,7 @@ class warehouse_L:
 		if text != None and corners:
 
 			bars = self.diff_shelf(im, qrpoints, corners)
-			if bars>8:
+			if bars>8:																		# to update VERY IMPORTANT!!!
 				return output, 2, corners
 
 			check_text = 1
@@ -452,7 +452,7 @@ class warehouse_L:
 		min_confidence = 0.5
 		height = width = 320
 
-		padding = 0.06
+		padding = 0.06																				# to update padding
 
 		orig = image.copy()
 		# origH = 1080
@@ -583,19 +583,19 @@ class warehouse_L:
 		qrprev_list = []                                   # For comparing with newer qr-codes from next shelf
 		qrlist = []
 		check_qr_num = 0
-		passed_shelf_var = False
-		should_correct_pos = False
-		num_corrections = 0
-		go_up = False
-		go_down = False
-		start_height = 0
-		should_track = False
-		vertical_motion = False
+		passed_shelf_var = False							#
+		should_correct_pos = False							#
+		num_corrections = 0									#
+		go_up = False										#	These lines tell if the particular function is to be executed or not
+		go_down = False										#
+		start_height = 0									#
+		should_track = False								#
+		vertical_motion = False								#
 		
 		align_without_QR = False
 		rectangle_without_QR = False
 
-		self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))
+		self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))							#remove this line
 		# f.close()
 
 		# Read feed:
@@ -623,7 +623,7 @@ class warehouse_L:
 			# QR-codes detect
 			k = cv2.waitKey(1) & 0xFF
 
-			if k == ord("m"):
+			if k == ord("m"):															# to update automate
 				
 				if go_up or go_down:
 					vertical_motion = True
@@ -645,7 +645,7 @@ class warehouse_L:
 				if ((trav1.num_text_frames - initial_no_of_frames) > 0) and align_without_QR:
 					align_without_QR = False
 
-				if trav1.num_text_frames == 3:              # NO. of shelves in one row # 4
+				if trav1.num_text_frames == 4:              # NO. of shelves in one row # 4			#update done
 					self.should_stop = True
 					print("Finished")
 					break
@@ -687,7 +687,7 @@ class warehouse_L:
 				if go_up:
 					print("up")
 					present_height = self.tello.get_h()
-					if (present_height - start_height) > 75:
+					if (present_height - start_height) > 75:										# to update
 						go_up = False
 						go_down = True
 						cv2.imshow("Results",frame)
@@ -703,7 +703,7 @@ class warehouse_L:
 					cv2.imshow("Results",frame)
 					continue
 
-				if go_down:
+				if go_down:																			# might have to update with archit's code
 					print("down")
 					#if self.tello.get_h() <= start_height and trav1.detect_only_rectangle(frame):
 					if self.tello.get_h() <= start_height:
@@ -736,7 +736,7 @@ class warehouse_L:
 					frame, check_text, txt_corners = self.find_text_and_write(frame, qrlist, qrpoints)
 					
 					if check_text == 0:
-						self.rcout = [-5,0,0,0]
+						self.rcout = [-5,0,0,0]																	# to update velocity
 						print("text not found")
 						self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))
 						cv2.imshow("Results",frame)
@@ -744,7 +744,7 @@ class warehouse_L:
 
 					if check_text == 2:
 						# move until further code is detected.
-						self.rcout = [-5,0,0,0]
+						self.rcout = [-5,0,0,0]																	# to update velocity
 						print("text and QR in different Shelves")
 						self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))
 						cv2.imshow("Results",frame)
@@ -757,7 +757,7 @@ class warehouse_L:
 				elif self.hover_time > 3:
 					print("hover time: "+str(self.hover_time))
 
-					self.rcout = [-15,0,0,0]
+					self.rcout = [-15,0,0,0]																	# to update velocity
 					
 					check_qr_num += 1
 					
@@ -788,7 +788,7 @@ class warehouse_L:
 					#if total_time > 5:              
 					#	should_correct_pos = True   			   ## Just ONCE every time this distance is reached
 					#	total_time = 0
-					self.rcout = [-15,0,0,0]
+					self.rcout = [-15,0,0,0]																	# to update velocity
 					self.reached_qrcode = 0
 					self.hover_time= 0
 		
