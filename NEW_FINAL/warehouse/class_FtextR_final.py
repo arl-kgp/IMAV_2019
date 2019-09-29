@@ -652,7 +652,7 @@ class warehouse_R:
 				if ((trav1.num_text_frames - initial_no_of_frames) > 0) and align_without_QR:
 					align_without_QR = False
 
-				if trav1.num_text_frames == 3:              # NO. of shelves in one row # 4
+				if trav1.num_text_frames == 4:              # NO. of shelves in one row # 4
 					self.should_stop = True
 					print("Finished")
 					break
