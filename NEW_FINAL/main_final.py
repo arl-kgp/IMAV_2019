@@ -63,7 +63,7 @@ class hoohah(object):
 
     def run(self):
 
-    	global LR_VAL
+        global LR_VAL
 
         trig = 0
 
