@@ -119,7 +119,7 @@ class FrontEnd(object):
         # self.tello.end()
 
     def takeoffToShelf(self,trigger,key,mask,dst):
-        frameH,frameW,arSet = 10,20,0.4
+        frameH,frameW,arSet = 10,20,0.15
         cv2.imshow("msk",mask)
         self.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
         self.manualRcControl(key)

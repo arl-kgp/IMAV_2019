@@ -260,7 +260,7 @@ class FrontEnd(object):
             approx = cv2.approxPolyDP(cnt, 0.012*cv2.arcLength(cnt, True), True) # 0.012 param
             x = approx.ravel()[0]
             y = approx.ravel()[1]
-            arSet = 0.4  #change krde for different sizes
+            arSet = 0.15  #change krde for different sizes
             if area > 300:#param
 
                 if len(approx) == 4:

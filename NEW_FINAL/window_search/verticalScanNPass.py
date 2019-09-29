@@ -331,7 +331,7 @@ class FrontEnd(object):
             # return the ordered coordinates
             return rect
     def algnToFrameFinal(self,key,mask,dst):
-        frameH,frameW,arSet = 10,20,0.4                                                         # to update VERY IMPORTANT!!!!!
+        frameH,frameW,arSet = 10,20,0.15                                                         # to update VERY IMPORTANT!!!!!
         cv2.imshow("msk",mask)
         self.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
         self.manualRcControl(key)
@@ -754,7 +754,7 @@ class FrontEnd(object):
             approx = cv2.approxPolyDP(cnt, 0.012*cv2.arcLength(cnt, True), True) # 0.012 param
             x = approx.ravel()[0]
             y = approx.ravel()[1]
-            arSet = 0.4
+            arSet = 0.15
             if area > 300:#param
 
                 if len(approx) == 4:                                                                    # to update. Insert Archit's code
