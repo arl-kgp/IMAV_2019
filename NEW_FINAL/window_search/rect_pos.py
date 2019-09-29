@@ -4,12 +4,12 @@ import numpy as np
 class detect(object):
 
     def __init__(self):                                                 # to change 
-        self.h_low = 22
-        self.h_high = 56
-        self.s_low = 56
-        self.s_high = 207
-        self.v_low = 144
-        self.v_high = 255    
+        self.h_low = 25
+        self.h_high = 39
+        self.s_low = 100
+        self.s_high = 235
+        self.v_low = 108
+        self.v_high = 236    
         self.trig = 0   
                                       # till here
 
@@ -32,7 +32,7 @@ class detect(object):
 
         n_max = np.amax(row_avg)
 
-        if (n_max>=80):                                                     # to change 80
+        if (n_max>=70):                                                     # to change 80
             k = row_avg.argmax()
             k_val = np.amax(row_avg)
             row_avg[k-20:k+20] = 0                                          # to change 20
@@ -41,7 +41,7 @@ class detect(object):
             row_avg[t-20:t+20] = 0
             row_avg[k] = k_val
             row_avg[t] = t_val
-            l = np.amax(np.where(row_avg>=80))
+            l = np.amax(np.where(row_avg>=70))
             cv2.line(frame,(0,l),(frame.shape[1],l),(255,255,255),4)
 
             return 1, l
