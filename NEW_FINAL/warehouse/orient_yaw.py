@@ -18,9 +18,11 @@ class Orient(object):
 		# 	print("takeoff to ho gya lol")
 		# sleep(1)
 
-		kp = 0.6
-		ki = 0.01
-		kd = 0.001
+		print("now in orientation wlalalalallalalalallalalalalalalalalallalalalalalallal")
+
+		kp = 0.8
+		ki = 0.012
+		kd = 0.0008
 
 		e = target - self.tello.get_yaw()
 		e_i = 0
@@ -28,7 +30,7 @@ class Orient(object):
 		t1 = time()
 		prev_e = e
 		
-		while(abs(e)): #for error
+		while(abs(e)>2): #for error
 		# while True:
 			# self.tello.get_battery()
 			print(self.tello.get_yaw())
@@ -49,6 +51,8 @@ class Orient(object):
 			t1 = time()
 			sleep(.01)
 			prev_e = e
+
+		print("Orientation wlae se nikla gya ab tohh sjbdygfvatsdusjnbsgvddbj")
 		# self.tello.land()
 		# self.tello.end()
 

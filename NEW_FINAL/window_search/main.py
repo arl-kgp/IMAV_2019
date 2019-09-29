@@ -5,8 +5,8 @@ import time
 import imutils as im
 
 
-from left_right import FrontEnd as left_right
-from verticalScanNPass import FrontEnd as up_down
+from window_search.left_right import FrontEnd as left_right
+from window_search.verticalScanNPass import FrontEnd as up_down
 # from passFrmWindow import FrontEnd as passWin
 # from after_shelf import FrontEnd as after
 from orient_yaw import Orient as orient 
@@ -96,9 +96,6 @@ class starting(object):
 
         # self.after.run(self.up,self.right)
 
-        self.tello.land()
-        print("Ended")
-
 
 def main():
     print("now i am gonna start the mission")
@@ -107,7 +104,7 @@ def main():
     tello.streamoff()
     tello.streamon()
     start = starting(tello)
-    a,b,c = start.run()
+    a,b,c = start.run(tello.get_yaw())
     print("UP is {} and right is {}".format(a,b))
 
 if __name__ == '__main__':

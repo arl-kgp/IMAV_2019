@@ -17,14 +17,14 @@ import pytesseract
 from qrcode import *
 from text import *
 from imutils.object_detection import non_max_suppression
-from shelf_trav import FrontEnd as shelf_traversal
+from warehouse.shelf_trav import FrontEnd as shelf_traversal
 from PIL import Image
 import scipy
 import scipy.misc
 from imutils.video import FPS
-from align_to_frame import FrontEnd as correct_position # Use in left
+from warehouse.align_to_frame import FrontEnd as correct_position # Use in left
 
-from align_rect import FrontEnd as align_rect
+from warehouse.align_rect import FrontEnd as align_rect
 
 class warehouse_L:
 	def __init__(self, tello):

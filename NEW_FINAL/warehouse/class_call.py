@@ -1,8 +1,8 @@
 from djitellopy import Tello
 import cv2
-from class_FtextR_final import warehouse_R
-from class_FtextL_final import warehouse_L
-from csvParserfinal import *
+from warehouse.class_FtextR_final import warehouse_R
+from warehouse.class_FtextL_final import warehouse_L
+from warehouse.csvParserfinal import *
 from tello_height import *
 from orient_yaw import Orient as orient
 

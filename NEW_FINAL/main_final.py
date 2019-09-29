@@ -12,28 +12,14 @@ import os
 
 import threading
 
-sys.path.append(os.path.abspath("./start_to_next"))
 from start_to_next.main import starting 
-sys.path.remove(os.path.abspath("./start_to_next"))
-
-sys.path.append(os.path.abspath("./warehouse"))
 from warehouse.class_call import warehouse_overall 
-sys.path.remove(os.path.abspath("./warehouse"))
-
-sys.path.append(os.path.abspath("./window_search"))
 from window_search.main import starting as rect_pass
-sys.path.remove(os.path.abspath("./window_search"))
-
-sys.path.append(os.path.abspath("./JoyStick_Controller"))
 from JoyStick_Controller.controller_module import Controller
-import JoyStick_Controller.xbox
+import JoyStick_Controller.xbox as xbox
 
 from tello_height import goto_height
-
-sys.path.remove(os.path.abspath("./JoyStick_Controller"))
-
 from after_shelf import FrontEnd as after
-
 from orient_yaw import Orient as orient
 
 Out_of_bounds = False

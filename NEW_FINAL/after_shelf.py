@@ -60,7 +60,7 @@ class FrontEnd(object):
 
             cv2.imshow("original",frame)
 
-            key = cv2.waitKey(1) & 0xFF;
+            key = cv2.waitKey(1) & 0xFF
             
             if (key == ord("m")):
                 # print(self.tello.get_bat())
@@ -332,7 +332,6 @@ class FrontEnd(object):
             approx = cv2.approxPolyDP(cnt, 0.012*cv2.arcLength(cnt, True), True) # 0.012 param
             x = approx.ravel()[0]
             y = approx.ravel()[1]
-            arSet = 0.4
             if area > 300:#param
 
                 if len(approx) == 4:
@@ -446,7 +445,7 @@ def main():
     frontend = FrontEnd(tello)
     print("noooo")
 
-    frontend.run(1,0)    #left,up
+    frontend.run(1,0, tello.get_yaw())    #left,up
 
     print("found the end of the code")
 

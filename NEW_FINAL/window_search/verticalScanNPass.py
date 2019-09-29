@@ -5,7 +5,7 @@ from pygame.locals import *
 import numpy as np
 import time
 import imutils as im
-from rect_pos import detect
+from window_search.rect_pos import detect
 
 # Speed of the drone
 S = 60

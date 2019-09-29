@@ -4,7 +4,7 @@ import numpy as np
 import time
 import imutils as im
 
-from align_rect import FrontEnd as align_rect
+from window_search.align_rect import FrontEnd as align_rect
 
 font = cv2.FONT_HERSHEY_COMPLEX
 
