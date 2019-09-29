@@ -637,8 +637,9 @@ def main():
     tello = Tello()
     frontend = FrontEnd(tello)
 
+    yaw = tello.get_yaw()
     # run frontend
-    frontend.run()
+    frontend.run(yaw)
 
 
 if __name__ == '__main__':

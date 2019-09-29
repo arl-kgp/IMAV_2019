@@ -82,7 +82,7 @@ class FrontEnd(object):
                         self.trigger_init_start = 1
 
                 if(self.trigger_init_start==1):
-                    self.align_rect.run(yaw)
+                    self.align_rect.run()
                     self.trigger_init_start = 2
                     self.align_rect.clear()
                     # print("gfcxgfhjkhgcfxdfghfxdghjcftyghxfgfhvfxdfgh")
@@ -109,7 +109,7 @@ class FrontEnd(object):
                                 self.trigger_init = 1
 
                         if(self.trigger_init == 1):
-                            self.align_rect.run(yaw)
+                            self.align_rect.run()
                             self.trigger_init = 2
                             self.align_rect.clear()
 
@@ -138,7 +138,7 @@ class FrontEnd(object):
 
                         if(self.trigger_init == 5):
 
-                            self.align_rect.run(yaw)
+                            self.align_rect.run()
                             self.trigger_init = 0
                             up = 1
                             self.align_rect.clear()
@@ -157,7 +157,7 @@ class FrontEnd(object):
                                 self.trigger_init = 1
 
                         if(self.trigger_init == 1):
-                            self.align_rect.run(yaw)
+                            self.align_rect.run()
                             self.trigger_init = 2
                             self.align_rect.clear()
 
@@ -185,7 +185,7 @@ class FrontEnd(object):
 
                         if(self.trigger_init == 5):
 
-                            self.align_rect.run(yaw)
+                            self.align_rect.run()
                             self.trigger_init = 0
                             left = left -1
                             self.align_rect.clear()
@@ -199,7 +199,7 @@ class FrontEnd(object):
 
             self.sendRcControl()
 
-    def clear():
+    def clear(self):
         
         # self.cap = cv2.VideoCapture(0)
         self.tracker = cv2.TrackerKCF_create()
