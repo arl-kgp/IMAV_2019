@@ -301,12 +301,12 @@ class FrontEnd(object):
         # return
 
     def sendRcControl(self):
-    	pass
+    	# pass
         # print "rcOut", self.rcOut
-        # self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
-        # self.rcOut = [0,0,0,0]
+        self.tello.send_rc_control(int(self.rcOut[0]),int(self.rcOut[1]),int(self.rcOut[2]),int(self.rcOut[3]))
+        self.rcOut = [0,0,0,0]
 
-        # return
+        return
 
     def rectifyInputImage(self,frame2use):
 
