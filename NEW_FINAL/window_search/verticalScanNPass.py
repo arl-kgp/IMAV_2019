@@ -558,7 +558,6 @@ class FrontEnd(object):
                     if ar > 1:
                         ar=1/ar
 
-
                     hull = cv2.convexHull(cnt)
                     hull_area = cv2.contourArea(hull)
                     solidity = float(area)/hull_area
@@ -602,7 +601,9 @@ class FrontEnd(object):
 
                                 self.telloPoseVariance = np.var(self.poseQueue,axis=0)
                                 self.telloPoseMean = np.mean(self.poseQueue,axis = 0)
-                                self.frameCenter = [[cx,cy]]
+                                ccc = (approx[0]+approx[1]+approx[2]+approx[3])//4
+
+                                self.frameCenter = [[ccc[0],ccc[1]]]
                                 # print "PoseQueue",self.poseQueue
                                 # print "PoseMean",self.telloPoseMean
                                 # print "telloPoseVariance" , self.telloPoseVariance
@@ -795,35 +796,6 @@ class FrontEnd(object):
                         oldArea = area
 
         return rect
-
-    def start_tracking(self, rect,frame):
-
-        self.bbox = (rect[0][0],rect[0][1],rect[2][0]-rect[0][0],rect[2][1]-rect[0][1])
-        ok = self.tracker.init(frame,self.bbox)
-        return ok
-
-    def track(self,frame):
-
-        ok, self.bbox = self.tracker.update(frame)
-
-        if ok:
-            # p1 = (int(self.bbox[0]), int(self.bbox[1]))
-            # p2 = (int(self.bbox[0]+ self.bbox[2]), int(self.bbox[1]+self.bbox[3]))
-            # cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
-            # cv2.imshow("with frame",frame)
-            print("still visible")
-            self.rcOut[0] = 0
-            self.rcOut[1] = 0
-            self.rcOut[2] = 20                                                      # to update
-            self.rcOut[3] = 0
-            self.trigger = 0
-            self.lost = 0
-
-        else:
-            print("LOST")
-            self.lost +=1
-            if(self.lost>15):
-                self.trigger = 1
 
         
 

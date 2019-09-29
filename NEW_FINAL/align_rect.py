@@ -449,7 +449,9 @@ class FrontEnd(object):
 
                                 self.telloPoseVariance = np.var(self.poseQueue,axis=0)
                                 self.telloPoseMean = np.mean(self.poseQueue,axis = 0)
-                                self.frameCenter = [[cx,cy]]
+                                ccc = (approx[0]+approx[1]+approx[2]+approx[3])//4
+
+                                self.frameCenter = [[ccc[0],ccc[1]]]
                                 # print "PoseQueue",self.poseQueue
                                 # print "PoseMean",self.telloPoseMean
                                 # print "telloPoseVariance" , self.telloPoseVariance

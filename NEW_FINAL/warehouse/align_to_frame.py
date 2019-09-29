@@ -349,8 +349,8 @@ class FrontEnd(object):
 
                         if area > oldArea:
                             cv2.drawContours(frame, [approx], 0, (0, 0, 0), 5)
-                            cv2.circle(frame,(int(cx),int(cy)), 3, (0,0,255), -1)
-                            cv2.putText(frame, "Rectangle" + str(angle), (x, y), font, 1, (0, 0, 0))
+                            #cv2.circle(frame,(int(cx),int(cy)), 3, (0,0,255), -1)
+                            cv2.putText(frame, "Rectangle", (x, y), font, 1, (0, 0, 0))
 
                             cntMain = approx
                             rect = self.order_points(cntMain)
@@ -538,7 +538,7 @@ def main():
     frontend = FrontEnd(tello)
 
     # run frontend
-    frontend.run()
+#    frontend.run()
 
 
 if __name__ == '__main__':
