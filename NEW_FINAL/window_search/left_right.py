@@ -51,7 +51,7 @@ class FrontEnd(object):
 
             key = cv2.waitKey(1) & 0xFF;
             
-            if (key == ord("m")):                                                           # to update automate
+            if (1):                                                           # to update automate
                 dst,mask = self.preproccessAndKey(frame)                                    # to update
                 rect = self.get_coordinates(mask,dst)                                       # to update
                 if(self.trigger_init==0):                    

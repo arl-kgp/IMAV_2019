@@ -185,7 +185,7 @@ class FrontEnd(object):
 
             self.lineIsVisible,self.lineLoc = self.skipLineDetect.run(dst) 
 
-            if key == ord("m"):                                                                 # to change automate
+            if 1:                                                                 # to change automate
                 if self.flagM1 == 1 and self.passFlag != 2: 
                     print ("Module 1")
                     self.flagM2 = self.algnToFrameFinal(key,mask,dst)

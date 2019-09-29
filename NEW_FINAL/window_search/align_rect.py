@@ -87,7 +87,7 @@ class FrontEnd(object):
             key,dst,mask = self.preproccessAndKey(frame_read)
 
             trigger = self.stateTrigger(key,"p")
-            if key == ord("m"):
+            if 1:
                 self.takeoffToShelf(trigger,key,mask,dst)
             else :
                 self.manualRcControl(key)
