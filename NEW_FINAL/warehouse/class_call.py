@@ -19,7 +19,7 @@ class warehouse_overall:
 
 		# yaw = self.tello.get_yaw()
 		
-		self.txt_R.scan(yaw)
+		self.txt_L.scan(yaw)
 		h = self.tello.get_h()
 		# GO_down_1.5m
 
@@ -33,7 +33,7 @@ class warehouse_overall:
 
 		self.orient.orient(yaw)
 		
-		self.txt_L.scan(yaw)
+		self.txt_R.scan(yaw)
 
 		self.orient.orient(yaw)
 		# GO_up_1.5m

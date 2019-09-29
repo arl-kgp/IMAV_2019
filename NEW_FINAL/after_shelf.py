@@ -72,7 +72,7 @@ class FrontEnd(object):
                     rect = self.get_coordinates(mask,dst)
                     print(rect)
                     if(rect[0][0] == 0):
-                        self.rcOut[2] = -20
+                        self.rcOut[2] = 20              #changed
                         self.rcOut[0] = 0
                         self.rcOut[1] = 0
                         self.rcOut[3] = 0
@@ -145,7 +145,7 @@ class FrontEnd(object):
 
                     elif (left!=0):
 
-                        print("now we are up and now going left")
+                        print("now we are up and now going right")
                         rect = self.get_coordinates(mask,dst)
 
                         if(self.trigger_init==0):
@@ -176,7 +176,7 @@ class FrontEnd(object):
                             rect = self.get_coordinates(mask,dst)
                             if(rect[0][0] == 0):
                                 self.rcOut[2] = 0
-                                self.rcOut[0] = -20
+                                self.rcOut[0] = 20   #changed
                                 self.rcOut[1] = 0
                                 self.rcOut[3] = 0 
                             else:
@@ -391,7 +391,7 @@ class FrontEnd(object):
             cv2.imshow("with frame",frame)
             # cv2.waitKey(10)
             print("still visible")
-            self.rcOut[0] = -20
+            self.rcOut[0] = 20
             self.rcOut[1] = 0
             self.rcOut[2] = 0
             self.rcOut[3] = 0

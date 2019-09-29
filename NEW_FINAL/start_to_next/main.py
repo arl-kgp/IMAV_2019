@@ -57,8 +57,8 @@ class starting(object):
         # self.skip_first.clear()
 
         # go more distance now
-        self.tello.move_right(80)                                                                #declare how much to move right so that reach the shelf
-        self.tello.rotate_counter_clockwise(90)
+        self.tello.move_left(80)                                                                #declare how much to move right so that reach the shelf
+        self.tello.rotate_clockwise(90)
 
         # do warehouse
 

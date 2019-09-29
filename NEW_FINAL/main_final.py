@@ -28,6 +28,8 @@ sys.path.append(os.path.abspath("./JoyStick_Controller"))
 from controller_module import Controller
 import xbox
 
+from tello_height import goto_height
+
 sys.path.remove(os.path.abspath("./JoyStick_Controller"))
 
 from after_shelf import FrontEnd as after
@@ -35,6 +37,11 @@ from after_shelf import FrontEnd as after
 from orient_yaw import Orient as orient
 
 Out_of_bounds = False
+LR_VAL = 0 #can be 0 : stay at place, 1 : move right, 2 : move left
+
+# will have to go to left if 1st shelf khiski hui hogi toward left wrt to second
+
+height = 185
 
 class hoohah(object):
 
@@ -46,7 +53,6 @@ class hoohah(object):
 
         self.initial_yaw = self.tello.get_yaw()
 
-
         self.warehouse = warehouse_overall(self.tello)
 
         self.rect_pass = rect_pass(self.tello)
@@ -56,6 +62,9 @@ class hoohah(object):
         self.orient = orient(self.tello)
 
     def run(self):
+
+    	global LR_VAL
+
         trig = 0
 
         try:
@@ -77,8 +86,10 @@ class hoohah(object):
         except:
             print("Control fail ho gya lol")
 
-        # self.starting.run(self.initial_yaw)										#uncomment this VERY IMPORTANT!!!!! 	
+        self.starting.run(self.initial_yaw)										#uncomment this VERY IMPORTANT!!!!! 	
 
+        goto_height(self.tello,height)											#the height of tello to reach 
+        
         yaw = self.tello.get_yaw()
 
         self.warehouse.algo(yaw)
@@ -87,20 +98,18 @@ class hoohah(object):
 
         self.warehouse.clear()
 
-        self.tello.move_right(40)													# to update
+        self.tello.move_left(50)													# to update
 
-        print("have moved right")
+        print("have moved left")
 
         while(trig == 0):
 
             up, left, trig = self.rect_pass.run(yaw)
             print("up = {}, left = {}, trig = {}".format(up,left,trig))
-
-            self.after.run(left,up,yaw)
+            if(trig==0):
+            	self.after.run(left,up,yaw)
 
         trig = 0
-
-
 
         # print("now going for after run")
 
@@ -108,6 +117,14 @@ class hoohah(object):
 
 
         # 3,0,yaw
+
+        if(LR_VAL==1):
+            self.tello.move_right(40)
+
+        elif(LR_VAL==2):
+            self.tello.move_left(40)
+
+        self.after.run(left,up,yaw)
 
         self.warehouse.algo(yaw)
 

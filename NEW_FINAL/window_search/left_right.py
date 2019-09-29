@@ -101,7 +101,7 @@ class FrontEnd(object):
                     rect = self.get_coordinates(mask,dst)
                     print("searching for new rectangle now")
                     if(rect[0][0] == 0):
-                        self.rcOut[0] = 20
+                        self.rcOut[0] = -20           #updated the velocity
                         self.rcOut[1] = 0
                         self.rcOut[2] = 0
                         self.rcOut[3] = 0
@@ -326,7 +326,7 @@ class FrontEnd(object):
             cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
             cv2.imshow("with frame",frame)
             print("still visible")
-            self.rcOut[0] = 20
+            self.rcOut[0] = -20                #changed
             self.rcOut[1] = 0
             self.rcOut[2] = 0
             self.rcOut[3] = 0
