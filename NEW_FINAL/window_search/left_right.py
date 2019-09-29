@@ -189,12 +189,13 @@ class FrontEnd(object):
 
         kernel = np.ones((5,5),np.uint8)#param 1
 
-        frame = cv2.GaussianBlur(frame, (7, 7), 0)#param 1
+        frame = cv2.GaussianBlur(frame, (7,7), 0)
         frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        kernel = np.ones((3,3), np.uint8)     
+        kernel = np.ones((3,3), np.uint8)
 
         frame_threshold = cv2.inRange(frame_HSV, (19, 0, 176), (64, 37, 255))
-        frame_threshold = cv2.dilate(frame_threshold, kernel, iterations=5)
+
+        frame_threshold = cv2.dilate(frame_threshold, kernel, iterations=7)
         frame_threshold = np.repeat(frame_threshold[:, :, np.newaxis], 3, 2)
 
         frame2 = np.uint8((frame_threshold//255)*np.int64(frame_HSV))
@@ -202,8 +203,11 @@ class FrontEnd(object):
         frame_threshold = cv2.inRange(frame2, (20, 28, 73), (57, 139, 133))
 
         mask = frame_threshold
-        mask = cv2.dilate(mask, kernel, iterations=2)
+        kernel = np.ones((1,1), np.uint8)      
 
+        mask = cv2.erode(mask, kernel, iterations=5)
+
+        mask = cv2.dilate(mask, kernel, iterations=8)
         return mask
 
     # def getRectMask(self,frame):
@@ -264,20 +268,16 @@ class FrontEnd(object):
             if area > 300:#param
 
                 if len(approx) == 4:
-                    if len(cnt) > 4:
-                        (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
-                        ar = MA/ma
-                    else:
-                        ar = (np.linalg.norm(approx[0] - approx[1]) + np.linalg.norm(approx[2] - approx[3]))/(np.linalg.norm(approx[2]-approx[1])+np.linalg.norm(approx[0]-approx[3]))
-                        if ar > 1:
-                            ar=1/ar
+                    ar = (np.linalg.norm(approx[0] - approx[1]) + np.linalg.norm(approx[2] - approx[3]))/(np.linalg.norm(approx[2]-approx[1])+np.linalg.norm(approx[0]-approx[3]))
+                    if ar > 1:
+                        ar=1/ar
 
                     hull = cv2.convexHull(cnt)
                     hull_area = cv2.contourArea(hull)
                     solidity = float(area)/hull_area
 
-                    condition = ar < 0.6 and ar > arSet #change for different rrect size
-                    if solidity > 0.9 and condition:
+                    condition = ar < 0.4 and ar > 0.25 #change for different rrect size
+                    if solidity > 0.95 and condition:
 
                         self.ar = ar
                         # print "ar",self.ar
@@ -290,8 +290,8 @@ class FrontEnd(object):
 
                         if area > oldArea:
                             cv2.drawContours(frame, [approx], 0, (0, 0, 0), 5)
-                            cv2.circle(frame,(int(cx),int(cy)), 3, (0,0,255), -1)
-                            cv2.putText(frame, "Rectangle" + str(angle), (x, y), font, 1, (0, 0, 0))
+                            #cv2.circle(frame,(int(cx),int(cy)), 3, (0,0,255), -1)
+                            cv2.putText(frame, "Rectangle", (x, y), font, 1, (0, 0, 0))
 
                             cntMain = approx
                             rect = self.order_points(cntMain)
