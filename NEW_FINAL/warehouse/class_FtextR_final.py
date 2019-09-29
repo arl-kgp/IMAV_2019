@@ -315,7 +315,9 @@ class warehouse_R:
 		rows, cols = img.shape
 		min_avg_int = 255
 		x = 0
+		y = 0
 		avg_int_list = []
+		idx_new = []
 		for i in range(cols-barsize):
 			bar_img = img[:, i:i+barsize]
 			avg_int = np.sum(bar_img)/(rows*barsize)
@@ -323,14 +325,19 @@ class warehouse_R:
 			
 		avg_int_list = np.array(avg_int_list)
 
-		idx = avg_int_list.argsort()[:15]
+		idx = avg_int_list.argsort()[:15]														# minimum 15 to update
 		coloured_list = []
 		for x in idx:
-			if np.sum(src[:,x]) != 0 and avg_int_list[x]<150:
+			if avg_int_list[x]<150:
+				idx_new[y] = x
+				y = y+1
+			if np.sum(src[:,x]) != 0 and avg_int_list[x]<150:									# to update
 				for i in range(10):
 					if x+i<cols:
 						src[:, x+i] = 0
 		print(avg_int_list[idx])
+		cv2.imshow("bars", src)
+		cv2.waitKey(0)
 		return src, idx
 
 	def diff_shelf(self,im, qrpoints, textpoints):

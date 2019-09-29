@@ -336,8 +336,9 @@ class warehouse_L:
 					if x+i<cols:
 						src[:, x+i] = 0
 		print(avg_int_list[idx])
-		imshow("bars", src)
-		return src, idx
+		cv2.imshow("bars", src)
+		cv2.waitKey(0)
+		return src, idx_new
 
 	def diff_shelf(self,im, qrpoints, textpoints):
 		vert = self.check_shelf_edge(im)
@@ -377,7 +378,7 @@ class warehouse_L:
 		if text != None and corners:
 
 			bars = self.diff_shelf(im, qrpoints, corners)
-			if bars>8:																		# to update VERY IMPORTANT!!!
+			if bars>15:																		# to update VERY IMPORTANT!!!!!!!!!!!!uppdated from8 to 15... not using this as this case doesn't arise
 				return output, 2, corners
 
 			check_text = 1

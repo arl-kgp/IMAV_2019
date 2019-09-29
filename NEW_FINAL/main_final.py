@@ -1,3 +1,6 @@
+import sys
+if '/opt/ros/kinetic/lib/python2.7/dist-packages' in sys.path:
+	sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 from djitellopy import Tello
 import cv2
 import numpy as np
