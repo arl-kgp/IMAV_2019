@@ -13,13 +13,13 @@ from orient_yaw import Orient as orient
 
 class starting(object):
 
-    def __init__(self,tello):
+    def __init__(self):
 
-        self.tello = tello
+        self.tello = Tello()
         # self.joy = xbox.Joystick()
-        # self.tello.connect()
-        # self.tello.streamoff()
-        # self.tello.streamon()
+        self.tello.connect()
+        self.tello.streamoff()
+        self.tello.streamon()
         # print("nooooooooo")
 
         self.left_right = left_right(self.tello)
@@ -36,7 +36,7 @@ class starting(object):
         self.right = 0
         self.trig = 0
 
-    def run(self,yaw):
+    def run(self):
 
         # while(self.right<2):
 
@@ -49,37 +49,23 @@ class starting(object):
             #     break
 
             # else:
-        initial_yaw = yaw
-        while(self.right<3):                                                    #parameter. Might have to update it to 4
+        initial_yaw = self.tello.get_yaw()
+        while(True):
             # print("yooooo")
-            
-            
-            self.orient.orient(initial_yaw)
             print("now in up down wali class")
             self.trig = self.up_down.run()
             self.up_down.clear()
-
-            print("now yaw correction started")
-            self.orient.orient(initial_yaw)
-            print("yaw correction complete")
-            # cv2.destroyAllWindows()
-
-            if(self.trig==1):
-                if(self.tello.get_h()>180):
-                    self.up = 1
-                    return self.up,self.right,1
-                    
-            else:
-                print("mow in left right wali class")
-                self.right = self.left_right.run(self.right)
-                self.left_right.clear()
-
-
-
-        return 0,2,0
-
-            # if(self.right>3):
-
+            # print("now yaw correction started")
+            # self.orient.orient(initial_yaw)
+            # # cv2.destroyAllWindows()
+            # if(self.trig==1):
+            #     if(self.tello.get_h()>180):
+            #         self.up = 1
+            #         return self.up,self.right
+            # else:
+            #     print("now in left right wali class")
+            #     self.right = self.left_right.run(self.right)
+            #     self.left_right.clear()
 
             # print("adgfduasjdjjdahgvafshjskssgvhjxjnvvdh")
             # self.right = self.left_right.run(self.right)
@@ -102,12 +88,8 @@ class starting(object):
 
 def main():
     print("now i am gonna start the mission")
-    tello = Tello()
-    tello.connect()
-    tello.streamoff()
-    tello.streamon()
-    start = starting(tello)
-    a,b,c = start.run()
+    start = starting()
+    a,b = start.run()
     print("UP is {} and right is {}".format(a,b))
 
 if __name__ == '__main__':

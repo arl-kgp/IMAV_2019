@@ -189,48 +189,22 @@ class FrontEnd(object):
 
         kernel = np.ones((5,5),np.uint8)#param 1
 
-        blurred = cv2.GaussianBlur(frame, (7, 7), 0)#param 1
+        frame = cv2.GaussianBlur(frame, (7, 7), 0)#param 1
+        frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        kernel = np.ones((3,3), np.uint8)     
 
-        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-        h,s,v = cv2.split(hsv)
+        frame_threshold = cv2.inRange(frame_HSV, (19, 0, 176), (64, 37, 255))
+        frame_threshold = cv2.dilate(frame_threshold, kernel, iterations=5)
+        frame_threshold = np.repeat(frame_threshold[:, :, np.newaxis], 3, 2)
 
-        dilS = cv2.dilate(s,kernel,iterations = 1)
-        newS = dilS-s
-        newS = cv2.equalizeHist(newS)
-        # newS = cv2.GaussianBlur(newS, (11, 11), 0)
+        frame2 = np.uint8((frame_threshold//255)*np.int64(frame_HSV))
 
+        frame_threshold = cv2.inRange(frame2, (20, 28, 73), (57, 139, 133))
 
-        dilV = cv2.dilate(v,kernel,iterations = 1)#param 1
-        newV = dilV-v
-        newV = cv2.equalizeHist(newV)
+        mask = frame_threshold
+        mask = cv2.dilate(mask, kernel, iterations=2)
 
-        dilH = cv2.dilate(h,kernel,iterations = 1)
-        newH = dilH-h
-        newH = cv2.equalizeHist(newH)
-
-
-        sabKaAnd = cv2.bitwise_or(newS,newV)
-        kernel2 = np.ones((3,3),np.uint8)#param 1
-        sabKaAnd = cv2.erode(sabKaAnd,kernel2,iterations = 1)#param 1
-        sabKaAnd = cv2.erode(sabKaAnd,kernel2,iterations = 1)#param 1
-
-        sabKaAnd = cv2.dilate(sabKaAnd,kernel2,iterations = 1)#param 1
-        sabKaAnd = cv2.GaussianBlur(sabKaAnd, (11, 11), 0)
-
-        maskSab = cv2.inRange(sabKaAnd,120,255)#param 1****
-
-        maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
-        maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
-
-        maskSab = cv2.bitwise_and(maskSab,newV)
-        maskSab = cv2.equalizeHist(maskSab)
-        maskSab = cv2.inRange(maskSab,190,255)# param *****
-
-        kernel2 = np.ones((2,2),np.uint8) #param ****
-        maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
-        maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
-
-        return maskSab
+        return mask
 
     # def getRectMask(self,frame):
 
@@ -290,8 +264,13 @@ class FrontEnd(object):
             if area > 300:#param
 
                 if len(approx) == 4:
-                    (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
-                    ar = MA/ma
+                    if len(cnt) > 4:
+                        (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
+                        ar = MA/ma
+                    else:
+                        ar = (np.linalg.norm(approx[0] - approx[1]) + np.linalg.norm(approx[2] - approx[3]))/(np.linalg.norm(approx[2]-approx[1])+np.linalg.norm(approx[0]-approx[3]))
+                        if ar > 1:
+                            ar=1/ar
 
                     hull = cv2.convexHull(cnt)
                     hull_area = cv2.contourArea(hull)

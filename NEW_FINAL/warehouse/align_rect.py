@@ -376,29 +376,26 @@ class FrontEnd(object):
         return dst
 
     def getRectMask(self,frame):
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-        h_low = 24
-        s_low = 78
-        v_low = 70
-        h_high = 116
-        s_high = 255
-        v_high = 174
+        kernel = np.ones((5,5),np.uint8)#param 1
 
-        # define range of blue color in HSV
-        lower_blue = np.array([h_low,s_low,v_low])
-        upper_blue = np.array([h_high,s_high,v_high])
+        frame = cv2.GaussianBlur(frame, (7, 7), 0)#param 1
+        frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        kernel = np.ones((3,3), np.uint8)     
 
-        # Threshold the HSV image to get only blue colors
-        mask = cv2.inRange(hsv, lower_blue, upper_blue)
+        frame_threshold = cv2.inRange(frame_HSV, (19, 0, 176), (64, 37, 255))
+        frame_threshold = cv2.dilate(frame_threshold, kernel, iterations=5)
+        frame_threshold = np.repeat(frame_threshold[:, :, np.newaxis], 3, 2)
 
-        # Bitwise-AND mask and original image
-        res = cv2.bitwise_and(frame,frame, mask= mask)
-        kernel = np.ones((5,5), np.uint8)
-        cv2.dilate(mask,kernel,iterations=1)
+        frame2 = np.uint8((frame_threshold//255)*np.int64(frame_HSV))
+
+        frame_threshold = cv2.inRange(frame2, (20, 28, 73), (57, 139, 133))
+
+        mask = frame_threshold
+        mask = cv2.dilate(mask, kernel, iterations=2)
 
         return mask
-
+        
     def PoseEstimationfrmMask(self,mask,frame,frameH,frameW,arSet):
 
         print("pose estimation....")
@@ -418,8 +415,13 @@ class FrontEnd(object):
                 # if len(approx) == 3:
                     # cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
                 if len(approx) == 4:
-                    (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
-                    ar = MA/ma
+                    if len(cnt) > 4:
+                        (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
+                        ar = MA/ma
+                    else:
+                        ar = (np.linalg.norm(approx[0] - approx[1]) + np.linalg.norm(approx[2] - approx[3]))/(np.linalg.norm(approx[2]-approx[1])+np.linalg.norm(approx[0]-approx[3]))
+                        if ar > 1:
+                            ar=1/ar
 
                     hull = cv2.convexHull(cnt)
                     hull_area = cv2.contourArea(hull)

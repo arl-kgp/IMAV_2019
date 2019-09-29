@@ -31,23 +31,25 @@ class Controller():
         while True:
             if self.joy.leftTrigger() and self.joy.rightTrigger():
                 self.tello.manualControl = True
+                
+                leftStick = self.joy.leftStick()
+                rightStick = self.joy.rightStick()
+                self.keydown("leftst",leftStick)
+                self.keydown("rightst",rightStick)
+
+                if self.joy.Y():
+                    self.keyup("takeoff")
+
+                if self.joy.B():
+                    self.keyup("land")
+
+                if self.joy.X() and self.joy.leftBumper() and self.joy.rightBumper():			#killswitch
+                    self.keyup("emergency")
+
+                self.update()
+            
             else:
                 self.tello.manualControl = False
-            leftStick = self.joy.leftStick()
-            rightStick = self.joy.rightStick()
-            self.keydown("leftst",leftStick)
-            self.keydown("rightst",rightStick)
-
-            if self.joy.Y():
-                self.keyup("takeoff")
-
-            if self.joy.B():
-                self.keyup("land")
-
-            if self.joy.X() and self.joy.leftBumper() and self.joy.rightBumper():			#killswitch
-            	self.keyup("emergency")
-
-            self.update()
 
             #time.sleep(1 / FPS)
 
