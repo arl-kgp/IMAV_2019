@@ -246,8 +246,13 @@ class FrontEnd(object):
             if area > 300:#param
 
                 if len(approx) == 4:
-                    (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
-                    ar = MA/ma
+                    if len(cnt) > 4:
+                        (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
+                        ar = MA/ma
+                    else:
+                        ar = (np.linalg.norm(approx[0] - approx[1]) + np.linalg.norm(approx[2] - approx[3]))/(np.linalg.norm(approx[2]-approx[1])+np.linalg.norm(approx[0]-approx[3]))
+                        if ar > 1:
+                            ar=1/ar
 
                     hull = cv2.convexHull(cnt)
                     hull_area = cv2.contourArea(hull)

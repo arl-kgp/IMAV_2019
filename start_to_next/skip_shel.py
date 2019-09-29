@@ -145,9 +145,20 @@ class FrontEnd(object):
         frame = frame2use 
         
         dst = frame2use            
-        mask = self.getRectMask(dst)
+        mask = self.getRectMask2(dst)
 
         return dst,mask
+
+    def getRectMask2(self,frame):
+        frame = cv2.cvtColor(frame,COLOR_BGR2HSV)
+        lowerbound = np.array([92,50,119])
+        upperbound = np.array([117,255,255])
+
+        mask = cv2.inRange(frame,lowerbound,upperbound)
+        kernel2 = np.ones((3,3),np.uint8)#param 1
+        mask = cv2.erode(mask,kernel2,iterations = 3)
+        mask = cv2.dilate(mask,kernel2,iterations = 3)
+        return mask
 
     def getRectMask(self,frame):
 
