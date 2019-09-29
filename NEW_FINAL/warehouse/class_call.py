@@ -39,8 +39,6 @@ class warehouse_overall:
 		# GO_up_1.5m
 
 		parser1()
-		parserdash()
-		parser2()
 
 	def clear(self):
 		self.txt_R = warehouse_R(self.tello)

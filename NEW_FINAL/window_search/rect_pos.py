@@ -4,13 +4,14 @@ import numpy as np
 class detect(object):
 
     def __init__(self):                                                 # to change 
-        self.h_low = 72                                                 # change all these variables
-        self.h_high = 141
-        self.s_low = 62
-        self.s_high = 255
-        self.v_low = 90
-        self.v_high = 248    
-        self.trig = 0                                                   # till here
+        self.h_low = 22
+        self.h_high = 56
+        self.s_low = 56
+        self.s_high = 207
+        self.v_low = 144
+        self.v_high = 255    
+        self.trig = 0   
+                                      # till here
 
     def run(self,frame):
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)

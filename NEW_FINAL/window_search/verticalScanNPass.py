@@ -252,7 +252,7 @@ class FrontEnd(object):
             u =  Kp*err
             # print "line ka u",u
             # u = 0
-
+            print("LGY")
             thresh = 50 #error threshold                                                        # to update
             if abs(err) < thresh:
                 # print "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
@@ -331,7 +331,7 @@ class FrontEnd(object):
             # return the ordered coordinates
             return rect
     def algnToFrameFinal(self,key,mask,dst):
-        frameH,frameW,arSet = 10,20,0.15                                                         # to update VERY IMPORTANT!!!!!
+        frameH,frameW,arSet = 6,16,0.15                                                         # to update VERY IMPORTANT!!!!!
         cv2.imshow("msk",mask)
         self.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
         self.manualRcControl(key)
@@ -519,13 +519,14 @@ class FrontEnd(object):
         frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         kernel = np.ones((3,3), np.uint8)     
 
-        frame_threshold = cv2.inRange(frame_HSV, (19, 0, 176), (64, 37, 255))
+        frame_threshold = cv2.inRange(frame, (200, 200, 200), (255, 255, 255))
         frame_threshold = cv2.dilate(frame_threshold, kernel, iterations=5)
         frame_threshold = np.repeat(frame_threshold[:, :, np.newaxis], 3, 2)
-
+        cv2.imshow("thres1", frame_threshold)
         frame2 = np.uint8((frame_threshold//255)*np.int64(frame_HSV))
 
         frame_threshold = cv2.inRange(frame2, (20, 28, 73), (57, 139, 133))
+        cv2.imshow("thres2", frame_threshold)
 
         mask = frame_threshold
         mask = cv2.dilate(mask, kernel, iterations=2)
@@ -585,8 +586,11 @@ class FrontEnd(object):
                             cntMain = approx
                             rect = self.order_points(cntMain)
                             # print "rect",rect
-                            
+                            print(rect)
+
                             Pose = self.PoseEstimation(rect,frameH,frameW)
+
+                            print(self.PoseFlag)
                             if self.PoseFlag == 1:
                                 self.c = 1
                                 self.centerCounter = 0
@@ -603,7 +607,7 @@ class FrontEnd(object):
                                 # print "PoseMean",self.telloPoseMean
                                 # print "telloPoseVariance" , self.telloPoseVariance
                             varN = np.linalg.norm(self.telloPoseVariance)
-                        oldArea =area
+                            oldArea =area
                     else:
                         if self.c == 1:
                             self.centerCounter = self.centerCounter + 1
@@ -639,7 +643,7 @@ class FrontEnd(object):
         h, status = cv2.findHomography(src,crnList)
 
         det = np.linalg.det(h)
-
+        print("det"+str(det))
         if det != 0 :
             self.PoseFlag=1
             # print "PoseFlag flag changed"

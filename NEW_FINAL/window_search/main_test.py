@@ -22,7 +22,7 @@ class starting(object):
         self.tello.streamon()
         # print("nooooooooo")
 
-        self.left_right = left_right(self.tello)
+        #self.left_right = left_right(self.tello)
 
         # print("yesssssssssssss")
         self.up_down = up_down(self.tello)
