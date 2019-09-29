@@ -338,7 +338,7 @@ class warehouse_L:
 		print(avg_int_list[idx])
 		cv2.imshow("bars", src)
 		cv2.waitKey(0)
-		return src, idx_new
+		return src, idx
 
 	def diff_shelf(self,im, qrpoints, textpoints):
 		vert = self.check_shelf_edge(im)
