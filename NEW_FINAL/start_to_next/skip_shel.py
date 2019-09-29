@@ -199,9 +199,9 @@ class FrontEnd(object):
 
         kernel2 = np.ones((2,2),np.uint8) #param ****
         maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
-        maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
+        mask = cv2.dilate(maskSab,kernel2,iterations = 1)
 
-        return maskSab
+        return mask
 
 
     def order_points(self, pts):
@@ -300,7 +300,7 @@ class FrontEnd(object):
             cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
             cv2.imshow("with frame",frame)
             print("still visible")
-            self.rcOut[0] = 30                                                  #to update speed along x axis
+            self.rcOut[0] = -30                                                  #to update speed along x axis
             self.rcOut[1] = 0
             self.rcOut[2] = 0
             self.rcOut[3] = 0

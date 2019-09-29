@@ -131,7 +131,7 @@ class FrontEnd(object):
         # self.tello.end()
 
     def takeoffToShelf(self,trigger,key,mask,dst):
-        frameH,frameW,arSet = 24,24,0.8                                              #to change (might)
+        frameH,frameW,arSet = 40,40,0.8                                              #to change (might)
         cv2.imshow("msk",mask)
         self.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
         self.manualRcControl(key)
@@ -164,7 +164,7 @@ class FrontEnd(object):
             return 1
 
         else :
-            self.rcOut[0] = 20                                                              #to change speed
+            self.rcOut[0] = -20                                                              #to change speed
             self.rcOut[1] = 0
             self.rcOut[2] = 0
             self.rcOut[3] = 0
@@ -230,7 +230,7 @@ class FrontEnd(object):
             if self.cntErNrm > 10 or self.cntErNrm ==0:                                             #to change dont change 0 only 10 to be changed. Precision for alignment
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,150,0,0,0.35)                                               #to change key,x,y,z,Kp     x,y,z are relative, Kp is extremely tested, y is right, z is top
+                self.PoseController(key,200,0,0,0.35)                                               #to change key,x,y,z,Kp     x,y,z are relative, Kp is extremely tested, y is right, z is top
                 self.alnFlowFlag = 1
                 # print "self.cntErNrm",self.cntErNrm
 

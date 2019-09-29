@@ -23,7 +23,7 @@ class starting(object):
         self.skip_first = skip_first(self.tello)
         self.align_next = align_initial(self.tello)
 
-        self.height = 90                                                                         #to change along with line 40
+        self.height = 150                                                                         #to change along with line 40
 
     def run(self,init_yaw):
 
@@ -77,7 +77,7 @@ def main():
     tello.streamoff()
     tello.streamon()
     start = starting(tello)
-    start.run(100)
+    start.run(0)
 
 if __name__ == '__main__':
     main()
