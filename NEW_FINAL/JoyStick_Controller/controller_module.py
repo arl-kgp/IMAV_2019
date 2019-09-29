@@ -11,11 +11,11 @@ S = 100
 # Frames per second of the pygame window display
 FPS = 25
 
-class FrontEnd(object):
+class Controller():
 
-    def __init__(self,tello_passed,joy_passed):
+    def __init__(self,tello,joy_passed):
 
-        self.tello = tello_passed
+        self.tello = tello
         self.joy = joy_passed
         # Drone velocities between -100~100
         self.for_back_velocity = 0
@@ -28,8 +28,11 @@ class FrontEnd(object):
 
     def run(self):
 
-        while self.joy.leftTrigger() and self.joy.rightTrigger():
-
+        while True:
+            if self.joy.leftTrigger() and self.joy.rightTrigger():
+                self.tello.manualControl = True
+            else:
+                self.tello.manualControl = False
             leftStick = self.joy.leftStick()
             rightStick = self.joy.rightStick()
             self.keydown("leftst",leftStick)
@@ -71,9 +74,8 @@ class FrontEnd(object):
 
     def update(self):
         """ Update routine. Send velocities to Tello."""
-        if self.send_rc_control:
-            self.tello.send_rc_control(self.left_right_velocity, self.for_back_velocity, self.up_down_velocity,
-                                       self.yaw_velocity)
+        self.tello.send_rc_control(self.left_right_velocity, self.for_back_velocity, self.up_down_velocity,
+                                    self.yaw_velocity, 1)
 
     def printer(self):
         print("Yaw: "+str(self.yaw_velocity) + " Throttle: " + str(self.up_down_velocity) + " Pitch: " + str(self.for_back_velocity) + " Roll: " + str(self.left_right_velocity))

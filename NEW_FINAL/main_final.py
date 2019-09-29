@@ -7,18 +7,25 @@ import imutils as im
 import sys
 import os
 
+import threading
 
-sys.path.append(os.path.abspath("/home/carry/IMAV/IMAV_2019/FINAL/start_to_next"))
+sys.path.append(os.path.abspath("./start_to_next"))
 from main import starting 
-sys.path.remove(os.path.abspath("/home/carry/IMAV/IMAV_2019/FINAL/start_to_next"))
+sys.path.remove(os.path.abspath("./start_to_next"))
 
-sys.path.append(os.path.abspath("/home/carry/IMAV/IMAV_2019/FINAL/warehouse"))
+sys.path.append(os.path.abspath("./warehouse"))
 from class_call import warehouse_overall 
-sys.path.remove(os.path.abspath("/home/carry/IMAV/IMAV_2019/FINAL/warehouse"))
+sys.path.remove(os.path.abspath("./warehouse"))
 
-sys.path.append(os.path.abspath("/home/carry/IMAV/IMAV_2019/FINAL/window_search"))
+sys.path.append(os.path.abspath("./window_search"))
 from main_test import starting as rect_pass
-sys.path.remove(os.path.abspath("/home/carry/IMAV/IMAV_2019/FINAL/window_search"))
+sys.path.remove(os.path.abspath("./window_search"))
+
+sys.path.append(os.path.abspath("./JoyStick_Controller"))
+from controller_module import Controller
+import xbox
+
+sys.path.remove(os.path.abspath("./JoyStick_Controller"))
 
 from after_shelf import FrontEnd as after
 
@@ -36,6 +43,7 @@ class hoohah(object):
 
         self.initial_yaw = self.tello.get_yaw()
 
+
         self.warehouse = warehouse_overall(self.tello)
 
         self.rect_pass = rect_pass(self.tello)
@@ -52,7 +60,19 @@ class hoohah(object):
         except:
             print("Ab toh takeoff ho gya lol")
             
+        
         time.sleep(2)
+
+
+        print("Starting Controller")
+        try:
+            self.joy = xbox.Joystick()
+
+            self.controller = Controller(self.tello, self.joy)
+            x = threading.Thread(target=self.controller.run, daemon=True)
+            x.start()
+        except:
+            print("Control fail ho gya lol")
 
         # self.starting.run(self.initial_yaw)										#uncomment this VERY IMPORTANT!!!!! 	
 

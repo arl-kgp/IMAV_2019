@@ -227,7 +227,6 @@ class FrontEnd(object):
             # print "ya1"
             # print "self.cntErNrm",self.cntErNrm
 
-            if self.cntErNrm > 10 or self.cntErNrm ==0:                                             #to change dont change 0 only 10 to be changed. Precision for alignment
                 # print "Norm ",self.cntErNrm
                 
                 self.PoseController(key,150,0,0,0.35)                                               #to change key,x,y,z,Kp     x,y,z are relative, Kp is extremely tested, y is right, z is top
