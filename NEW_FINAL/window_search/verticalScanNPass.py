@@ -350,7 +350,7 @@ class FrontEnd(object):
 
         # print "self.PoseFlag",self.PoseFlag
 
-        con = self.ARmean[0] > 0.4 and self.tello.get_h() < self.midSearchH
+        con = self.ARmean[0] > 0.25 and self.tello.get_h() < self.midSearchH
         # print "con",con
         if self.PoseFlag == 1 and con: 
             

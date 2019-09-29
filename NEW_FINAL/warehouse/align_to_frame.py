@@ -109,7 +109,7 @@ class FrontEnd(object):
 
         # print "self.PoseFlag",self.PoseFlag
 
-        con = self.ARmean[0] > 0.8
+        con = self.ARmean[0] > 0.25
         con = con*1
         # print "con",con
         trig = self.interMtrigger2(con)
