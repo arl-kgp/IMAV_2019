@@ -378,7 +378,7 @@ class warehouse_R:
 		if text != None and corners:
 
 			bars = self.diff_shelf(im, qrpoints, corners)
-			if bars>8:
+			if bars>15:
 				return output, 2, corners
 
 			check_text = 1
