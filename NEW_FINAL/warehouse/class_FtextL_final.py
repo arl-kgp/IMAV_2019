@@ -641,7 +641,7 @@ class warehouse_L:
 				#if not vertical_motion:
 				#print("No vertical motion, tracking")
 				
-				initial_no_of_frames = trav1.num_text_frames()
+				initial_no_of_frames = trav1.num_text_frames
 				if vertical_motion:
 					trav1.run_updown(frame)  # Use in left
 				else:
