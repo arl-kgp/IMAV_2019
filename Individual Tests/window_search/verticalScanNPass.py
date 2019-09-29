@@ -5,7 +5,7 @@ from pygame.locals import *
 import numpy as np
 import time
 import imutils as im
-from window_search.rect_pos import detect
+from rect_pos import detect
 
 # Speed of the drone
 S = 60
@@ -526,8 +526,7 @@ class FrontEnd(object):
 
         frame2 = np.uint8((frame_threshold//255)*np.int64(frame_HSV))
 
-        frame_threshold = cv2.inRange(frame2, (20, 28, 73), (57, 139, 133))
-
+        frame_threshold = cv2.inRange(frame_HSV, (32, 64, 0), (97, 255, 255))
         mask = frame_threshold
         kernel = np.ones((1,1), np.uint8)      
 
@@ -602,7 +601,7 @@ class FrontEnd(object):
                                 self.telloPoseVariance = np.var(self.poseQueue,axis=0)
                                 self.telloPoseMean = np.mean(self.poseQueue,axis = 0)
                                 ccc = (approx[0]+approx[1]+approx[2]+approx[3])[0]/4
-
+                                #print(ccc)
                                 self.frameCenter = [[ccc[0],ccc[1]]]
                                 # print "PoseQueue",self.poseQueue
                                 # print "PoseMean",self.telloPoseMean
