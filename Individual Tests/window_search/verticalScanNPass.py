@@ -577,7 +577,7 @@ class FrontEnd(object):
         # mask = cv2.erode(mask, kernel, iterations=4)
 
         # mask = cv2.dilate(mask, kernel, iterations=7)
-        return frame_threshold
+        # return frame_threshold
 
     def PoseEstimationfrmMask(self,mask,frame,frameH,frameW,arSet):
         # Contours detection
