@@ -213,24 +213,61 @@ def check_format(text):
 
 	return to_print
 
+tello = Tello()
+tello.connect()
+tello.streamoff()
+tello.streamon()
+
+
 if __name__ == '__main__':
 
-	cap = cv2.VideoCapture("/home/balaji/Videos/use.mp4")
-	while(cap.isOpened()):
-		print ("1")
-		ret, frame = cap.read()
-		output = frame
+	frame_read = tello.get_frame_read()
+
+	while True:
+		frameBGR = np.copy(frame_read.frame)
+
+		output = frameBGR
 		text = []
 		corners = []
-		text, corners, output = text_finder(frame)
+		text, corners, output = text_finder(frameBGR)
 		print (text)
+		
 		cv2.imshow("frame",output)
-		cv2.waitKey(1)
+		key = cv2.waitKey(1) & 0xFF;
+		if key == ord("t"):
+			tello.takeoff()    
+		elif key == ord("l"):
+			tello.land()
+		elif key == ord("w"):
+			rcOut[1] = 10
+		elif key == ord("a"):
+			rcOut[0] = 10
+		elif key == ord("s"):
+			rcOut[1] = -10
+		elif key == ord("d"):
+			rcOut[0] = -10
+		elif key == ord("u"):
+			rcOut[2] = 10
+		elif key == ord("j"):
+			rcOut[2] = -10
+		elif key == ord("c"):
+			rcOut[3] = 10
+		elif key == ord("v"):
+			rcOut[3] = -10
+		elif key == ord("q"):
+			breaks
+		else:
+			rcOut = [0,0,0,0]
+
+		#print self.rcOut
+		tello.send_rc_control(int(rcOut[0]),int(rcOut[1]),int(rcOut[2]),int(rcOut[3]))
+		rcOut = [0,0,0,0]
 
 
 
-
-
+tello.land()
+tello.streamoff()
+tello.end()
 
 
 
