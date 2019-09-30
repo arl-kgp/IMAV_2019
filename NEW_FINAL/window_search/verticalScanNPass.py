@@ -414,7 +414,7 @@ class FrontEnd(object):
             if self.cntErNrm > 10 or self.cntErNrm ==0:                                                 # parameter 10
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,35,10,8,0.55)                                                   # parameter 10
+                self.PoseController(key,35,0,10,0.55)                                                   # parameter 10
                 if self.centerCounter > 16 and self.centerCounter < 180:                                # to update
                     self.rcOut = [0,-20,0,0]
                 self.alnFlowFlag = 1

@@ -411,10 +411,10 @@ class FrontEnd(object):
             # print "ya1"
             # print "self.cntErNrm",self.cntErNrm
 
-            if self.cntErNrm > 10 or self.cntErNrm ==0:                                                 # parameter 10
+            if self.cntErNrm > 9 or self.cntErNrm ==0:                                                 # parameter 10
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,35,10,8,0.55)                                                   # parameter 10
+                self.PoseController(key,35,0,10,0.55)                                                   # parameter 10
                 if self.centerCounter > 16 and self.centerCounter < 180:                                # to update
                     self.rcOut = [0,-20,0,0]
                 self.alnFlowFlag = 1
@@ -770,6 +770,7 @@ class FrontEnd(object):
                 MtnCmd = np.array([kp*xEr,kp*yEr,kp*zEr])
 
                 MtnCmd[0] = -1*MtnCmd[0]
+
                 self.rcOut = [MtnCmd[1], MtnCmd[0],MtnCmd[2],0]
 
                 if self.rcOut[0] > 35:
