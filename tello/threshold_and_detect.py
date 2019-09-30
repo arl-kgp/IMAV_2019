@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-cap = cv2.VideoCapture("outpy.avi")
+cap = cv2.VideoCapture("/home/carry/IMAV/IMAV_2019/tello/outpy5.avi")
 
 def nothing(x):
     pass
