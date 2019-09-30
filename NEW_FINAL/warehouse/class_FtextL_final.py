@@ -52,40 +52,40 @@ class warehouse_L:
 		if len(text) == 4:
 			list1 = list1[1:]
 
-		if(text[0]=='S'):
-			list1[0]='5'
-		if(text[0]=='I'):
-			list1[0]='1'
+		# if(text[0]=='S'):
+		# 	list1[0]='5'
+		# if(text[0]=='I'):
+		# 	list1[0]='1'
 		elif(text[0]=='A'):
 			list1[0]='4'
-		elif(text[0]=='O'):
-			list1[0]='0'
-		elif(text[0]=='Q'):
-			list1[0]='0'
+		# elif(text[0]=='O'):
+		# 	list1[0]='0'
+		# elif(text[0]=='Q'):
+		# 	list1[0]='0'
 
 
-		if(text[1]=='S'):
-			list1[1]='9'
-		elif(text[1]=='I'):
-			list1[1]='1'
-		elif(text[1]=='A'):
+		# if(text[1]=='S'):
+		# 	list1[1]='9'
+		# elif(text[1]=='I'):
+		# 	list1[1]='1'
+		if(text[1]=='A'):
 			list1[1]='4'
 
 
 		if(text[2]=='4'):
 			list1[2]='A'
-		elif(text[2]=='6'):
-			list1[2]='C'
-		elif(text[2]=='0'):
-			list1[2]='D'
-		elif(text[2]=='1'):
-			list1[2]='I'
-		elif(text[2]=='5'):
-			list1[2]='S'
-		elif(text[2]=='3'):
-			list1[2]='B'
-		elif(text[2]=='8'):
-			list1[2]='B'
+		# elif(text[2]=='6'):
+		# 	list1[2]='C'
+		# elif(text[2]=='0'):
+		# 	list1[2]='D'
+		# elif(text[2]=='1'):
+		# 	list1[2]='I'
+		# elif(text[2]=='5'):
+		# 	list1[2]='S'
+		# elif(text[2]=='3'):4
+		# 	list1[2]='B'
+		# elif(text[2]=='8'):
+		# 	list1[2]='B'
 
 		text = ''.join(list1)
 		return text
