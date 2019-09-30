@@ -372,7 +372,7 @@ class FrontEnd(object):
 
         frame2 = np.uint8((frame_threshold//255)*np.int64(frame_HSV))
 
-        frame_threshold = cv2.inRange(frame_HSV, (32, 64, 0), (97, 255, 255))
+        frame_threshold = cv2.inRange(frame2, (20, 28, 73), (57, 139, 133))
         mask = frame_threshold
         kernel = np.ones((1,1), np.uint8)      
 

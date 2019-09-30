@@ -86,7 +86,7 @@ class FrontEnd(object):
         self.flag1 =1
         self.passFlag = 0
 
-        self.maxSearchH = 250 #maximum search height for the rectangle
+        self.maxSearchH = 420 #maximum search height for the rectangle
         self.midSearchH = 75
 
         self.startTime = 0
@@ -185,7 +185,7 @@ class FrontEnd(object):
 
             self.lineIsVisible,self.lineLoc = self.skipLineDetect.run(dst) 
 
-            if 1:                                                                 # to change automate
+            if key==ord('m'):                                                                 # to change automate
                 if self.flagM1 == 1 and self.passFlag != 2: 
                     print ("Module 1")
                     self.flagM2 = self.algnToFrameFinal(key,mask,dst)
@@ -515,25 +515,69 @@ class FrontEnd(object):
 
         kernel = np.ones((5,5),np.uint8)#param 1
 
-        frame = cv2.GaussianBlur(frame, (7,7), 0)
-        frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        kernel = np.ones((3,3), np.uint8)
+        blurred = cv2.GaussianBlur(frame, (7, 7), 0)#param 1
 
-        frame_threshold = cv2.inRange(frame_HSV, (19, 0, 176), (64, 37, 255))
+        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+        h,s,v = cv2.split(hsv)
 
-        frame_threshold = cv2.dilate(frame_threshold, kernel, iterations=7)
-        frame_threshold = np.repeat(frame_threshold[:, :, np.newaxis], 3, 2)
+        dilS = cv2.dilate(s,kernel,iterations = 1)
+        newS = dilS-s
+        newS = cv2.equalizeHist(newS)
+        # newS = cv2.GaussianBlur(newS, (11, 11), 0)
 
-        frame2 = np.uint8((frame_threshold//255)*np.int64(frame_HSV))
 
-        frame_threshold = cv2.inRange(frame_HSV, (32, 64, 0), (97, 255, 255))
-        mask = frame_threshold
-        kernel = np.ones((1,1), np.uint8)      
+        dilV = cv2.dilate(v,kernel,iterations = 1)#param 1
+        newV = dilV-v
+        newV = cv2.equalizeHist(newV)
 
-        mask = cv2.erode(mask, kernel, iterations=5)
+        dilH = cv2.dilate(h,kernel,iterations = 1)
+        newH = dilH-h
+        newH = cv2.equalizeHist(newH)
 
-        mask = cv2.dilate(mask, kernel, iterations=8)
-        return mask
+
+        sabKaAnd = cv2.bitwise_or(newS,newV)
+        kernel2 = np.ones((3,3),np.uint8)#param 1
+        sabKaAnd = cv2.erode(sabKaAnd,kernel2,iterations = 1)#param 1
+        sabKaAnd = cv2.erode(sabKaAnd,kernel2,iterations = 1)#param 1
+
+        sabKaAnd = cv2.dilate(sabKaAnd,kernel2,iterations = 1)#param 1
+        sabKaAnd = cv2.GaussianBlur(sabKaAnd, (11, 11), 0)
+
+        maskSab = cv2.inRange(sabKaAnd,120,255)#param 1****
+
+        maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
+        maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
+
+        maskSab = cv2.bitwise_and(maskSab,newV)
+        maskSab = cv2.equalizeHist(maskSab)
+        maskSab = cv2.inRange(maskSab,190,255)# param *****
+
+        kernel2 = np.ones((2,2),np.uint8) #param ****
+        maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
+        maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
+
+        return maskSab
+        # kernel = np.ones((5,5),np.uint8)#param 1
+
+        # frame = cv2.GaussianBlur(frame, (7,7), 0)
+        # frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        # kernel = np.ones((3,3), np.uint8)
+
+        # frame_threshold = cv2.inRange(frame_HSV, (0, 0, 0), (255, 40, 255))
+
+        # frame_threshold = cv2.erode(frame_threshold, kernel, iterations=1)
+        # frame_threshold = np.repeat(frame_threshold[:, :, np.newaxis], 3, 2)
+        # cv2.imshow("t1", frame_threshold)
+        # frame2 = np.uint8((frame_threshold//255)*np.int64(frame_HSV))
+
+        # frame_threshold = cv2.inRange(frame2, (30, 37, 0), (90, 115, 255))
+        # mask = frame_threshold
+        # kernel = np.ones((1,1), np.uint8)      
+
+        # mask = cv2.erode(mask, kernel, iterations=4)
+
+        # mask = cv2.dilate(mask, kernel, iterations=7)
+        return frame_threshold
 
     def PoseEstimationfrmMask(self,mask,frame,frameH,frameW,arSet):
         # Contours detection
