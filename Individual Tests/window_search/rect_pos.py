@@ -7,9 +7,9 @@ class detect(object):
         self.h_low = 25
         self.h_high = 39
         self.s_low = 100
-        self.s_high = 235
+        self.s_high = 245
         self.v_low = 108
-        self.v_high = 236    
+        self.v_high = 246    
         self.trig = 0   
                                       # till here
 
