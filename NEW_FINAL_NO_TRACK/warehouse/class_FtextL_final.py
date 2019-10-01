@@ -154,7 +154,7 @@ def get_cnt(frame):
 	cy = np.sum(cnt1[:, 1])/4
 	cx = np.sum(cnt1[:, 0])/4
 
-	param1 = 0.7
+	param1 = 0.65
 	param2 = 0.45
 
 	cnt1[0][1] = cy - (cy-cnt1[0][1] )*param1
@@ -181,8 +181,8 @@ class warehouse_L:
 		# self.east = "frozen_east_text_detection.pb" 			#enter the full path to east model
 		# print("[INFO] loading east text detector...")
 		# self.net = cv2.dnn.readNet(self.east)
-		self.f = open('warehouse.csv','a')
-		self.f1 = open('out2.csv','a')
+		self.f = open('warehouse.csv','w')
+		self.f1 = open('out2.csv','w')
 		print("file opened")
 		# cv2.waitKey(3000);
 		self.hover_time = 0
@@ -193,6 +193,7 @@ class warehouse_L:
 		self.align_rect = align_rect(self.tello)
 
 		self.yaw = self.tello.get_yaw()
+
 
 	def text_better(self,text):
 		list1 = list(text)
@@ -315,6 +316,8 @@ class warehouse_L:
 		# east + Tesseract
 		text = None
 		text_list, conf_list, corners, output = self.roi_detect(im)
+		if(corners):
+			print("Area: "+str(self.find_area(corners)))
 
 		text_list_ref = []			## FINAL RETURN VALUES
 		conf_list_ref = []
@@ -604,7 +607,7 @@ class warehouse_L:
 		
 		align_without_QR = False
 		rectangle_without_QR = False
-		detection_completed_per_shelf = True
+		detection_completed_per_shelf = False
 
 		self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))							#remove this line
 		# f.close()
@@ -646,17 +649,18 @@ class warehouse_L:
 				#print("No vertical motion, tracking")
 				
 				initial_no_of_frames = trav1.num_text_frames
-
+				"""
 				if vertical_motion:
 					trav1.run_updown(frame)  # Use in left
 				else:
 					trav1.run(frame)  # Use in left
+				"""
 				# cv2.destroyWindow("dst")
 				print("text_frames_detected: " + str(trav1.num_text_frames))
 
-				if ((trav1.num_text_frames - initial_no_of_frames) > 0) and align_without_QR:
-					align_without_QR = False
-					self.tello.move_left(40)
+				#if ((trav1.num_text_frames - initial_no_of_frames) > 0) and align_without_QR:
+				#if detection_completed_per_shelf and align_without_QR:
+				#	align_without_QR = False
 
 				if trav1.num_text_frames == 4:              # NO. of shelves in one row # 4			#update done
 					self.should_stop = True
@@ -694,13 +698,18 @@ class warehouse_L:
 					trav1.prev_trigger = 1
 					trav1.trigger = 1
 
-					if detection_completed_per_shelf and trav1.num_text_frames == 1:
+					if detection_completed_per_shelf and trav1.num_text_frames == 3:
 						self.should_stop = True
 						print("Finished")
 						break
 
-					if detection_completed_per_shelf == False:
-						detection_completed_per_shelf = True
+					if detection_completed_per_shelf == True:
+						# go_to_distance 120
+						self.tello.go_left(120)
+						detection_completed_per_shelf = False
+
+					if align_without_QR == True:
+						align_without_QR = False
 
 					continue
 
@@ -708,7 +717,7 @@ class warehouse_L:
 				if go_up:
 					print("up")
 					present_height = self.tello.get_h()
-					if (present_height - start_height) > 40:										# to update
+					if (present_height - start_height) > 90:										# to update
 						go_up = False
 						go_down = True
 						cv2.imshow("Results",frame)
@@ -731,6 +740,7 @@ class warehouse_L:
 						go_down = False
 						#trav1.num_text_frames = trav1.num_text_frames-1
 						should_correct_pos = True
+						detection_completed_per_shelf = True
 						continue
 
 					#self.rcOut = [0, 0, -10, 0]
@@ -744,7 +754,7 @@ class warehouse_L:
 
 				print("intersection: "+str(ret_val))
 
-				if qrpoints != [] and self.hover_time < 2 and ret_val == 1:	 # If QR detected, detect TEXT
+				if qrpoints != [] and self.hover_time < 3 and ret_val == 1:	 # If QR detected, detect TEXT
 
 					frame = frame_1
 					print(qrlist)
@@ -756,12 +766,12 @@ class warehouse_L:
 
 					frame, check_text, txt_corners = self.find_text_and_write(frame, qrlist, qrpoints)
 					
-					if check_text == 0:
-						self.rcout = [-5,0,0,0]																	# to update velocity
-						print("text not found")
-						self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))
-						cv2.imshow("Results",frame)
-						continue
+					# if check_text == 0:
+					# 	self.rcout = [-5,0,0,0]																	# to update velocity
+					# 	print("text not found")
+					# 	self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))
+					# 	cv2.imshow("Results",frame)
+					# 	continue
 
 					if check_text == 2:
 						# move until further code is detected.
@@ -802,6 +812,8 @@ class warehouse_L:
 
 					should_correct_pos = True  # Use in left
 					align_without_QR = True
+					detection_completed_per_shelf = True
+
 					print("No QR, ONLY text")
 
 				else:
@@ -849,7 +861,7 @@ class warehouse_L:
 			# 	self.f1.close()
 			# 	self.tello.land()
 			# 	print("file closed")
-			# 	break
+			# # 	break
 
 			cv2.imshow("Results",frame)
 			self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))
