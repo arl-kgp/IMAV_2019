@@ -181,8 +181,8 @@ class warehouse_L:
 		# self.east = "frozen_east_text_detection.pb" 			#enter the full path to east model
 		# print("[INFO] loading east text detector...")
 		# self.net = cv2.dnn.readNet(self.east)
-		self.f = open('warehouse.csv','w')
-		self.f1 = open('out2.csv','w')
+		self.f = open('warehouse.csv','a')
+		self.f1 = open('out2.csv','a')
 		print("file opened")
 		# cv2.waitKey(3000);
 		self.hover_time = 0
