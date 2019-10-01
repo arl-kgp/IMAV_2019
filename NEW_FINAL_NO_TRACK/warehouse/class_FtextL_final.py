@@ -609,7 +609,8 @@ class warehouse_L:
 		detection_completed_per_shelf = False
 		align_num_text_frames = 0
 
-		# self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))							#remove this line
+
+		# self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))							#remove this line						#remove this line
 		# f.close()
 
 		# Read feed:

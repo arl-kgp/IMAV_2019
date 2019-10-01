@@ -291,7 +291,7 @@ class FrontEnd(object):
         #     self.rcOut[1] = -50
         # elif key == ord("d"):
         #     self.rcOut[0] = 50
-        # elif key == ord("u"):
+        # elif kegetrey == ord("u"):
         #     self.rcOut[2] = 50
         # elif key == ord("j"):
         #     self.rcOut[2] = -50
@@ -395,7 +395,8 @@ class FrontEnd(object):
                 # if len(approx) == 3:
                     # cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
                 if len(approx) == 4:
-                    if len(cnt) > 4:
+
+                    if 0:
                         (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
                         ar = MA/ma
                     else:
@@ -424,8 +425,8 @@ class FrontEnd(object):
 
                         if area > oldArea:
                             cv2.drawContours(frame, [approx], 0, (0, 0, 0), 5)
-                            cv2.circle(frame,(int(cx),int(cy)), 3, (0,0,255), -1)
-                            cv2.putText(frame, "Rectangle" + str(angle), (x, y), font, 1, (0, 0, 0))
+                            #cv2.circle(frame,(int(cx),int(cy)), 3, (0,0,255), -1)
+                            cv2.putText(frame, "Rectangle", (x, y), font, 1, (0, 0, 0))
 
                             cntMain = approx
                             rect = self.order_points(cntMain)
