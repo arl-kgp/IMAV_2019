@@ -194,7 +194,7 @@ class FrontEnd(object):
         maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
         maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
 
-        maskSab = cv2.bitwise_and(mfitaskSab,newV)
+        maskSab = cv2.bitwise_and(maskSab,newV)
         maskSab = cv2.equalizeHist(maskSab)
         maskSab = cv2.inRange(maskSab,190,255)# param *****
 
@@ -275,7 +275,7 @@ class FrontEnd(object):
                         if area > oldArea:
                             cv2.drawContours(frame, [approx], 0, (0, 0, 0), 5)
                             #cv2.circle(frame,(int(cx),int(cy)), 3, (0,0,255), -1)
-                            cv2.putText(frame, "Rectangle" + str(angle), (x, y), font, 1, (0, 0, 0))
+                            cv2.putText(frame, "Rectangle", (x, y), font, 1, (0, 0, 0))
 
                             cntMain = approx
                             rect = self.order_points(cntMain)
