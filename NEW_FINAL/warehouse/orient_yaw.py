@@ -22,4 +22,4 @@ class Orient(object):
 			else:
 				self.tello.rotate_counter_clockwise(-int(e))
 
-			sleep(1.7)
+			# sleep(1.7)

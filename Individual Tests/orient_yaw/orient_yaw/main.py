@@ -18,7 +18,7 @@ except:
 orient = Orient(tello)
 print ("initial yaw = "+str(tello.get_yaw()))
 while 1:
-
+	print("initial yaw = "+str(tello.get_yaw()))
 	print ("Enter the yaw value:")
 
 	yaw = int(input())
@@ -27,6 +27,7 @@ while 1:
 	orient.orient(yaw)
 
 	print ("Yaw rotation complete")
-	print("final yaw = "+str(tello.get_yaw))
+	print("final yaw = "+str(tello.get_yaw()))
+	# time.sleep(2)
 
 tello.land()
