@@ -22,6 +22,8 @@ from tello_height import goto_height
 from after_shelf import FrontEnd as after
 from orient_yaw import Orient as orient
 
+import final_csv
+
 Out_of_bounds = False
 LR_VAL = 0 #can be 0 : stay at place, 1 : move right, 2 : move left
 
@@ -128,10 +130,18 @@ class hoohah(object):
         self.tello.end()
         print("Ended")
 
+        print("Enter input file name")
+        fname = input()
+        print("Enter ID")
+        id = input()
+
+        final_csv.getout(id, fname)
+
 
 def main():
     print("now i am gonna start the mission")
     tello = Tello()
+    tello.offset = 60
     tello.connect()
     tello.streamoff()
     tello.streamon()
