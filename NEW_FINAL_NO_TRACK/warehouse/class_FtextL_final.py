@@ -220,7 +220,7 @@ class warehouse_L:
 		text = ''.join(list1)
 		return text
 
-	def roi_detect(self,image):
+def roi_detect(self,image):
 
 		# initialize the list of results
 		results = []
@@ -252,7 +252,6 @@ class warehouse_L:
 			cv2.putText(output, text, (x, y - 20), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
 
 		return text_list, conf_list, corners, output
-
 
 	def decode_predictions(self,scores, geometry, min_confidence):
 		# grab the number of rows and columns from the scores volume, then
@@ -608,6 +607,8 @@ class warehouse_L:
 		align_without_QR = False
 		rectangle_without_QR = False
 		detection_completed_per_shelf = False
+		align_num_text_frames = 0
+
 
 		self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))							#remove this line
 		# f.close()
@@ -698,13 +699,19 @@ class warehouse_L:
 					trav1.prev_trigger = 1
 					trav1.trigger = 1
 
+					"""
 					if detection_completed_per_shelf and trav1.num_text_frames == 3:
 						self.should_stop = True
 						print("Finished")
 						break
-
+					"""
 					if detection_completed_per_shelf == True:
 						# go_to_distance 120
+						align_num_text_frames = align_num_text_frames + 1
+						if align_num_text_frames == 4:
+							self.should_stop = True
+							print("Finished")
+							break
 						self.tello.go_left(120)
 						detection_completed_per_shelf = False
 
@@ -754,7 +761,7 @@ class warehouse_L:
 
 				print("intersection: "+str(ret_val))
 
-				if qrpoints != [] and self.hover_time < 3 and ret_val == 1:	 # If QR detected, detect TEXT
+				if qrpoints != [] and self.hover_time < 2 and ret_val == 1:	 # If QR detected, detect TEXT
 
 					frame = frame_1
 					print(qrlist)

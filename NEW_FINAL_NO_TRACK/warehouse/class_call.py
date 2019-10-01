@@ -19,6 +19,8 @@ class warehouse_overall:
 		# goto_height(self.tello,100)												# to change height parameter
 
 		# yaw = self.tello.get_yaw()
+
+		self.orient.orient(yaw)
 		
 		self.txt_L.scan(yaw)
 		h = self.tello.get_h()
@@ -36,7 +38,7 @@ class warehouse_overall:
 		
 		self.txt_R.scan(yaw)
 
-		# self.orient.orient(yaw)
+		self.orient.orient(yaw)
 		# GO_up_1.5m
 
 		parser1()
