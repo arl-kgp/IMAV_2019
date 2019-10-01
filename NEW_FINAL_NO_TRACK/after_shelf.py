@@ -51,7 +51,7 @@ class FrontEnd(object):
         # else:
         #     final_height = 30
 
-        goto_height(final_height)
+        goto_height(self.tello,final_height)
 
         # go down and search, align
         # if up == 1 go left

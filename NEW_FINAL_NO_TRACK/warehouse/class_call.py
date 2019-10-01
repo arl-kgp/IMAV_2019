@@ -1,10 +1,10 @@
 from djitellopy import Tello
 import cv2
-from class_FtextR_final import warehouse_R
-from class_FtextL_final import warehouse_L
-from csvParserfinal import *
-from tello_height import *
-from orient_yaw import Orient as orient
+from warehouse.class_FtextR_final import warehouse_R
+from warehouse.class_FtextL_final import warehouse_L
+from warehouse.csvParserfinal import *
+from warehouse.tello_height import *
+from warehouse.orient_yaw import Orient as orient
 
 class warehouse_overall:
 	def __init__(self, tello):
@@ -16,7 +16,7 @@ class warehouse_overall:
 
 	def algo(self,yaw):
 
-		goto_height(self.tello,100)												# to change height parameter
+		# goto_height(self.tello,100)												# to change height parameter
 
 		# yaw = self.tello.get_yaw()
 		
@@ -26,13 +26,13 @@ class warehouse_overall:
 
 		# self.orient.orient(yaw)
 
-		k = h-150
-		if(k<20):																# change k minimum height
-			k=20
+		# k = h-150
+		# if(k<20):																# change k minimum height
+		k = 20
 
 		goto_height(self.tello, k)
 
-		# self.orient.orient(yaw)
+		self.orient.orient(yaw)
 		
 		self.txt_R.scan(yaw)
 
