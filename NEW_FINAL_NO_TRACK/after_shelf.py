@@ -118,7 +118,10 @@ class FrontEnd(object):
                             self.align_rect.clear()
 
                         if(self.trigger_init == 2):
-                            self.tello.move_right(135)
+                            try:
+                                self.tello.move_right(135)
+                            except:
+                                pass
                             self.trigger_init = 4
 
                         if(self.trigger_init == 4):
