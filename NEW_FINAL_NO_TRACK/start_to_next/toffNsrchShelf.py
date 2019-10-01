@@ -291,7 +291,7 @@ class FrontEnd(object):
         #     self.rcOut[1] = -50
         # elif key == ord("d"):
         #     self.rcOut[0] = 50
-        # elif key == ord("u"):
+        # elif kegetrey == ord("u"):
         #     self.rcOut[2] = 50
         # elif key == ord("j"):
         #     self.rcOut[2] = -50
@@ -395,7 +395,8 @@ class FrontEnd(object):
                 # if len(approx) == 3:
                     # cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
                 if len(approx) == 4:
-                    if len(cnt) > 4:
+
+                    if 0:
                         (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
                         ar = MA/ma
                     else:
