@@ -479,7 +479,7 @@ class FrontEnd(object):
                                 # print "PoseMean",self.telloPoseMean
                                 # print "telloPoseVariance" , self.telloPoseVariance
                             varN = np.linalg.norm(self.telloPoseVariance)
-                        oldArea =area
+                            oldArea =area
                     else:
                         if self.c == 1:
                             self.centerCounter = self.centerCounter + 1

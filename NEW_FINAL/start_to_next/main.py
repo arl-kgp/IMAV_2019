@@ -60,15 +60,6 @@ class starting(object):
         self.tello.move_left(80)                                                                #declare how much to move right so that reach the shelf
         self.tello.rotate_clockwise(90)
 
-        # do warehouse
-
-        # search for the shelf to pass from
-
-        # 
-
-
-        # self.tello.land()
-        # print("Ended")
 
 def main():
     print("now i am gonna start the mission")

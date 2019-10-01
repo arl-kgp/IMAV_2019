@@ -472,7 +472,7 @@ class FrontEnd(object):
 
                             varN = np.linalg.norm(self.telloPoseVariance)
                             # print "varN",varN
-                        oldArea =area
+                            oldArea =area
         # cv2.imshow("Frame", frame)
         # cv2.imshow("Mask", mask)
 
