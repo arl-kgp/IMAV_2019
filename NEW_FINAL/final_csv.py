@@ -7,8 +7,8 @@ def getout(id, fname):
         for ls in tz.readlines():
             ls = ls.strip('\n')
             l = ls.split(',')
-            qrf[l[0]] = l[1]
-    
+            qrf[l[1]] = l[0]
+    #print(qrf)
     needed = []
     with open(fname, 'r') as tz:
         for ls in tz.readlines():
