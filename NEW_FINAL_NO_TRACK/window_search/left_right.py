@@ -320,7 +320,7 @@ class FrontEnd(object):
                             rect = self.order_points(cntMain)
                             # print("reached here")
 
-                        oldArea = area
+                            oldArea = area
 
         return rect
 

@@ -307,7 +307,7 @@ class FrontEnd(object):
             if area > 300:#param
 
                 if len(approx) == 4:
-                    cnt = approx
+                    #cnt = approx
                  
                     ar = (np.linalg.norm(approx[0] - approx[1]) + np.linalg.norm(approx[2] - approx[3]))/(np.linalg.norm(approx[2]-approx[1])+np.linalg.norm(approx[0]-approx[3]))
                     if ar > 1:
