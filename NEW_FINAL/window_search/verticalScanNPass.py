@@ -86,7 +86,7 @@ class FrontEnd(object):
         self.flag1 =1
         self.passFlag = 0
 
-        self.maxSearchH = 250 #maximum search height for the rectangle
+        self.maxSearchH = 400 #maximum search height for the rectangle
         self.midSearchH = 75
 
         self.startTime = 0
@@ -158,8 +158,8 @@ class FrontEnd(object):
         self.flag1 =1
         self.passFlag = 0
 
-        self.maxSearchH = 250 #maximum search height for the rectangle
-        self.midSearchH = 50
+        self.maxSearchH = 400 #maximum search height for the rectangle
+        self.midSearchH = 75
 
         self.startTime = 0
 
@@ -245,7 +245,7 @@ class FrontEnd(object):
 
         elif self.lineIsVisible == 1 and self.passFlag ==0:
             Kp = 0.16 # proportional constant                                                   # parameter
-            setLoc = 300                                                                        # to update
+            setLoc = 250                                                                        # to update
             # print "line ki location",self.lineLoc
             err = setLoc - self.lineLoc #error
 
@@ -411,10 +411,10 @@ class FrontEnd(object):
             # print "ya1"
             # print "self.cntErNrm",self.cntErNrm
 
-            if self.cntErNrm > 10 or self.cntErNrm ==0:                                                 # parameter 10
+            if self.cntErNrm > 8 or self.cntErNrm ==0:                                                 # parameter 10
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,35,0,10,0.55)                                                   # parameter 10
+                self.PoseController(key,35,0,7,0.57)                                                   # parameter 10
                 if self.centerCounter > 16 and self.centerCounter < 180:                                # to update
                     self.rcOut = [0,-20,0,0]
                 self.alnFlowFlag = 1
@@ -511,7 +511,6 @@ class FrontEnd(object):
 
         return dst
 
-
     def getRectMask(self,frame):
 
         kernel = np.ones((5,5),np.uint8)#param 1
@@ -558,6 +557,27 @@ class FrontEnd(object):
         maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
 
         return maskSab
+        # kernel = np.ones((5,5),np.uint8)#param 1
+
+        # frame = cv2.GaussianBlur(frame, (7,7), 0)
+        # frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        # kernel = np.ones((3,3), np.uint8)
+
+        # frame_threshold = cv2.inRange(frame_HSV, (0, 0, 0), (255, 40, 255))
+
+        # frame_threshold = cv2.erode(frame_threshold, kernel, iterations=1)
+        # frame_threshold = np.repeat(frame_threshold[:, :, np.newaxis], 3, 2)
+        # cv2.imshow("t1", frame_threshold)
+        # frame2 = np.uint8((frame_threshold//255)*np.int64(frame_HSV))
+
+        # frame_threshold = cv2.inRange(frame2, (30, 37, 0), (90, 115, 255))
+        # mask = frame_threshold
+        # kernel = np.ones((1,1), np.uint8)      
+
+        # mask = cv2.erode(mask, kernel, iterations=4)
+
+        # mask = cv2.dilate(mask, kernel, iterations=7)
+        # return frame_threshold
 
     def PoseEstimationfrmMask(self,mask,frame,frameH,frameW,arSet):
         # Contours detection
@@ -625,7 +645,7 @@ class FrontEnd(object):
                                 self.telloPoseVariance = np.var(self.poseQueue,axis=0)
                                 self.telloPoseMean = np.mean(self.poseQueue,axis = 0)
                                 ccc = (approx[0]+approx[1]+approx[2]+approx[3])[0]/4
-
+                                #print(ccc)
                                 self.frameCenter = [[ccc[0],ccc[1]]]
                                 # print "PoseQueue",self.poseQueue
                                 # print "PoseMean",self.telloPoseMean
@@ -750,6 +770,7 @@ class FrontEnd(object):
                 MtnCmd = np.array([kp*xEr,kp*yEr,kp*zEr])
 
                 MtnCmd[0] = -1*MtnCmd[0]
+
                 self.rcOut = [MtnCmd[1], MtnCmd[0],MtnCmd[2],0]
 
                 if self.rcOut[0] > 35:

@@ -86,7 +86,7 @@ class FrontEnd(object):
         self.flag1 =1
         self.passFlag = 0
 
-        self.maxSearchH = 420 #maximum search height for the rectangle
+        self.maxSearchH = 400 #maximum search height for the rectangle
         self.midSearchH = 75
 
         self.startTime = 0
@@ -158,8 +158,8 @@ class FrontEnd(object):
         self.flag1 =1
         self.passFlag = 0
 
-        self.maxSearchH = 250 #maximum search height for the rectangle
-        self.midSearchH = 50
+        self.maxSearchH = 400 #maximum search height for the rectangle
+        self.midSearchH = 75
 
         self.startTime = 0
 
@@ -245,7 +245,7 @@ class FrontEnd(object):
 
         elif self.lineIsVisible == 1 and self.passFlag ==0:
             Kp = 0.16 # proportional constant                                                   # parameter
-            setLoc = 300                                                                        # to update
+            setLoc = 250                                                                        # to update
             # print "line ki location",self.lineLoc
             err = setLoc - self.lineLoc #error
 
@@ -411,10 +411,10 @@ class FrontEnd(object):
             # print "ya1"
             # print "self.cntErNrm",self.cntErNrm
 
-            if self.cntErNrm > 9 or self.cntErNrm ==0:                                                 # parameter 10
+            if self.cntErNrm > 8 or self.cntErNrm ==0:                                                 # parameter 10
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,35,0,10,0.55)                                                   # parameter 10
+                self.PoseController(key,35,0,7,0.57)                                                   # parameter 10
                 if self.centerCounter > 16 and self.centerCounter < 180:                                # to update
                     self.rcOut = [0,-20,0,0]
                 self.alnFlowFlag = 1

@@ -15,7 +15,7 @@ class FrontEnd(object):
         # self.tello = Tello()
 
         # self.cap = cv2.VideoCapture(0)
-        self.tracker = cv2.TrackerKCF_create()
+        self.tracker = cv2.TrackerMedianFlow_create()
         # self.tracker = cv2.CSRT_create()
         self.rcOut = np.zeros(4)
         self.bbox = (5,5,20,20)
@@ -125,7 +125,7 @@ class FrontEnd(object):
 
     def clear(self):
         
-        self.tracker = cv2.TrackerKCF_create()
+        self.tracker = cv2.TrackerMedianFlow_create()
         # self.tracker = cv2.CSRT_create()
         self.rcOut = np.zeros(4)
         self.bbox = (5,5,20,20)
@@ -328,7 +328,7 @@ class FrontEnd(object):
         self.bbox = (rect[0][0],rect[0][1],rect[2][0]-rect[0][0],rect[2][1]-rect[0][1])
         # print("self.bbox is :: :: {}".format(self.bbox))
         # cv2.imshow("frame is",frame)
-        self.tracker = cv2.TrackerKCF_create()
+        self.tracker = cv2.TrackerMedianFlow_create()
         ok = self.tracker.init(frame,self.bbox)
         # print("Val of OK inside start is {}".format(ok))
         # p1 = (int(self.bbox[0]), int(self.bbox[1]))
@@ -358,6 +358,7 @@ class FrontEnd(object):
 
         else:
             if(self.visible<5):
+                print(self.visible)
                 self.trigger_init = 2
                 return
             print("LOST")

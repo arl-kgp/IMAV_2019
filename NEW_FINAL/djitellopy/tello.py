@@ -59,6 +59,8 @@ class Tello:
         self.enable_exceptions = enable_exceptions
         self.retry_count = retry_count
 
+        self.offset = 0
+
         if client_socket:
             self.clientSocket = client_socket
         else:
@@ -233,7 +235,7 @@ class Tello:
             response = response.replace(';',':')
             response = response.split(':')
             try:
-                return float(response[19])
+                return float(response[19]) + offset
             except:
                 print("Exception in height")
                 return 0
