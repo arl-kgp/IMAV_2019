@@ -72,7 +72,7 @@ class FrontEnd(object):
 
         while not should_stop:
             frame = frame_read.frame
-            print(self.tello.get_bat())
+            # print(self.tello.get_bat())
             if frame_read.stopped:
                 frame_read.stop()
                 break
@@ -159,14 +159,50 @@ class FrontEnd(object):
 
     def getRectMask(self,frame):
 
-        frame = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
-        lowerbound = np.array([92,50,119])
-        upperbound = np.array([117,255,255])
+        kernel = np.ones((5,5),np.uint8)#param 1
 
-        mask = cv2.inRange(frame,lowerbound,upperbound)
+        blurred = cv2.GaussianBlur(frame, (7, 7), 0)#param 1
+
+        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+        h,s,v = cv2.split(hsv)
+
+        dilS = cv2.dilate(s,kernel,iterations = 1)
+        newS = dilS-s
+        newS = cv2.equalizeHist(newS)
+        # newS = cv2.GaussianBlur(newS, (11, 11), 0)
+
+
+        dilV = cv2.dilate(v,kernel,iterations = 1)#param 1
+        newV = dilV-v
+        newV = cv2.equalizeHist(newV)
+
+        dilH = cv2.dilate(h,kernel,iterations = 1)
+        newH = dilH-h
+        newH = cv2.equalizeHist(newH)
+
+
+        sabKaAnd = cv2.bitwise_or(newS,newV)
         kernel2 = np.ones((3,3),np.uint8)#param 1
-        mask = cv2.erode(mask,kernel2,iterations = 3)
-        mask = cv2.dilate(mask,kernel2,iterations = 3)
+        sabKaAnd = cv2.erode(sabKaAnd,kernel2,iterations = 1)#param 1
+        sabKaAnd = cv2.erode(sabKaAnd,kernel2,iterations = 1)#param 1
+
+        sabKaAnd = cv2.dilate(sabKaAnd,kernel2,iterations = 1)#param 1
+        sabKaAnd = cv2.GaussianBlur(sabKaAnd, (11, 11), 0)
+
+        maskSab = cv2.inRange(sabKaAnd,120,255)#param 1****
+
+        maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
+        maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
+
+        maskSab = cv2.bitwise_and(maskSab,newV)
+        maskSab = cv2.equalizeHist(maskSab)
+        maskSab = cv2.inRange(maskSab,190,255)# param *****
+
+        kernel2 = np.ones((2,2),np.uint8) #param ****
+        maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
+        maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
+
+        mask = maskSab
         return mask
 
     def order_points(self, pts):
@@ -211,7 +247,8 @@ class FrontEnd(object):
             if area > 300:#param
 
                 if len(approx) == 4:
-                    if len(cnt) > 4:
+
+                    if 0:
                         (cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
                         ar = MA/ma
                     else:
@@ -237,14 +274,14 @@ class FrontEnd(object):
 
                         if area > oldArea:
                             cv2.drawContours(frame, [approx], 0, (0, 0, 0), 5)
-                            cv2.circle(frame,(int(cx),int(cy)), 3, (0,0,255), -1)
-                            cv2.putText(frame, "Rectangle" + str(angle), (x, y), font, 1, (0, 0, 0))
+                            #cv2.circle(frame,(int(cx),int(cy)), 3, (0,0,255), -1)
+                            cv2.putText(frame, "Rectangle", (x, y), font, 1, (0, 0, 0))
 
                             cntMain = approx
                             rect = self.order_points(cntMain)
                             # print("reached here")
 
-                        oldArea = area
+                            oldArea = area
 
         return rect
 
@@ -265,7 +302,7 @@ class FrontEnd(object):
             cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
             cv2.imshow("with frame",frame)
             print("still visible")
-            self.rcOut[0] = -30                                                  #to update speed along x axis
+            self.rcOut[0] = -25                                                  #to update speed along x axis
             self.rcOut[1] = 0
             self.rcOut[2] = 0
             self.rcOut[3] = 0

@@ -22,7 +22,7 @@ from tello_height import goto_height
 from after_shelf import FrontEnd as after
 from orient_yaw import Orient as orient
 
-import final_csv
+import final_csv_final
 
 Out_of_bounds = False
 LR_VAL = 0 #can be 0 : stay at place, 1 : move right, 2 : move left
@@ -133,7 +133,7 @@ class hoohah(object):
         print("Enter ID")
         id = input()
 
-        final_csv.getout(id, fname)
+        final_csv_final.getout(id, fname)
 
 
 def main():
