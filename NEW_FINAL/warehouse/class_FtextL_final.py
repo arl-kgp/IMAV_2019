@@ -253,7 +253,6 @@ class warehouse_L:
 		return text_list, conf_list, corners, output
 
 
-
 	def decode_predictions(self,scores, geometry, min_confidence):
 		# grab the number of rows and columns from the scores volume, then
 		# initialize our set of bounding box rectangles and corresponding
