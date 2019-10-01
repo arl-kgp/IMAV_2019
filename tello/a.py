@@ -9,7 +9,7 @@ import imutils as im
 
 # font = cv2.FONT_HERSHEY_COMPLEX
 
-out = cv2.VideoWriter('t3.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 25, (720,540))
+out = cv2.VideoWriter('y6.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 25, (720,540))
 
 
 class FrontEnd(object):

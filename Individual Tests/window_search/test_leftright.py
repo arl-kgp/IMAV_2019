@@ -50,8 +50,9 @@ class starting(object):
 
             # else:
         initial_yaw = yaw
-        while(self.right<3):                                                    #parameter. Might have to update it to 4
+        while(self.right<4):                                                    #parameter. Might have to update it to 4
             # print("yooooo")
+            
             
             
             self.orient.orient(initial_yaw)
@@ -65,14 +66,23 @@ class starting(object):
             # cv2.destroyAllWindows()
 
             if(self.trig==1):
-                if(self.tello.get_h()>180):
+                if(self.tello.get_h()>250):
                     self.up = 1
                     return self.up,self.right,1
-                    
+                else:
+                    self.up = 0
+                    return self.up,self.right,1
+
             else:
                 print("mow in left right wali class")
-                self.right = self.left_right.run(self.right)
-                self.left_right.clear()
+                #self.right = self.left_right.run(self.right)
+                #self.left_right.clear()
+                self.right = self.right+1
+                try:
+                    self.tello.move_left(140)
+                except:
+                    pass
+                print("MOVED")
 
 
 
@@ -101,6 +111,10 @@ def main():
     print("now i am gonna start the mission")
     tello = Tello()
     tello.connect()
+    try:
+        tello.takeoff()
+    except:
+        pass
     tello.streamoff()
     tello.streamon()
     start = starting(tello)
