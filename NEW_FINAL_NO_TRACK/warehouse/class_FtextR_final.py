@@ -221,7 +221,7 @@ class warehouse_R:
 		text = ''.join(list1)
 		return text
 
-def roi_detect(self,image):
+	def roi_detect(self,image):
 
 		# initialize the list of results
 		results = []

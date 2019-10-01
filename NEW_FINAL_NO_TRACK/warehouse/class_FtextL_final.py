@@ -220,7 +220,7 @@ class warehouse_L:
 		text = ''.join(list1)
 		return text
 
-def roi_detect(self,image):
+	def roi_detect(self,image):
 
 		# initialize the list of results
 		results = []
@@ -610,7 +610,7 @@ def roi_detect(self,image):
 		align_num_text_frames = 0
 
 
-		self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))							#remove this line
+		# self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))							#remove this line
 		# f.close()
 
 		# Read feed:

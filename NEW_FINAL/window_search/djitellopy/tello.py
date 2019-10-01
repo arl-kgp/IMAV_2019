@@ -235,7 +235,7 @@ class Tello:
             response = response.replace(';',':')
             response = response.split(':')
             try:
-                return float(response[19]) + offset
+                return float(response[19]) + self.offset
             except:
                 print("Exception in height")
                 return 0
