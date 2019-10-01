@@ -8,17 +8,15 @@ import imutils as im
 
 from align_rect import FrontEnd as align_rect
 
+from tello_height import *
+
 font = cv2.FONT_HERSHEY_COMPLEX
 
 class FrontEnd(object):
 
     def __init__(self,tello):
         self.tello = tello
-        # self.tello = Tello()
-
-        # self.cap = cv2.VideoCapture(0)
-        self.tracker = cv2.TrackerKCF_create()
-        # self.tracker = cv2.CSRT_create()
+ 
         self.rcOut = np.zeros(4)
         self.bbox = (5,5,20,20)
 
@@ -41,9 +39,19 @@ class FrontEnd(object):
 
     def run(self,left,up,yaw):
 
+        # height = self.tello.get_h()
+
         frame_read = self.tello.get_frame_read()
 
         should_stop = False
+
+        # if(up):
+        final_height = 180
+
+        # else:
+        #     final_height = 30
+
+        goto_height(final_height)
 
         # go down and search, align
         # if up == 1 go left
@@ -52,6 +60,7 @@ class FrontEnd(object):
         print("now here")
 
         while not should_stop:
+
             frame = frame_read.frame
             print(self.tello.get_bat())
             if frame_read.stopped:
@@ -62,7 +71,7 @@ class FrontEnd(object):
 
             key = cv2.waitKey(1) & 0xFF
             
-            if (key == ord("m")):
+            if 1:
                 # print(self.tello.get_bat())
                 dst,mask = self.preproccessAndKey(frame)
                 # rect =
@@ -70,11 +79,11 @@ class FrontEnd(object):
                     # print("tfadygsuhijfsfjhtgdyuhjkdfgytucijcdfgyusijcdf")
                     
                     rect = self.get_coordinates(mask,dst)
-                    print(rect)
+                    # print(rect)
                     if(rect[0][0] == 0):
-                        self.rcOut[2] = 20              #changed
+                        self.rcOut[2] = 0             
                         self.rcOut[0] = 0
-                        self.rcOut[1] = 0
+                        self.rcOut[1] = 10      #aage jaega if rect not found
                         self.rcOut[3] = 0
                         # continue
                     else:
@@ -90,62 +99,9 @@ class FrontEnd(object):
 
                 if(self.trigger_init_start==2):
 
-                    if(up==0):
-                        print("up was 0 so going up")
-                        # print(self.trigger_init)
+                    if (left!=0):
 
-                        rect = self.get_coordinates(mask,dst)
-
-                        if(self.trigger_init==0):
-                            
-                            if(rect[0][0] == 0):
-                                # self.rcOut[0] = 0
-                                # self.rcOut[1] = 0
-                                # self.rcOut[2] = -10
-                                # self.rcOut[3] = 0
-                                continue
-                            else:
-                                print("ahhahaha")
-                                self.trigger_init = 1
-
-                        if(self.trigger_init == 1):
-                            self.align_rect.run()
-                            self.trigger_init = 2
-                            self.align_rect.clear()
-
-                        if(self.trigger_init == 2):
-                            ok = self.start_tracking(rect,dst)
-                            if (ok==True):
-                                self.trigger_init = 3
-
-                        if(self.trigger_init == 3):
-                            self.track_up(dst)
-                            if self.trigger == 1:
-                                # up = 1
-                                self.trigger = 0
-                                self.trigger_init = 4
-
-                        if(self.trigger_init == 4):
-                            # rect = self.get_coordinates(mask,dst)
-                            if(rect[0][0] == 0):
-                                self.rcOut[2] = 20
-                                self.rcOut[0] = 0
-                                self.rcOut[1] = 0
-                                self.rcOut[3] = 0 
-                            else:
-                                print("hahahah")
-                                self.trigger_init = 5
-
-                        if(self.trigger_init == 5):
-
-                            self.align_rect.run()
-                            self.trigger_init = 0
-                            up = 1
-                            self.align_rect.clear()
-
-                    elif (left!=0):
-
-                        print("now we are up and now going right")
+                        print("now going right")
                         rect = self.get_coordinates(mask,dst)
 
                         if(self.trigger_init==0):
@@ -162,15 +118,8 @@ class FrontEnd(object):
                             self.align_rect.clear()
 
                         if(self.trigger_init == 2):
-                            ok = self.start_tracking(rect,dst)
-                            if(ok==True):
-                                self.trigger_init = 3
-
-                        if(self.trigger_init == 3):
-                            self.track_left(dst)
-                            if self.trigger == 1:
-                                self.trigger = 0
-                                self.trigger_init = 4
+                            self.tello.move_right(135)
+                            self.trigger_init = 4
 
                         if(self.trigger_init == 4):
                             rect = self.get_coordinates(mask,dst)
@@ -190,7 +139,7 @@ class FrontEnd(object):
                             left = left -1
                             self.align_rect.clear()
 
-                    if left == 0 and up == 1:
+                    if left == 0:
                         print("wohoo we have reached where we wanted to be")
                         break
 
@@ -202,7 +151,7 @@ class FrontEnd(object):
     def clear(self):
         
         # self.cap = cv2.VideoCapture(0)
-        self.tracker = cv2.TrackerKCF_create()
+        # self.tracker = cv2.TrackerKCF_create()
         # self.tracker = cv2.CSRT_create()
         self.rcOut = np.zeros(4)
         self.bbox = (5,5,20,20)
@@ -391,73 +340,6 @@ class FrontEnd(object):
                         oldArea = area
 
         return rect
-
-    def start_tracking(self, rect,frame):
-
-        self.bbox = (rect[0][0],rect[0][1],rect[2][0]-rect[0][0],rect[2][1]-rect[0][1])
-        self.tracker = cv2.TrackerKCF_create()
-        ok = self.tracker.init(frame,self.bbox)
-        # p1 = (int(self.bbox[0]), int(self.bbox[1]))
-        # p2 = (int(self.bbox[0]+ self.bbox[2]), int(self.bbox[1]+self.bbox[3]))
-        # cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
-        # cv2.imshow("with frame",frame)
-        # cv2.waitKey(10)
-        return ok
-
-    def track_left(self,frame):
-
-        ok, self.bbox = self.tracker.update(frame)
-
-        if ok:
-            p1 = (int(self.bbox[0]), int(self.bbox[1]))
-            p2 = (int(self.bbox[0]+ self.bbox[2]), int(self.bbox[1]+self.bbox[3]))
-            cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
-            cv2.imshow("with frame",frame)
-            # cv2.waitKey(10)
-            print("still visible")
-            self.rcOut[0] = 20
-            self.rcOut[1] = 0
-            self.rcOut[2] = 0
-            self.rcOut[3] = 0
-            self.trigger = 0
-            self.lost = 0
-
-        else:
-            print("LOST")
-            # self.lost +=1
-            # if(self.lost>15):
-            self.trigger = 1
-                # self.lost = 0
-
-
-    def track_up(self,frame):
-
-        ok, self.bbox = self.tracker.update(frame)
-
-        if ok:
-            # p1 = (int(self.bbox[0]), int(self.bbox[1]))
-            # p2 = (int(self.bbox[0]+ self.bbox[2]), int(self.bbox[1]+self.bbox[3]))
-            # cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
-            # cv2.imshow("with frame",frame)
-            print("still visible")
-            self.rcOut[0] = 0
-            self.rcOut[1] = 0
-            self.rcOut[2] = 40
-            self.rcOut[3] = 0
-            self.trigger = 0
-            self.lost = 0
-            self.visible+=1
-
-        else:
-            if(self.visible<5):
-                self.trigger_init = 2
-                return
-            print("LOST")
-            self.visible = 0
-            # self.lost +=1
-            # if(self.lost>15):
-            self.trigger = 1
-                # self.lost = 0
 
 def main():
     print("ahahah")
