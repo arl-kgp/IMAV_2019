@@ -5,8 +5,8 @@ import time
 import imutils as im
 
 
-from window_search.left_right import FrontEnd as left_right
-from window_search.verticalScanNPass import FrontEnd as up_down
+from left_right import FrontEnd as left_right
+from verticalScanNPass import FrontEnd as up_down
 # from passFrmWindow import FrontEnd as passWin
 # from after_shelf import FrontEnd as after
 from orient_yaw import Orient as orient 
@@ -86,7 +86,7 @@ class starting(object):
 
 
 
-        return 0,3,0
+        return 0,2,0
 
             # if(self.right>3):
 
