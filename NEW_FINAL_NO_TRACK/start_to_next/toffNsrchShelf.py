@@ -330,14 +330,52 @@ class FrontEnd(object):
         return dst
 
     def getRectMask(self,frame):
-        frame = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
-        lowerbound = np.array([92,50,119])
-        upperbound = np.array([117,255,255])
 
-        mask = cv2.inRange(frame,lowerbound,upperbound)
+        kernel = np.ones((5,5),np.uint8)#param 1
+
+        blurred = cv2.GaussianBlur(frame, (7, 7), 0)#param 1
+
+        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+        h,s,v = cv2.split(hsv)
+
+        dilS = cv2.dilate(s,kernel,iterations = 1)
+        newS = dilS-s
+        newS = cv2.equalizeHist(newS)
+        # newS = cv2.GaussianBlur(newS, (11, 11), 0)
+
+
+        dilV = cv2.dilate(v,kernel,iterations = 1)#param 1
+        newV = dilV-v
+        newV = cv2.equalizeHist(newV)
+
+        dilH = cv2.dilate(h,kernel,iterations = 1)
+        newH = dilH-h
+        newH = cv2.equalizeHist(newH)
+
+
+        sabKaAnd = cv2.bitwise_or(newS,newV)
         kernel2 = np.ones((3,3),np.uint8)#param 1
-        mask = cv2.erode(mask,kernel2,iterations = 3)
-        mask = cv2.dilate(mask,kernel2,iterations = 3)
+        sabKaAnd = cv2.erode(sabKaAnd,kernel2,iterations = 1)#param 1
+        sabKaAnd = cv2.erode(sabKaAnd,kernel2,iterations = 1)#param 1
+
+        sabKaAnd = cv2.dilate(sabKaAnd,kernel2,iterations = 1)#param 1
+        sabKaAnd = cv2.GaussianBlur(sabKaAnd, (11, 11), 0)
+
+        maskSab = cv2.inRange(sabKaAnd,120,255)#param 1****
+
+        maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
+        maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
+
+        maskSab = cv2.bitwise_and(maskSab,newV)
+        maskSab = cv2.equalizeHist(maskSab)
+        maskSab = cv2.inRange(maskSab,190,255)# param *****
+
+        kernel2 = np.ones((2,2),np.uint8) #param ****
+        maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
+        maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
+
+        mask = maskSab
+
         return mask
 
 
@@ -352,7 +390,6 @@ class FrontEnd(object):
             x = approx.ravel()[0]
             y = approx.ravel()[1]
 
-            
 
             if area > 300:#param                                                                                     #to change
                 # if len(approx) == 3:
@@ -374,7 +411,7 @@ class FrontEnd(object):
                     # print "solidity",solidity
                     # print "ar",ar
                     condition = ar < 1 and ar > arSet
-                    if solidity > 0.9 and condition:                                                                #to change
+                    if solidity > 0.90 and condition:                                                                #to change
 
                         self.ar = ar
                         # print "ar",self.ar

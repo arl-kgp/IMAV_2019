@@ -2,16 +2,16 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-cap = cv2.VideoCapture("/home/carry/IMAV/IMAV_2019/tello/outpy5.avi")
+cap = cv2.VideoCapture("/home/carry/IMAV/videos/1.avi")
 
 def nothing(x):
     pass
 
 cv2.namedWindow("frame")
-cv2.createTrackbar("h_low", "frame", 0, 255, nothing)
-cv2.createTrackbar("s_low", "frame", 0, 255, nothing)
-cv2.createTrackbar("v_low", "frame", 0, 255, nothing)
-cv2.createTrackbar("h_high", "frame",255, 255, nothing)
+cv2.createTrackbar("h_low", "frame", 97, 255, nothing)
+cv2.createTrackbar("s_low", "frame", 50, 255, nothing)
+cv2.createTrackbar("v_low", "frame", 155, 255, nothing)
+cv2.createTrackbar("h_high", "frame",120, 255, nothing)
 cv2.createTrackbar("s_high", "frame", 255, 255, nothing)
 cv2.createTrackbar("v_high", "frame", 255, 255, nothing)
 font = cv2.FONT_HERSHEY_COMPLEX
