@@ -14,7 +14,7 @@ import asyncio
 import numpy as np
 import cv2
 import pytesseract
-from qrcode import *
+from warehouse.qrcode import *
 from warehouse.text import *
 from imutils.object_detection import non_max_suppression
 from warehouse.shelf_trav import FrontEnd as shelf_traversal
