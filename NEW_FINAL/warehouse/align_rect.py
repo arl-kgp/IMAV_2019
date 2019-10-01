@@ -136,7 +136,7 @@ class FrontEnd(object):
         # self.tello.end()
 
     def takeoffToShelf(self,trigger,key,mask,dst,yaw):
-        frameH,frameW,arSet = 10,20,0.4
+        frameH,frameW,arSet = 6,16,0.15
         cv2.imshow("msk",mask)
         self.PoseEstimationfrmMask(mask,dst,frameH,frameW,arSet)
         self.manualRcControl(key)
@@ -274,12 +274,14 @@ class FrontEnd(object):
             # print "ya1"
             # print "self.cntErNrm",self.cntErNrm
 
-            if self.cntErNrm > 12 or self.cntErNrm ==0:
+            if self.cntErNrm > 8 or self.cntErNrm ==0:
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,60,0,12,0.55)
+                self.PoseController(key,35,0,15,0.57)
                 self.alnFlowFlag = 1
                 # print "self.cntErNrm",self.cntErNrm
+                if self.centerCounter > 16 and self.centerCounter < 180:                                # to update
+                    self.rcOut = [0,-20,0,0]
 
                 # print "ya2"
                 return 0
@@ -288,7 +290,7 @@ class FrontEnd(object):
                 # print "ya3"
                 self.alnFlowFlag = 0
                 return 0
-            if self.cntErNrm < 12 and self.cntErNrm != 0:
+            if self.cntErNrm < 10 and self.cntErNrm != 0:
                 self.alnFlowFlag = 0
                 # print "self.cntErNrm",self.cntErNrm
                 
@@ -300,7 +302,7 @@ class FrontEnd(object):
                 # print "ya5"
                 return 0 
         else:
-            if self.cntErNrm < 12 and self.cntErNrm != 0:
+            if self.cntErNrm < 10 and self.cntErNrm != 0:
                 # print "self.cntErNrm",self.cntErNrm
                 # print "ya6"
                 self.orient.orient(yaw)
@@ -355,8 +357,6 @@ class FrontEnd(object):
         return
 
     def rectifyInputImage(self,frame2use):
-
-
 
 # 0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00
         K = np.array([[7.092159469231584126e+02,0.000000000000000000e+00,3.681653710406367850e+02],[0.000000000000000000e+00,7.102890453175559742e+02,2.497677007139825491e+02],[0.000000000000000000e+00,0.000000000000000000e+00,1.000000000000000000e+00]])
