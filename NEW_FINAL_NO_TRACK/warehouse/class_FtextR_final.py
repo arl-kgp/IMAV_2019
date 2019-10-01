@@ -174,7 +174,6 @@ def get_cnt(frame):
 
 	return c, cropped
 
-
 class warehouse_R:
 	def __init__(self, tello):
 		self.tello = tello
@@ -221,7 +220,7 @@ class warehouse_R:
 		text = ''.join(list1)
 		return text
 
-def roi_detect(self,image):
+	def roi_detect(self,image):
 
 		# initialize the list of results
 		results = []
@@ -383,7 +382,7 @@ def roi_detect(self,image):
 		x = 0
 		y = 0
 		avg_int_list = []
-		idx_new = []
+		# idx_new = []
 		for i in range(cols-barsize):
 			bar_img = img[:, i:i+barsize]
 			avg_int = np.sum(bar_img)/(rows*barsize)
@@ -395,7 +394,7 @@ def roi_detect(self,image):
 		coloured_list = []
 		for x in idx:
 			if avg_int_list[x]<150:
-				idx_new[y] = x
+				# idx_new[y] = x
 				y = y+1
 			if np.sum(src[:,x]) != 0 and avg_int_list[x]<150:									# to update
 				for i in range(10):
@@ -409,7 +408,7 @@ def roi_detect(self,image):
 	def diff_shelf(self,im, qrpoints, textpoints):
 		vert = self.check_shelf_edge(im)
 		im, idx = self.check_bars(vert, im, 5)
-		x1 = im.shape[1]
+		x1 = 0
 		for polygon in qrpoints:
 			for point in polygon:
 				if(x1>point.x):
@@ -657,7 +656,7 @@ def roi_detect(self,image):
 					trav1.run(frame)  # Use in left
 				"""
 				# cv2.destroyWindow("dst")
-				print("text_frames_detected: " + str(trav1.num_text_frames))
+				# print("text_frames_detected: " + str(trav1.num_text_frames))
 
 				#if ((trav1.num_text_frames - initial_no_of_frames) > 0) and align_without_QR:
 				#if detection_completed_per_shelf and align_without_QR:
@@ -706,6 +705,7 @@ def roi_detect(self,image):
 					"""
 
 					if detection_completed_per_shelf == True:
+
 						align_num_text_frames = align_num_text_frames + 1
 						if align_num_text_frames == 4:
 							self.should_stop = True
@@ -730,7 +730,7 @@ def roi_detect(self,image):
 						cv2.imshow("Results",frame)
 						continue
 					check = self.go_up(frame, qrprev_list)
-					if (not check or trav1.detect_only_rectangle(frame)) and (present_height-start_height)>40:
+					if (not check or trav1.detect_only_rectangle(frame)) and (present_height-start_height)>60:
 						go_up = False
 						go_down = True
 						cv2.imshow("Results",frame)
@@ -742,17 +742,10 @@ def roi_detect(self,image):
 
 				if go_down:
 					print("down")
-					#if self.tello.get_h() <= start_height and trav1.detect_only_rectangle(frame):
-					if self.tello.get_h() <= start_height:
-						go_down = False
-						#trav1.num_text_frames = trav1.num_text_frames-1
-						should_correct_pos = True
-						detection_completed_per_shelf = True
-						continue
-
-					#self.rcOut = [0, 0, -10, 0]
-					self.tello.send_rc_control(0, 0, -20, 0)
-					cv2.imshow("Results",frame)
+					goto_height(self.tello,start_height)
+					go_down = False
+					should_correct_pos = True
+					detection_completed_per_shelf = True
 					continue
 
 				print("m printing")
@@ -773,22 +766,22 @@ def roi_detect(self,image):
 
 					frame, check_text, txt_corners = self.find_text_and_write(frame, qrlist, qrpoints)
 					
-					# if check_text == 0:
-					# 	# if text is not visible and qr is visible 
-					# 	self.rcout = [5,0,0,0]
-					# 	print("text not found")
-					# 	self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))
-					# 	cv2.imshow("Results",frame)
-						# continue
-
-					if check_text == 2:
-						# move until further code is detected. 
-						# pichle shelf ka alphanumeric and current ka qr
+					if check_text == 0:
+						# if text is not visible and qr is visible 
 						self.rcout = [5,0,0,0]
-						print("text and QR in different Shelves")
+						print("text not found")
 						self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))
 						cv2.imshow("Results",frame)
 						continue
+
+					# if check_text == 2:
+					# 	# move until further code is detected. 
+					# 	# pichle shelf ka alphanumeric and current ka qr
+					# 	self.rcout = [5,0,0,0]
+					# 	print("text and QR in different Shelves")
+					# 	self.tello.send_rc_control(int(self.rcout[0]),int(self.rcout[1]),int(self.rcout[2]),int(self.rcout[3]))
+					# 	cv2.imshow("Results",frame)
+					# 	continue
 
 					# print("Text length: "+str(self.find_length(txt_corners)))
 					self.hover_time = self.hover_time + time.time() - start_time 
