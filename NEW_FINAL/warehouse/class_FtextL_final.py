@@ -17,24 +17,172 @@ import pytesseract
 from qrcode import *
 from text import *
 from imutils.object_detection import non_max_suppression
-from warehouse.shelf_trav import FrontEnd as shelf_traversal
+from shelf_trav import FrontEnd as shelf_traversal
 from PIL import Image
 import scipy
 import scipy.misc
 from imutils.video import FPS
-from warehouse.align_to_frame import FrontEnd as correct_position # Use in left
+from align_to_frame import FrontEnd as correct_position # Use in left
 
-from warehouse.align_rect import FrontEnd as align_rect
+from align_rect import FrontEnd as align_rect
+
+import math
+
+K1 = 3
+split = 5
+K2 = 6
+
+font = cv2.FONT_HERSHEY_COMPLEX
+maxc = 5
+
+def order_points(pts):
+
+	pts = pts.reshape(4,2)
+	# initialzie a list of coordinates that will be ordered
+	# such that the first entry in the list is the top-left,
+	# the second entry is the top-right, the third is the
+	# bottom-right, and the fourth is the bottom-left
+	rect = np.zeros((4, 2), dtype = "float32")
+	
+	# the top-left point will have the smallest sum, whereas
+	# the bottom-right point will have the largest sum
+	s = pts.sum(axis = 1)
+	# print "dim",pts.shape
+	# print "s",s 
+	rect[0] = pts[np.argmin(s)]
+	rect[2] = pts[np.argmax(s)]
+	
+	# now, compute the difference between the points, the
+	# top-right point will have the smallest difference,
+	# whereas the bottom-left will have the largest difference
+	diff = np.diff(pts, axis = 1)
+	rect[1] = pts[np.argmin(diff)]
+	rect[3] = pts[np.argmax(diff)]
+	
+	# return the ordered coordinates
+	return rect
+
+def get_cnt(frame):
+	arSet = 0.5
+	kernel = np.ones((5,5),np.uint8)#param 1
+
+	blurred = cv2.GaussianBlur(frame, (7, 7), 0)#param 1
+
+	hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+	h,s,v = cv2.split(hsv)
+
+	dilS = cv2.dilate(s,kernel,iterations = 1)
+	newS = dilS-s
+	newS = cv2.equalizeHist(newS)
+	# newS = cv2.GaussianBlur(newS, (11, 11), 0)
+
+
+	dilV = cv2.dilate(v,kernel,iterations = 1)#param 1
+	newV = dilV-v
+	newV = cv2.equalizeHist(newV)
+
+	dilH = cv2.dilate(h,kernel,iterations = 1)
+	newH = dilH-h
+	newH = cv2.equalizeHist(newH)
+
+
+	sabKaAnd = cv2.bitwise_or(newS,newV)
+	kernel2 = np.ones((3,3),np.uint8)#param 1
+	sabKaAnd = cv2.erode(sabKaAnd,kernel2,iterations = 1)#param 1
+	sabKaAnd = cv2.erode(sabKaAnd,kernel2,iterations = 1)#param 1
+
+	sabKaAnd = cv2.dilate(sabKaAnd,kernel2,iterations = 1)#param 1
+	sabKaAnd = cv2.GaussianBlur(sabKaAnd, (11, 11), 0)
+
+	maskSab = cv2.inRange(sabKaAnd,120,255)#param 1****
+
+	maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
+	maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
+
+	maskSab = cv2.bitwise_and(maskSab,newV)
+	maskSab = cv2.equalizeHist(maskSab)
+	maskSab = cv2.inRange(maskSab,190,255)# param *****
+
+	kernel2 = np.ones((2,2),np.uint8) #param ****
+	maskSab = cv2.erode(maskSab,kernel2,iterations = 1)
+	maskSab = cv2.dilate(maskSab,kernel2,iterations = 1)
+	mask = maskSab
+	cv2.imshow("msk", mask)
+	# Contours detection
+	contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+	oldArea = 300
+	cnt2 = []
+	lcnt = None
+
+	for cnt in contours:
+		area = cv2.contourArea(cnt)
+		approx = cv2.approxPolyDP(cnt, 0.012*cv2.arcLength(cnt, True), True) # 0.012 param
+		x = approx.ravel()[0]
+		y = approx.ravel()[1]
+
+		
+
+		if area > oldArea:#param
+			# if len(approx) == 3:
+				# cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
+			if len(approx) == 4:
+				cnt = approx
+				if len(cnt) > 4:
+					(cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
+					ar = MA/ma
+				else:
+					ar = (np.linalg.norm(approx[0] - approx[1]) + np.linalg.norm(approx[2] - approx[3]))/(np.linalg.norm(approx[2]-approx[1])+np.linalg.norm(approx[0]-approx[3]))
+					if ar > 1:
+						ar=1/ar
+
+				hull = cv2.convexHull(cnt)
+				hull_area = cv2.contourArea(hull)
+				solidity = float(area)/hull_area
+
+				condition = ar < 0.4 and ar > 0.28
+				if solidity > 0.95 and condition:
+					cnt2.append(approx)
+					oldArea = area
+					lcnt = approx
+
+		
+	if len(cnt2)==0:
+		return None, cnt2
+	#cnt2[-1]*=2
+	cnt1 = order_points(lcnt)
+	cy = np.sum(cnt1[:, 1])/4
+	cx = np.sum(cnt1[:, 0])/4
+
+	param1 = 0.7
+	param2 = 0.45
+
+	cnt1[0][1] = cy - (cy-cnt1[0][1] )*param1
+	cnt1[1][1] = cy - (cy-cnt1[1][1] )*param1
+	cnt1[2][1] = cy + (-cy+cnt1[2][1] )*param1
+	cnt1[3][1] = cy + (-cy+cnt1[3][1] )*param1
+	cnt1[0][0] = cx - (cx-cnt1[0][0] )*param2
+	cnt1[1][0] = cx - (cx-cnt1[1][0] )*param2
+	cnt1[2][0] = cx + (-cx+cnt1[2][0] )*param2
+	cnt1[3][0] = cx + (-cx+cnt1[3][0] )*param2
+	
+	c = np.reshape(cnt1, (4,1,2))
+	rect = cv2.boundingRect(c)
+
+	x,y,w,h = rect
+	cropped = frame[y: y+h, x: x+w]
+
+	return c, cropped
 
 class warehouse_L:
 	def __init__(self, tello):
 		self.tello = tello
 		self.rcout = np.zeros(4)
-		self.east = "frozen_east_text_detection.pb" 			#enter the full path to east model
-		print("[INFO] loading east text detector...")
-		self.net = cv2.dnn.readNet(self.east)
-		self.f = open('warehouse.csv','w')
-		self.f1 = open('out2.csv','w')
+		# self.east = "frozen_east_text_detection.pb" 			#enter the full path to east model
+		# print("[INFO] loading east text detector...")
+		# self.net = cv2.dnn.readNet(self.east)
+		self.f = open('warehouse.csv','a')
+		self.f1 = open('out2.csv','a')
 		print("file opened")
 		# cv2.waitKey(3000);
 		self.hover_time = 0
@@ -46,143 +194,61 @@ class warehouse_L:
 
 		self.yaw = self.tello.get_yaw()
 
-
 	def text_better(self,text):
 		list1 = list(text)
 		if len(text) == 4:
 			list1 = list1[1:]
 
-		# if(text[0]=='S'):
-		# 	list1[0]='5'
-		# if(text[0]=='I'):
-		# 	list1[0]='1'
+		if(text[0]=='I'):
+			list1[0]='1'
 		elif(text[0]=='A'):
 			list1[0]='4'
-		# elif(text[0]=='O'):
-		# 	list1[0]='0'
-		# elif(text[0]=='Q'):
-		# 	list1[0]='0'
 
-
-		# if(text[1]=='S'):
-		# 	list1[1]='9'
-		# elif(text[1]=='I'):
-		# 	list1[1]='1'
-		if(text[1]=='A'):
+		if(text[1]=='I'):
+			list1[1]='1'
+		elif(text[1]=='A'):
 			list1[1]='4'
-
 
 		if(text[2]=='4'):
 			list1[2]='A'
-		# elif(text[2]=='6'):
-		# 	list1[2]='C'
-		# elif(text[2]=='0'):
-		# 	list1[2]='D'
-		# elif(text[2]=='1'):
-		# 	list1[2]='I'
-		# elif(text[2]=='5'):
-		# 	list1[2]='S'
-		# elif(text[2]=='3'):4
-		# 	list1[2]='B'
-		# elif(text[2]=='8'):
-		# 	list1[2]='B'
+		elif(text[2]=='3'):
+			list1[2]='B'
+		elif(text[2]=='8'):
+			list1[2]='B'
 
 		text = ''.join(list1)
 		return text
 
 	def roi_detect(self,image):
 
-		min_confidence = 0.5
-		height = width = 320
-
-		padding = 0.06
-
-		orig = image.copy()
-		# origH = 1080
-		# origW = 720
-		(origH, origW) = image.shape[:2]
-
-		# set the new width and height and then determine the ratio in change
-		# for both the width and height
-		(newW, newH) = (width, height)
-		rW = origW / float(newW)
-		rH = origH / float(newH)
-
-		# resize the image and grab the new image dimensions
-		image = cv2.resize(image, (newW, newH))
-		(H, W) = image.shape[:2]
-
-		# define the two output layer names for the east detector model that
-		# we are interested -- the first is the output probabilities and the
-		# second can be used to derive the bounding box coordinates of text
-		layerNames = [
-			"feature_fusion/Conv_7/Sigmoid",
-			"feature_fusion/concat_3"]
-
-		# construct a blob from the image and then perform a forward pass of
-		# the model to obtain the two output layer sets
-		blob = cv2.dnn.blobFromImage(image, 1.0, (W, H),
-			(123.68, 116.78, 103.94), swapRB=True, crop=False)
-		self.net.setInput(blob)
-		(scores, geometry) = self.net.forward(layerNames)
-
-		# decode the predictions, then  apply non-maxima suppression to
-		# suppress weak, overlapping bounding boxes
-		(rects, confidences) = self.decode_predictions(scores, geometry, min_confidence)
-		boxes = non_max_suppression(np.array(rects), probs=confidences)
-
 		# initialize the list of results
 		results = []
-
-		iter = 1
 		text_list = []
 		conf_list = []
 		corners = []
 
-		output = orig.copy()
+		output = image.copy()
 
-		for (startX, startY, endX, endY) in boxes:
+		contour, roi = get_cnt(image)
 
-			# scale the bounding box coordinates based on the respective
-			# ratios
-			startX = int(startX * rW)
-			startY = int(startY * rH)
-			endX = int(endX * rW)
-			endY = int(endY * rH)
+		if(contour is not None):
+			cv2.imshow("roi",roi)
+			im, text, conf = return_text(roi) 
 
-			# in order to obtain a better OCR of the text we can potentially
-			# apply a bit of padding surrounding the bounding box -- here we
-			# are computing the deltas in both the x and y directions
-			dX = int((endX - startX) * padding)
-			dY = int((endY - startY) * padding)
-
-			# apply padding to each side of the bounding box, respectively
-			startX = max(0, startX - dX)
-			startY = max(0, startY - dY)
-			endX = min(origW, endX + (dX * 2))
-			endY = min(origH, endY + (dY * 2))
-
-			# extract the actual padded ROI
-			roi = orig[startY:endY, startX:endX]
-			
-			im, text, conf = return_text(roi)
-
-			cv2.rectangle(output, (startX, startY), (endX, endY), (0, 0, 255), 2)
-			cv2.putText(output, text, (startX, startY - 20), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
-			corner_pts = [[startX, startY], [endX, endY]]
-			
-			print("text " + str(iter) + " :" + text)
+			x,y,w,h = cv2.boundingRect(contour)
 
 			text = text.replace('_', '')
 			text = text.replace('\\', '')
 			text = text.replace('/', '')
 			
 			if len(text) == 3 or len(text) == 4:
-				text = self.text_better(text)
+				#text = text_better(text)
 				text_list.append(text)
 				conf_list.append(conf)
-				corners.append(corner_pts)
-			iter += 1
+				corners.append((x,y,x+w,y+h))
+
+			cv2.rectangle(output, (x, y), (x+w, y+h), (0, 0, 255), 2)
+			cv2.putText(output, text, (x, y - 20), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
 
 		return text_list, conf_list, corners, output
 
@@ -250,8 +316,6 @@ class warehouse_L:
 		# east + Tesseract
 		text = None
 		text_list, conf_list, corners, output = self.roi_detect(im)
-		if(corners):
-			print("Area: "+str(self.find_area(corners)))
 
 		text_list_ref = []			## FINAL RETURN VALUES
 		conf_list_ref = []
@@ -317,7 +381,7 @@ class warehouse_L:
 		x = 0
 		y = 0
 		avg_int_list = []
-		idx_new = []
+		# idx_new = []
 		for i in range(cols-barsize):
 			bar_img = img[:, i:i+barsize]
 			avg_int = np.sum(bar_img)/(rows*barsize)
@@ -329,7 +393,7 @@ class warehouse_L:
 		coloured_list = []
 		for x in idx:
 			if avg_int_list[x]<150:
-				idx_new[y] = x
+				# idx_new[y] = x
 				y = y+1
 			if np.sum(src[:,x]) != 0 and avg_int_list[x]<150:									# to update
 				for i in range(10):
@@ -377,7 +441,8 @@ class warehouse_L:
 		check_text = 0                         # Flag to determine whether text actually found
 		if text != None and corners:
 
-			bars = self.diff_shelf(im, qrpoints, corners)
+			# bars = self.diff_shelf(im, qrpoints, corners)
+			bars = 2
 			if bars>15:																		# to update VERY IMPORTANT!!!!!!!!!!!!uppdated from8 to 15... not using this as this case doesn't arise
 				return output, 2, corners
 
@@ -456,95 +521,34 @@ class warehouse_L:
 	############### REDEFINED ROI_DETECT and TEXT_FINDER 
 	def roi_detect_for_position(self,image):
 
-		min_confidence = 0.5
-		height = width = 320
-
-		padding = 0.06																				# to update padding
-
-		orig = image.copy()
-		# origH = 1080
-		# origW = 720
-		(origH, origW) = image.shape[:2]
-
-		# set the new width and height and then determine the ratio in change
-		# for both the width and height
-		(newW, newH) = (width, height)
-		rW = origW / float(newW)
-		rH = origH / float(newH)
-
-		# resize the image and grab the new image dimensions
-		image = cv2.resize(image, (newW, newH))
-		(H, W) = image.shape[:2]
-
-		# define the two output layer names for the east detector model that
-		# we are interested -- the first is the output probabilities and the
-		# second can be used to derive the bounding box coordinates of text
-		layerNames = [
-			"feature_fusion/Conv_7/Sigmoid",
-			"feature_fusion/concat_3"]
-
-		# construct a blob from the image and then perform a forward pass of
-		# the model to obtain the two output layer sets
-		blob = cv2.dnn.blobFromImage(image, 1.0, (W, H),
-			(123.68, 116.78, 103.94), swapRB=True, crop=False)
-		self.net.setInput(blob)
-		(scores, geometry) = self.net.forward(layerNames)
-
-		# decode the predictions, then  apply non-maxima suppression to
-		# suppress weak, overlapping bounding boxes
-		(rects, confidences) = self.decode_predictions(scores, geometry, min_confidence)
-		boxes = non_max_suppression(np.array(rects), probs=confidences)
-
 		# initialize the list of results
 		results = []
-
-		iter = 1
 		text_list = []
 		conf_list = []
 		corners = []
 
-		output = orig.copy()
+		output = image.copy()
 
-		for (startX, startY, endX, endY) in boxes:
+		contour, roi = get_cnt(image)
 
-			# scale the bounding box coordinates based on the respective
-			# ratios
-			startX = int(startX * rW)
-			startY = int(startY * rH)
-			endX = int(endX * rW)
-			endY = int(endY * rH)
+		if(contour is not None):
+			cv2.imshow("roi",roi)
+			im, text, conf = return_text(roi) 
 
-			# in order to obtain a better OCR of the text we can potentially
-			# apply a bit of padding surrounding the bounding box -- here we
-			# are computing the deltas in both the x and y directions
-			dX = int((endX - startX) * padding)
-			dY = int((endY - startY) * padding)
-
-			# apply padding to each side of the bounding box, respectively
-			startX = max(0, startX - dX)
-			startY = max(0, startY - dY)
-			endX = min(origW, endX + (dX * 2))
-			endY = min(origH, endY + (dY * 2))
-
-			# extract the actual padded ROI
-			roi = orig[startY:endY, startX:endX]
-			
-			im, text, conf = return_text(roi)
-
-			cv2.rectangle(output, (startX, startY), (endX, endY), (0, 0, 255), 2)
-			cv2.putText(output, text, (startX, startY - 20), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
-			corner_pts = [[startX, startY], [endX, endY]]
-			
-			#print("text " + str(iter) + " :" + text)
+			x,y,w,h = cv2.boundingRect(contour)
 
 			text = text.replace('_', '')
 			text = text.replace('\\', '')
 			text = text.replace('/', '')
 			
-			text_list.append(text)
-			conf_list.append(conf)
-			corners.append(corner_pts)
-			iter += 1
+			if len(text) == 3 or len(text) == 4:
+				#text = text_better(text)
+				text_list.append(text)
+				conf_list.append(conf)
+				corners.append((x,y,x+w,y+h))
+
+			cv2.rectangle(output, (x, y), (x+w, y+h), (0, 0, 255), 2)
+			cv2.putText(output, text, (x, y - 20), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
 
 		return text_list, conf_list, corners, output
 
@@ -601,6 +605,7 @@ class warehouse_L:
 		
 		align_without_QR = False
 		rectangle_without_QR = False
+		detection_completed_per_shelf = True
 
 		self.f.write('%s,%s,\n'%("QR_Data", "Alphanum_text"))							#remove this line
 		# f.close()
@@ -642,15 +647,17 @@ class warehouse_L:
 				#print("No vertical motion, tracking")
 				
 				initial_no_of_frames = trav1.num_text_frames
+
 				if vertical_motion:
 					trav1.run_updown(frame)  # Use in left
 				else:
 					trav1.run(frame)  # Use in left
-				cv2.destroyWindow("dst")
+				# cv2.destroyWindow("dst")
 				print("text_frames_detected: " + str(trav1.num_text_frames))
 
 				if ((trav1.num_text_frames - initial_no_of_frames) > 0) and align_without_QR:
 					align_without_QR = False
+					self.tello.move_left(40)
 
 				if trav1.num_text_frames == 4:              # NO. of shelves in one row # 4			#update done
 					self.should_stop = True
@@ -688,13 +695,21 @@ class warehouse_L:
 					trav1.prev_trigger = 1
 					trav1.trigger = 1
 
+					if detection_completed_per_shelf and trav1.num_text_frames == 1:
+						self.should_stop = True
+						print("Finished")
+						break
+
+					if detection_completed_per_shelf == False:
+						detection_completed_per_shelf = True
+
 					continue
 
 				# leftleft
 				if go_up:
 					print("up")
 					present_height = self.tello.get_h()
-					if (present_height - start_height) > 75:										# to update
+					if (present_height - start_height) > 40:										# to update
 						go_up = False
 						go_down = True
 						cv2.imshow("Results",frame)
@@ -730,7 +745,7 @@ class warehouse_L:
 
 				print("intersection: "+str(ret_val))
 
-				if qrpoints != [] and self.hover_time < 3 and ret_val == 1:	 # If QR detected, detect TEXT
+				if qrpoints != [] and self.hover_time < 2 and ret_val == 1:	 # If QR detected, detect TEXT
 
 					frame = frame_1
 					print(qrlist)
@@ -757,11 +772,11 @@ class warehouse_L:
 						cv2.imshow("Results",frame)
 						continue
 
-					print("Text length: "+str(self.find_length(txt_corners)))
+					# print("Text length: "+str(self.find_length(txt_corners)))
 					self.hover_time = self.hover_time + time.time() - start_time 
 
 				
-				elif self.hover_time > 3:
+				elif self.hover_time > 2:
 					print("hover time: "+str(self.hover_time))
 
 					self.rcout = [-15,0,0,0]																	# to update velocity
@@ -781,7 +796,7 @@ class warehouse_L:
 					start_height = self.tello.get_h()
 					go_up = True
 					
-
+					detection_completed_per_shelf = False
 					should_correct_pos = True  # Use in left
 
 				elif rectangle_without_QR and not align_without_QR:

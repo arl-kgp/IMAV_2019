@@ -7,7 +7,12 @@ tello.connect()
 tello.streamoff()
 tello.streamon()
 txt = warehouse_overall(tello)
-txt.algo()
+yaw = tello.get_yaw()
+# try:
+# 	tello.takeoff()
+# except:
+# 	pass
+txt.algo(yaw)
 tello.land()
 tello.streamoff()
 tello.end()

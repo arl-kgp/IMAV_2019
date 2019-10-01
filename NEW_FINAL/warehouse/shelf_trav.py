@@ -38,7 +38,6 @@ class FrontEnd(object):
     def detect_only_rectangle(self, frame):
         dst,mask = self.preproccessAndKey(frame)
         
-        
         rect = self.get_coordinates(mask,dst)
         print("rect in func " + str(rect))
         if(rect[0][0] == 0):
@@ -152,7 +151,6 @@ class FrontEnd(object):
         mask = self.getRectMask(dst)
 
         return dst,mask
-
 
     def getRectMask(self,frame):
 
@@ -294,7 +292,7 @@ class FrontEnd(object):
             # cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
             # cv2.imshow("with frame",frame)
             print("still visible")
-            self.rcOut[0] = 30
+            self.rcOut[0] = -30
             self.rcOut[1] = 0
             self.rcOut[2] = 0
             self.rcOut[3] = 0
@@ -304,7 +302,7 @@ class FrontEnd(object):
             self.visible +=1
 
         else:
-            if(self.visible<5):
+            if(self.visible<10):
                 self.tracker = cv2.TrackerKCF_create()
                 self.trigger_init = 1
                 return

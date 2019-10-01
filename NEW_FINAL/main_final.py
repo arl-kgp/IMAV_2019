@@ -56,11 +56,9 @@ class hoohah(object):
         try:
             self.tello.takeoff()
         except:
-            print("Ab toh takeoff ho gya lol")
-            
+            print("Ab toh takeoff ho gya lol")    
         
         time.sleep(2)
-
 
         print("Starting Controller")
         try:
@@ -84,7 +82,7 @@ class hoohah(object):
 
         self.warehouse.clear()
 
-        self.tello.move_left(50)													# to update
+        # self.tello.move_left(50)													# to update
 
         print("have moved left")
 

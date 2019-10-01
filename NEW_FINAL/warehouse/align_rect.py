@@ -211,7 +211,7 @@ class FrontEnd(object):
             return 1
 
         else :
-            self.rcOut[0] = 20
+            self.rcOut[0] = -20
             self.rcOut[1] = 0
             self.rcOut[2] = 0
             self.rcOut[3] = 0
@@ -277,7 +277,7 @@ class FrontEnd(object):
             if self.cntErNrm > 12 or self.cntErNrm ==0:
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,30,0,0,0.55)
+                self.PoseController(key,60,0,12,0.55)
                 self.alnFlowFlag = 1
                 # print "self.cntErNrm",self.cntErNrm
 
@@ -374,7 +374,6 @@ class FrontEnd(object):
         dst = dst[y:y+h,x:x+w]
 
         return dst
-
 
     def getRectMask(self,frame):
 

@@ -109,7 +109,7 @@ class FrontEnd(object):
 
         # print "self.PoseFlag",self.PoseFlag
 
-        con = self.ARmean[0] > 0.25
+        con = self.ARmean[0] > 0.8
         con = con*1
         # print "con",con
         trig = self.interMtrigger2(con)
@@ -280,7 +280,6 @@ class FrontEnd(object):
         dst = dst[y:y+h,x:x+w]
 
         return dst
-
 
     def getRectMask(self,frame):
 
