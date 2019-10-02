@@ -4,7 +4,7 @@ import pygame
 from pygame.locals import *
 import numpy as np
 import time
-import xbox
+import JoyStick_Controller.xbox
 
 # Speed of the drone
 S = 100
