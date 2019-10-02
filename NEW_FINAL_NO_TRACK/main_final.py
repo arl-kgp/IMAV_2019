@@ -76,9 +76,18 @@ class hoohah(object):
 
         # self.starting.run(self.initial_yaw)										#uncomment this VERY IMPORTANT!!!!! 	
         
-        self.tello.move_left(410)
+        # self.tello.move_forward(40)
+        try:
+            self.tello.move_left(40)
+        except:
+            pass
+        try:
+            self.tello.move_back(440)
+        except:
+            pass
+        self.orient.orient(self.initial_yaw)
 
-        self.tello.rotate_clockwise(90)
+        # self.tello.rotate_clockwise(90)
 
         goto_height(self.tello,height)											#the height of tello to reach 
         
@@ -113,7 +122,7 @@ class hoohah(object):
         try:
         	self.tello.move_right(40)
         except:
-        	pass
+            pass
 
         # if(LR_VAL==1):
         #     self.tello.move_right(45)                #########################################################################################################################################################

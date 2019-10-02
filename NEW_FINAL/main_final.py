@@ -74,7 +74,16 @@ class hoohah(object):
         except:
             print("Control fail ho gya lol")
 
-        self.starting.run(self.initial_yaw)										#uncomment this VERY IMPORTANT!!!!! 	
+        try:
+            self.tello.move_left(40)
+        except:
+            pass
+        try:
+            self.tello.move_back(440)
+        except:
+            pass
+            
+        self.orient.orient(self.initial_yaw)									#uncomment this VERY IMPORTANT!!!!! 	
 
         goto_height(self.tello,height)											#the height of tello to reach 
         
