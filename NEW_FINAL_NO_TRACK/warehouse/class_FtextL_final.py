@@ -712,8 +712,10 @@ class warehouse_L:
 							self.should_stop = True
 							print("Finished")
 							break
-							
-						self.tello.go_left(120)
+						try:
+							self.tello.move_left(120)
+						except:
+							pass
 						detection_completed_per_shelf = False
 
 					if align_without_QR == True:
