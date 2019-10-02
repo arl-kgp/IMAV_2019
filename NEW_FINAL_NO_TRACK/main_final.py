@@ -93,7 +93,7 @@ class hoohah(object):
             up, left, trig = self.rect_pass.run(yaw)
             print("up = {}, left = {}, trig = {}".format(up,left,trig))
             if(trig==0):
-            	self.after.run(left,up,yaw)
+                self.after.run(left,up,yaw)
                 self.after = after(self.tello)
 
         trig = 0
