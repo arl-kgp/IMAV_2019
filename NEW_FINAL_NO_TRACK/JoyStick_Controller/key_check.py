@@ -1,5 +1,5 @@
-import xbox
-from controller_module import FrontEnd
+import JoyStick_Controller.xbox
+from JoyStick_Controller.controller_module import FrontEnd
 from djitellopy import Tello
 
 class keyCheck(object):
