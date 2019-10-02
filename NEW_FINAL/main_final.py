@@ -82,7 +82,7 @@ class hoohah(object):
             self.tello.move_back(440)
         except:
             pass
-            
+
         self.orient.orient(self.initial_yaw)									#uncomment this VERY IMPORTANT!!!!! 	
 
         goto_height(self.tello,height)											#the height of tello to reach 
@@ -116,9 +116,9 @@ class hoohah(object):
 
         # 3,0,yaw
         try:
-        	self.tello.move_right(40)
+            self.tello.move_right(40)
         except:
-        	pass
+            pass
 
         # if(LR_VAL==1):
         #     self.tello.move_right(45)                #########################################################################################################################################################

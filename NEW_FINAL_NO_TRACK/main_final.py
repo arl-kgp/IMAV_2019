@@ -120,7 +120,7 @@ class hoohah(object):
 
         # 3,0,yaw
         try:
-        	self.tello.move_right(40)
+            self.tello.move_right(40)
         except:
             pass
 
