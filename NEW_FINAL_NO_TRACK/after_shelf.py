@@ -46,7 +46,7 @@ class FrontEnd(object):
         should_stop = False
 
         # if(up):
-        final_height = 180
+        final_height = 185
 
         # else:
         #     final_height = 30
@@ -82,8 +82,8 @@ class FrontEnd(object):
                     # print(rect)
                     if(rect[0][0] == 0):
                         self.rcOut[2] = 0             
-                        self.rcOut[0] = 0
-                        self.rcOut[1] = 10      #aage jaega if rect not found
+                        self.rcOut[0] = 15
+                        self.rcOut[1] = 0      #aage jaega if rect not found
                         self.rcOut[3] = 0
                         # continue
                     else:

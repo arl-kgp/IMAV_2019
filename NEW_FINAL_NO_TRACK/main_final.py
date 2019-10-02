@@ -51,7 +51,7 @@ class hoohah(object):
 
     def run(self):
 
-    	id = 1
+        id = 1
 
         # global LR_VAL
 
@@ -107,7 +107,7 @@ class hoohah(object):
 
         # 3,0,yaw
         try:
-        	self.tello.move_right(70)
+        	self.tello.move_right(40)
         except:
         	pass
 
