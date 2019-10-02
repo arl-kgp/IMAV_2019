@@ -29,7 +29,7 @@ Out_of_bounds = False
 
 # will have to go to left if 1st shelf khiski hui hogi toward left wrt to second
 
-height = 180
+height = 200
 
 class hoohah(object):
 
@@ -48,6 +48,8 @@ class hoohah(object):
         self.after = after(self.tello)
 
         self.orient = orient(self.tello)
+
+        self.tello.set_speed(10)
 
     def run(self):
 
@@ -81,10 +83,12 @@ class hoohah(object):
             self.tello.move_left(40)
         except:
             pass
+        time.sleep(3)
         try:
             self.tello.move_back(440)
         except:
             pass
+        time.sleep(7)
         self.orient.orient(self.initial_yaw)
 
         # self.tello.rotate_clockwise(90)
@@ -123,6 +127,7 @@ class hoohah(object):
             self.tello.move_right(40)
         except:
             pass
+        time.sleep(2)
 
         # if(LR_VAL==1):
         #     self.tello.move_right(45)                #########################################################################################################################################################
@@ -148,9 +153,16 @@ class hoohah(object):
                 self.after = after(self.tello)
 
         # self.after.run(left,up,yaw)
-
-        self.tello.move_forward(500)
-        self.tello.move_forward(50)
+        try:
+        	self.tello.move_forward(500)
+        except:
+        	pass
+        time.sleep(10)
+        try:
+        	self.tello.move_forward(50)
+        except:
+        	pass
+        time.sleep(2)
 
         self.tello.land()
         self.tello.end()

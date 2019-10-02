@@ -277,7 +277,7 @@ class FrontEnd(object):
             if self.cntErNrm > 8 or self.cntErNrm ==0:
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,35,0,15,0.57)
+                self.PoseController(key,35,0,15,0.39)
                 self.alnFlowFlag = 1
                 # print "self.cntErNrm",self.cntErNrm
                 if self.centerCounter > 16 and self.centerCounter < 180:                                # to update
