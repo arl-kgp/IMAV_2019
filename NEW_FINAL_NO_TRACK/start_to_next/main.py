@@ -23,7 +23,7 @@ class starting(object):
         self.skip_first = skip_first(self.tello)
         self.align_next = align_initial(self.tello)
 
-        self.height = 150                                                                         #to change along with line 40
+        self.height = 180                                                                         #to change along with line 40
 
     def run(self,init_yaw):
 
