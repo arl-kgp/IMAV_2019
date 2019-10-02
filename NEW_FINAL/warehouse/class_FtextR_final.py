@@ -127,8 +127,7 @@ def get_cnt(frame):
 			# if len(approx) == 3:
 				# cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
 			if len(approx) == 4:
-				cnt = approx
-				if len(cnt) > 4:
+				if 0:
 					(cx,cy),(MA,ma),angle = cv2.fitEllipse(cnt)
 					ar = MA/ma
 				else:
