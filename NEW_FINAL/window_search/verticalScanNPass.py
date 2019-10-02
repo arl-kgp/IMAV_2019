@@ -286,7 +286,7 @@ class FrontEnd(object):
                 self.flag1 = 0
             eTime =  time.time() - self.startTime
             
-            shootTime = 1.5                                                                     # to update
+            shootTime = 1.76                                                                  # to update
             # print "eTime",eTime
             if eTime < shootTime: # shoot time
                 # print "ffffffffffffffffffffffffffffffffffffffffffffff"
