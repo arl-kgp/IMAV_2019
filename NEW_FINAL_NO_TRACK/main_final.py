@@ -51,7 +51,7 @@ class hoohah(object):
 
     def run(self):
 
-        id = 1
+        id = 4
 
         # global LR_VAL
 
@@ -74,7 +74,11 @@ class hoohah(object):
         except:
             print("Control fail ho gya lol")
 
-        self.starting.run(self.initial_yaw)										#uncomment this VERY IMPORTANT!!!!! 	
+        # self.starting.run(self.initial_yaw)										#uncomment this VERY IMPORTANT!!!!! 	
+        
+        self.tello.move_left(410)
+
+        self.tello.rotate_clockwise(90)
 
         goto_height(self.tello,height)											#the height of tello to reach 
         

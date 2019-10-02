@@ -227,10 +227,10 @@ class FrontEnd(object):
             # print "ya1"
             # print "self.cntErNrm",self.cntErNrm
 
-            if self.cntErNrm > 10 or self.cntErNrm ==0:                                             #to change dont change 0 only 10 to be changed. Precision for alignment
+            if self.cntErNrm > 18 or self.cntErNrm ==0:                                             #to change dont change 0 only 10 to be changed. Precision for alignment
                 # print "Norm ",self.cntErNrm
                 
-                self.PoseController(key,200,0,0,0.35)                                               #to change key,x,y,z,Kp     x,y,z are relative, Kp is extremely tested, y is right, z is top
+                self.PoseController(key,250,0,0,0.15)                                               #to change key,x,y,z,Kp     x,y,z are relative, Kp is extremely tested, y is right, z is top
                 self.alnFlowFlag = 1
                 # print "self.cntErNrm",self.cntErNrm
 
@@ -241,7 +241,7 @@ class FrontEnd(object):
                 # print "ya3"
                 self.alnFlowFlag = 0
                 return 0
-            if self.cntErNrm < 10 and self.cntErNrm != 0:
+            if self.cntErNrm < 18 and self.cntErNrm != 0:
                 self.alnFlowFlag = 0
                 # print "self.cntErNrm",self.cntErNrm
                 
@@ -253,7 +253,7 @@ class FrontEnd(object):
                 # print "ya5"
                 return 0 
         else:
-            if self.cntErNrm < 10 and self.cntErNrm != 0:
+            if self.cntErNrm < 18 and self.cntErNrm != 0:
                 # print "self.cntErNrm",self.cntErNrm
                 # print "ya6"
                 return 1
