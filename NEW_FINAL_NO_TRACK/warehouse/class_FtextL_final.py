@@ -26,6 +26,8 @@ from warehouse.align_to_frame import FrontEnd as correct_position # Use in left
 
 from warehouse.align_rect import FrontEnd as align_rect
 
+from tello_height import *
+
 import math
 
 K1 = 3

@@ -23,6 +23,7 @@ import scipy
 import scipy.misc
 from imutils.video import FPS
 from warehouse.align_to_frame import FrontEnd as correct_position # Use in left
+from tello_height import *
 
 from warehouse.align_rect import FrontEnd as align_rect
 
