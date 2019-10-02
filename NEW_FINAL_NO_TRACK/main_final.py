@@ -25,11 +25,11 @@ from orient_yaw import Orient as orient
 import final_csv_final
 
 Out_of_bounds = False
-LR_VAL = 0 #can be 0 : stay at place, 1 : move right, 2 : move left               #########################################################################################################################################################
+# LR_VAL = 1 #can be 0 : stay at place, 1 : move right, 2 : move left               #########################################################################################################################################################
 
 # will have to go to left if 1st shelf khiski hui hogi toward left wrt to second
 
-height = 185
+height = 180
 
 class hoohah(object):
 
@@ -51,7 +51,9 @@ class hoohah(object):
 
     def run(self):
 
-        global LR_VAL
+    	id = 1
+
+        # global LR_VAL
 
         trig = 0
 
@@ -104,12 +106,16 @@ class hoohah(object):
 
 
         # 3,0,yaw
+        try:
+        	self.tello.move_right(70)
+        except:
+        	pass
 
-        if(LR_VAL==1):
-            self.tello.move_right(40)                #########################################################################################################################################################
+        # if(LR_VAL==1):
+        #     self.tello.move_right(45)                #########################################################################################################################################################
 
-        elif(LR_VAL==2):
-            self.tello.move_left(40)                 #########################################################################################################################################################
+        # elif(LR_VAL==2):
+        #     self.tello.move_left(45)                 #########################################################################################################################################################
 
         self.after.run(left,up,yaw)
         self.after = after(self.tello)
@@ -130,14 +136,19 @@ class hoohah(object):
 
         # self.after.run(left,up,yaw)
 
+        self.tello.move_forward(500)
+        self.tello.move_forward(50)
+
         self.tello.land()
         self.tello.end()
         print("Ended")
 
-        print("Enter input file name")
-        fname = input()
-        print("Enter ID")
-        id = input()
+        fname = "/home/carry/IMAV/IMAV_2019/NEW_FINAL_NO_TRACK/distribution.csv"
+
+        # print("Enter input file name")
+        # fname = input()
+        # print("Enter ID")
+        # id = input()
 
         final_csv_final.getout(id, fname)
 
