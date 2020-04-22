@@ -1,16 +1,16 @@
-# IMAV_2019
+![imav](https://user-images.githubusercontent.com/45385843/79998045-d5eaee80-84d7-11ea-9419-64e649415813.jpg)
 
 The repository is the complete compilation of all the resources for automated and manual warehouse management using DJI Tello micro-drone.
 
 Now, let's get started on explaining the constituents of the repository.
 
-###First, lets start with the sub-repo "imav-warehouse-management"
+### First, lets start with the sub-repo "imav-warehouse-management"
 
 It is the solution if the person wants to use the manual mode, i.e. wants to know about only a small/specified region of the inventory then can perform it manually. It is possible to connect a joystick to the laptop simply and fly the drone, meanwhile, do the necessary work too.
 
 The main work going to be explained here is detecting the QR-codes, alphanumeric codes and the algorithm for associating them.
 
-###Second comes to the sub-repo "NEW_FINAL_NO_TRACK"
+### Second, come to the sub-repo "NEW_FINAL_NO_TRACK"
 
 The algorithm for detecting the QR-codes and alphanumeric code is similar to as the previous sub-repo. But what is different is, this is an automated approach towards solving the problem statement.
 
@@ -34,7 +34,7 @@ Here comes a brief on the sub-files:
 7) "Joystick_Controller" folder consists of the code to manually take over the using Joystick incase of an emergency.
 
 
-###Finally comes to the sub-repo "NEW_FINAL"
+### Finally, come to the sub-repo "NEW_FINAL"
 
 This sub-repo closely resembles the previous folder but with a minimal change.
 Previously, when we aligned to a particular rectangle, we used to give the drone a specific command to go a fixed amount of distance. However, it often worked, but sometimes it wasn't such a right solution. 
@@ -42,9 +42,12 @@ Thus, we modified to track the detected rectangle and report we had moved ahead 
 
 
 
+The warehouse management part of the codebase was a modified implementation of our IMAV'19 conference paper   
+[Warehouse Management Using Real-Time QR-Code and
+Text Detection](http://www.imavs.org/papers/2019/41480.pdf)
 
 
+This work was done as a part of the indoor competition at IMAV'19.  
+**We are proud to announce that we won the IMAV'19 competition with this codebase.**  
 
-This work was done as a part of the indoor competition at IMAV'19.
-We are proud to announce that we have won the competition with this codebase.
 
